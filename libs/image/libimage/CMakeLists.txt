@@ -1,0 +1,38 @@
+# OpenImageIO
+find_package(OpenImageIO REQUIRED)
+
+# libimage
+add_library(libimage
+    src/image/Exception.cpp
+    src/image/Type.cpp
+    src/image/luts/Barycentric.cpp
+    src/image/luts/CubeFile.cpp
+    src/image/luts/LUT.cpp
+    src/image/luts/SimpleCube.cpp
+    src/image/luts/TetrahedralInterpolator.cpp
+)
+add_library(image::libimage ALIAS libimage)
+
+target_include_directories(libimage PUBLIC include)
+
+target_link_libraries(libimage
+    PUBLIC
+    glm::glm
+    PRIVATE
+    OpenImageIO::OpenImageIO
+)
+
+target_compile_features(libimage PUBLIC cxx_std_17)
+if(MSVC)
+    target_compile_options(libimage PRIVATE /W4 /WX)
+else()
+    target_compile_options(libimage PRIVATE -Wall -Wextra -pedantic -Werror -march=native)
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT IMAGE_DISABLE_ASAN)
+        target_compile_options(libimage PRIVATE -fsanitize=address)
+        target_link_libraries(libimage PRIVATE -fsanitize=address)
+    endif()
+endif()
+# enable_clang_tidy(libimage)
+
+include(GNUInstallDirs)
+install(TARGETS libimage RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
