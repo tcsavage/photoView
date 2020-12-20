@@ -84,3 +84,7 @@ void MainWindow::setupToolBars() {
 void MainWindow::openImage(const QUrl &) {
     
 }
+
+void MainWindow::openLut(const QUrl &url) {
+    processor.loadLutFromFile(url.toLocalFile().toStdString());
+}

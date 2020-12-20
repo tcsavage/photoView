@@ -7,6 +7,7 @@ find_package(Qt5Widgets CONFIG REQUIRED)
 set(photo_luts_sources
     src/main.cpp
     src/MainWindow.cpp
+    src/Processor.cpp
 )
 
 add_executable(photo_luts ${photo_luts_sources})
@@ -15,6 +16,7 @@ target_link_libraries(
     photo_luts
     PRIVATE
     Qt5::Widgets
+    image::libimage
 )
 
 target_compile_features(photo_luts PUBLIC cxx_std_17)
