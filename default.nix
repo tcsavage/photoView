@@ -1,15 +1,18 @@
 { pkgs ? import <nixpkgs> {} }:
-pkgs.qt5.mkDerivation {
+pkgs.callPackage (
+  { gcc10, pkg-config, cmake, openimageio2, qt5 }:
+  qt5.mkDerivation {
     pname = "photo_luts";
     version = "0.0.0";
     src = ./.;
     nativeBuildInputs = [
-      pkgs.gcc10
-      pkgs.pkg-config
-      pkgs.cmake
+      gcc10
+      pkg-config
+      cmake
     ];
     buildInputs = [
-      pkgs.openimageio2
-      pkgs.qt5.qtbase
+      openimageio2
+      qt5.qtbase
     ];
-}
+  }
+) {}
