@@ -22,7 +22,7 @@ target_link_libraries(libimage
     OpenImageIO::OpenImageIO
 )
 
-target_compile_features(libimage PUBLIC cxx_std_17)
+target_compile_features(libimage PUBLIC cxx_std_20)
 if(MSVC)
     target_compile_options(libimage PRIVATE /W4 /WX)
 else()

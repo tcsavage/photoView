@@ -61,7 +61,7 @@ namespace image {
     };
 
     template<typename T>
-    class RepresentType<T, std::enable_if_t<std::is_arithmetic_v<T> || std::is_pod_v<T> || std::is_aggregate_v<T> || std::is_final_v<T>>> {
+    class RepresentType<T, std::enable_if_t<std::is_arithmetic_v<T> || (std::is_standard_layout_v<T> && std::is_trivial_v<T>) || std::is_aggregate_v<T> || std::is_final_v<T>>> {
     public:
         static TypeRef get() {
             static Type ty { TypeName<T>::get(), sizeof(T), alignof(T) };

@@ -19,7 +19,7 @@ target_link_libraries(
     image::libimage
 )
 
-target_compile_features(photo_luts PUBLIC cxx_std_17)
+target_compile_features(photo_luts PUBLIC cxx_std_20)
 if(MSVC)
     target_compile_options(photo_luts PRIVATE /W4)
 else()

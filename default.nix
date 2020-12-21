@@ -4,7 +4,7 @@ pkgs.qt5.mkDerivation {
     version = "0.0.0";
     src = ./.;
     nativeBuildInputs = [
-      pkgs.gcc
+      pkgs.gcc10
       pkgs.pkg-config
       pkgs.cmake
     ];
