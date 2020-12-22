@@ -5,8 +5,6 @@
 
 namespace image::luts {
 
-    
-
     namespace {
         std::istream &operator>>(std::istream &input, ColorRGB &color) {
             input >> color.r;

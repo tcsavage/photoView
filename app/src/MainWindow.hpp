@@ -18,7 +18,7 @@ protected:
     void setupToolBars();
 
     void openImage(const QUrl &url);
-    void openLut(const QUrl &url);
+    void openLut(const QString &url);
 
 private:
     Processor processor;

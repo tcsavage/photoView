@@ -2,6 +2,8 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QDebug>
+#include <QErrorMessage>
 #include <QMenuBar>
 #include <QStandardPaths>
 #include <QStyle>
@@ -9,6 +11,7 @@
 #include <QUrl>
 
 MainWindow::MainWindow() {
+    qDebug() << "Constructing MainWindow";
     setWindowTitle("Photo LUTs");
     setupDialogs();
     setupActions();
@@ -35,6 +38,7 @@ void MainWindow::setupDialogs() {
     openLutDialog->setFileMode(QFileDialog::FileMode::ExistingFile);
     openLutDialog->setNameFilter("3D LUTs (*.cube)");
     openLutDialog->setDirectory(QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
+    connect(openLutDialog, &QFileDialog::fileSelected, this, [this] (const QString &path) { openLut(path); });
 }
 
 void MainWindow::setupActions() {
@@ -81,10 +85,18 @@ void MainWindow::setupToolBars() {
     }
 }
 
-void MainWindow::openImage(const QUrl &) {
-    
+void MainWindow::openImage(const QUrl &url) {
+    processor.loadImageFromFile(url.toLocalFile().toStdString());
 }
 
-void MainWindow::openLut(const QUrl &url) {
-    processor.loadLutFromFile(url.toLocalFile().toStdString());
+void MainWindow::openLut(const QString &pathStr) {
+    qDebug() << "Opening requested LUT:" << pathStr;
+    image::Path path = pathStr.toStdString();
+    auto loaded = processor.loadLutFromFile(path);
+    if (!loaded) {
+        QErrorMessage errMsg { this };
+        errMsg.showMessage(tr("Failed to load LUT"));
+        return;
+    }
+    openLutFileText->setText(QString::fromStdString(path.filename()));
 }
