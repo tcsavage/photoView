@@ -18,5 +18,6 @@ bool Processor::loadLutFromFile(image::Path path) {
 
 bool Processor::loadImageFromFile(image::Path path) {
     image = OIIO::ImageBuf(image::String(path));
-    return true;
+    image.read(0, 0, true);
+    return !image.has_error();
 }

@@ -4,6 +4,7 @@
 #include <QLineEdit>
 #include <QMainWindow>
 
+#include "ImageView.hpp"
 #include "Processor.hpp"
 
 class MainWindow : public QMainWindow {
@@ -12,17 +13,21 @@ public:
     MainWindow();
 
 protected:
+    void setupMainWidget();
     void setupDialogs();
     void setupActions();
     void setupMenus();
     void setupToolBars();
 
-    void openImage(const QUrl &url);
-    void openLut(const QString &url);
+    void openImage(const QString &path);
+    void openLut(const QString &path);
+
+    void updateImageView();
 
 private:
     Processor processor;
     
+    ImageView *imageView;
     QLineEdit *openLutFileText;
 
     QAction *openImageAction;

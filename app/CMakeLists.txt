@@ -6,6 +6,7 @@ find_package(Qt5Widgets CONFIG REQUIRED)
 
 set(photo_luts_sources
     src/main.cpp
+    src/ImageView.cpp
     src/MainWindow.cpp
     src/Processor.cpp
 )
