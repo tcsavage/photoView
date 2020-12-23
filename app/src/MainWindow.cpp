@@ -120,9 +120,8 @@ void MainWindow::openLut(const QString &pathStr) {
 
 void MainWindow::updateImageView() {
     qDebug() << "Updating image view";
-    const auto &spec = processor.image.spec();
-    image::NDArray<image::U8> arr { image::Shape { 3, static_cast<std::size_t>(spec.width), static_cast<std::size_t>(spec.height) } };
-    processor.image.get_pixels(processor.image.roi(), OIIO::TypeDesc::UINT8, arr.data());
-    imageView->load(QSize { spec.width, spec.height }, std::span(arr.data(), arr.size()));
+    auto &img = processor.image;
+    QSize size { processor.imageWidth, processor.imageHeight };
+    imageView->load(size, img.data());
     qDebug() << "Finished updating image view";
 }

@@ -1,6 +1,10 @@
 #include "Processor.hpp"
 
+#include <algorithm>
+#include <fstream>
 #include <iostream>
+
+#include <OpenImageIO/imageio.h>
 
 bool Processor::loadLutFromFile(image::Path path) {
     std::ifstream is;
@@ -17,7 +21,20 @@ bool Processor::loadLutFromFile(image::Path path) {
 }
 
 bool Processor::loadImageFromFile(image::Path path) {
-    image = OIIO::ImageBuf(image::String(path));
-    image.read(0, 0, true);
-    return !image.has_error();
+    auto iin = OIIO::ImageInput::open(path.string());
+    if (iin == nullptr) {
+        return false;
+    }
+    const auto &spec = iin->spec();
+    image = image::NDArray<image::U8>(image::Shape {
+        static_cast<std::size_t>(spec.nchannels),
+        static_cast<std::size_t>(spec.width),
+        static_cast<std::size_t>(spec.height)
+    });
+    std::cerr << "Created new image array: " << image.shape() << "\n";
+    iin->read_image(OIIO::TypeDesc::UINT8, image.data());
+    imageWidth = spec.width;
+    imageHeight = spec.height;
+    iin->close();
+    return true;
 }

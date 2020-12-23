@@ -12,7 +12,7 @@ class ImageView : public QWidget {
     Q_OBJECT
 public:
     void clear();
-    void load(QSize size, std::span<image::U8> data);
+    void load(QSize size, const image::U8 *data);
 
     ImageView();
 
