@@ -18,6 +18,12 @@
 
 namespace image {
 
+    namespace detail {
+        constexpr auto roundUpToMultiple(auto n, auto multiple) {
+            return ((n + multiple - 1) / multiple) * multiple;
+        }
+    }
+
     class ReshapeException : public Exception {
     public:
         ReshapeException()
@@ -94,6 +100,7 @@ namespace image {
     using NDArrayStoragePtr = std::shared_ptr<void>;
 
     struct NDArrayStorage {
+        std::size_t size;
         NDArrayStoragePtr ptr;
 
         template <class T>
@@ -102,8 +109,18 @@ namespace image {
         template <class T>
         const T *getPtr() const { return static_cast<T*>(ptr.get()); }
 
-        NDArrayStorage(std::size_t size, std::size_t alignment)
-            : ptr(std::aligned_alloc(alignment, size), [](auto p) { std::free(p); }) {}
+        NDArrayStorage(std::size_t requestedSize, std::size_t alignment)
+            : size(detail::roundUpToMultiple(requestedSize, alignment))
+            , ptr(
+                std::aligned_alloc(alignment, size),
+                [](auto p) { std::free(p); }
+            ) {
+                auto p = reinterpret_cast<std::intptr_t>(ptr.get());
+                std::cerr << "Created NDArray size 0x" << std::hex << size
+                          << " (0x" << requestedSize << " requested) at [0x"
+                          << p << ", 0x"
+                          << p + size << ")\n" << std::dec;
+            }
 
         explicit NDArrayStorage(NDArrayStoragePtr ptr) : ptr(ptr) {}
     };
