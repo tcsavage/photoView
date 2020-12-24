@@ -21,17 +21,16 @@ bool Processor::loadLutFromFile(image::Path path) {
 }
 
 bool Processor::loadImageFromFile(image::Path path) {
-    auto iin = OIIO::ImageInput::open(path.string());
-    if (iin == nullptr) {
+    OIIO::ImageSpec spec;
+    auto iin = OIIO::ImageInput::create(path.string());
+    if (!iin->open(path, spec, spec)) {
         return false;
     }
-    const auto &spec = iin->spec();
     image = image::NDArray<image::U8>(image::Shape {
         static_cast<std::size_t>(spec.nchannels),
         static_cast<std::size_t>(spec.width),
         static_cast<std::size_t>(spec.height)
     });
-    std::cerr << "Created new image array: " << image.shape() << "\n";
     iin->read_image(OIIO::TypeDesc::UINT8, image.data());
     imageWidth = spec.width;
     imageHeight = spec.height;

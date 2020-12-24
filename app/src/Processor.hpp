@@ -17,5 +17,3 @@ struct Processor {
     bool loadLutFromFile(image::Path path);
     bool loadImageFromFile(image::Path path);
 };
-
-
