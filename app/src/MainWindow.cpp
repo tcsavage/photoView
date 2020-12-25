@@ -95,8 +95,8 @@ void MainWindow::setupToolBars() {
 
 void MainWindow::openImage(const QString &pathStr) {
     qDebug() << "Opening requested image:" << pathStr;
-    auto loaded = processor.loadImageFromFile(pathStr.toStdString());
-    if (!loaded) {
+    auto r = processor.loadImageFromFile(pathStr.toStdString());
+    if (!r) {
         qDebug() << "Failed to open image:" << pathStr;
         QErrorMessage errMsg { this };
         errMsg.showMessage(tr("Failed to load image"));
@@ -108,8 +108,8 @@ void MainWindow::openImage(const QString &pathStr) {
 void MainWindow::openLut(const QString &pathStr) {
     qDebug() << "Opening requested LUT:" << pathStr;
     image::Path path = pathStr.toStdString();
-    auto loaded = processor.loadLutFromFile(path);
-    if (!loaded) {
+    auto r = processor.loadLutFromFile(path);
+    if (!r) {
         qDebug() << "Failed to open LUT:" << pathStr;
         QErrorMessage errMsg { this };
         errMsg.showMessage(tr("Failed to load LUT"));

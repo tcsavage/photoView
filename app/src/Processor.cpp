@@ -6,25 +6,25 @@
 
 #include <OpenImageIO/imageio.h>
 
-bool Processor::loadLutFromFile(image::Path path) {
+image::Expected<void, LutLoadFailure> Processor::loadLutFromFile(image::Path path) {
     std::ifstream is;
     is.open(path);
     if (!is.is_open()) {
-        return false; // error: not found
+        return image::Unexpected(LutLoadFailure(path, "file cound not be opened"));
     }
     image::luts::CubeFile cubeFile;
     is >> cubeFile;
     lut = cubeFile.lut();
     interp.load(lut);
     lutLoaded = true;
-    return true;
+    return image::success;
 }
 
-bool Processor::loadImageFromFile(image::Path path) {
+image::Expected<void, ImageLoadFailure> Processor::loadImageFromFile(image::Path path) {
     OIIO::ImageSpec spec;
     auto iin = OIIO::ImageInput::create(path.string());
     if (!iin->open(path, spec, spec)) {
-        return false;
+        return image::Unexpected(ImageLoadFailure(path, OIIO::geterror()));
     }
     image = image::NDArray<image::U8>(image::Shape {
         static_cast<std::size_t>(spec.nchannels),
@@ -35,5 +35,5 @@ bool Processor::loadImageFromFile(image::Path path) {
     imageWidth = spec.width;
     imageHeight = spec.height;
     iin->close();
-    return true;
+    return image::success;
 }
