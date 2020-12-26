@@ -38,5 +38,5 @@ public:
     Processor(QObject *parent = nullptr);
 
 signals:
-    void imageChanged(Processor &processor);
+    void imageChanged();
 };

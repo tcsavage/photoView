@@ -23,7 +23,7 @@ protected:
     void openImage(const QString &path);
     void openLut(const QString &path);
 
-    void updateImageView(Processor &p);
+    void updateImageView(bool showOriginal = false);
 
 private:
     Processor *processor { nullptr };
@@ -34,6 +34,7 @@ private:
     QAction *openImageAction;
     QAction *exportImageAction;
     QAction *openLutAction;
+    QAction *toggleShowOriginalAction;
     QAction *quitAction;
 
     QFileDialog *openImageDialog;

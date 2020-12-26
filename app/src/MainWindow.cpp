@@ -65,6 +65,11 @@ void MainWindow::setupActions() {
     openLutAction->setShortcuts(QKeySequence::Open);
     connect(openLutAction, &QAction::triggered, this, [this] { openLutDialog->show(); });
 
+    toggleShowOriginalAction = new QAction("Show original", this);
+    toggleShowOriginalAction->setCheckable(true);
+    toggleShowOriginalAction->setChecked(false);
+    connect(toggleShowOriginalAction, &QAction::toggled, this, [this](bool showOriginal) { updateImageView(showOriginal); });
+
     quitAction = new QAction("&Quit", this);
     quitAction->setShortcuts(QKeySequence::Quit);
     connect(quitAction, &QAction::triggered, this, &QApplication::quit);
@@ -92,11 +97,16 @@ void MainWindow::setupToolBars() {
         openLutFileText->setMaximumWidth(200);
         toolBar->addWidget(openLutFileText);
     }
+
+    {
+        auto toolBar = this->addToolBar("Processing");
+        toolBar->addAction(toggleShowOriginalAction);
+    }
 }
 
 void MainWindow::setupProcessor() {
     processor = new Processor(this);
-    connect(processor, &Processor::imageChanged, this, &MainWindow::updateImageView);
+    connect(processor, &Processor::imageChanged, this, [this] { updateImageView(); });
 }
 
 void MainWindow::openImage(const QString &pathStr) {
@@ -123,10 +133,11 @@ void MainWindow::openLut(const QString &pathStr) {
     openLutFileText->setText(QString::fromStdString(path.filename()));
 }
 
-void MainWindow::updateImageView(Processor &p) {
+void MainWindow::updateImageView(bool showOriginal) {
     qDebug() << "Updating image view";
-    auto rawImg = p.image.reinterpret<image::U8>();
-    QSize size { p.imageWidth, p.imageHeight };
+    auto &img = showOriginal ? processor->originalImage : processor->image;
+    auto rawImg = img.reinterpret<image::U8>();
+    QSize size { processor->imageWidth, processor->imageHeight };
     imageView->load(size, rawImg.data());
     qDebug() << "Finished updating image view";
 }

@@ -65,14 +65,13 @@ void Processor::update() {
         std::cerr << "Applying LUT to original\n";
         std::transform(originalImage.begin(), originalImage.end(), image.begin(), [this](const image::ColorRGB<image::U8> &color) {
             auto out = interp.map(color);
-            // std::cerr << "Mapped " << color << " to " << out << "\n";
             return out;
         });
     } else {
         std::cerr << "Coppying original as-is\n";
         std::copy(originalImage.begin(), originalImage.end(), image.begin());
     }
-    imageChanged(*this);
+    imageChanged();
 }
 
 Processor::Processor(QObject *parent) : QObject(parent) {}
