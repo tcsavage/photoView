@@ -3,7 +3,7 @@ let
   openimageio2 = with pkgs ; import ./nix/openimageio2.nix { inherit pkgs; };
 in pkgs.callPackage (
   { gcc10, pkg-config, cmake, openexr, qt5 }:
-  qt5.mkDerivation {
+  qt5.mkDerivationWith pkgs.stdenvNoCC.mkDerivation {
     pname = "photo_luts";
     version = "0.0.0";
     src = ./.;
