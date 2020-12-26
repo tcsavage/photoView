@@ -101,6 +101,7 @@ namespace image {
 
     struct NDArrayStorage {
         std::size_t size;
+        std::size_t alignment;
         NDArrayStoragePtr ptr;
 
         template <class T>
@@ -111,12 +112,13 @@ namespace image {
 
         NDArrayStorage(std::size_t requestedSize, std::size_t alignment)
             : size(detail::roundUpToMultiple(requestedSize, alignment))
+            , alignment(alignment)
             , ptr(
                 std::aligned_alloc(alignment, size),
                 [](auto p) { std::free(p); }
             ) {
                 auto p = reinterpret_cast<std::intptr_t>(ptr.get());
-                std::cerr << "Created NDArray size 0x" << std::hex << size
+                std::cerr << "Created NDArray storage - size 0x" << std::hex << size
                           << " (0x" << requestedSize << " requested) at [0x"
                           << p << ", 0x"
                           << p + size << ")\n" << std::dec;
