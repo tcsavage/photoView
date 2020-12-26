@@ -9,6 +9,7 @@ ImageView::ImageView(QWidget* parent, Qt::WindowFlags f)
     : QLabel(parent, f) {
         this->setMinimumSize(1,1);
         setScaledContents(false);
+        setAlignment(Qt::AlignCenter);
         clear();
     }
 
