@@ -3,10 +3,10 @@
 namespace image {
 
     Exception::Exception(std::string msg)
-        : msg_(msg) {}
+        : _msg(msg) {}
 
     const char* Exception::what() const noexcept {
-        return msg_.c_str();
+        return _msg.c_str();
     }
 
 }
