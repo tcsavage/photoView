@@ -111,13 +111,15 @@ void MainWindow::setupProcessor() {
 
 void MainWindow::openImage(const QString &pathStr) {
     qDebug() << "Opening requested image:" << pathStr;
-    auto r = processor->loadImageFromFile(pathStr.toStdString());
+    image::Path path = pathStr.toStdString();
+    auto r = processor->loadImageFromFile(path);
     if (!r) {
         qDebug() << "Failed to open image:" << pathStr;
         QErrorMessage errMsg { this };
         errMsg.showMessage(tr("Failed to load image"));
         return;
     }
+    setWindowTitle(QString::fromStdString(path.filename()));
 }
 
 void MainWindow::openLut(const QString &pathStr) {
