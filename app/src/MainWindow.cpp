@@ -20,6 +20,7 @@ MainWindow::MainWindow() {
     setupActions();
     setupMenus();
     setupToolBars();
+    setupProcessor();
 }
 
 void MainWindow::setupMainWidget() {
@@ -93,22 +94,26 @@ void MainWindow::setupToolBars() {
     }
 }
 
+void MainWindow::setupProcessor() {
+    processor = new Processor(this);
+    connect(processor, &Processor::imageChanged, this, &MainWindow::updateImageView);
+}
+
 void MainWindow::openImage(const QString &pathStr) {
     qDebug() << "Opening requested image:" << pathStr;
-    auto r = processor.loadImageFromFile(pathStr.toStdString());
+    auto r = processor->loadImageFromFile(pathStr.toStdString());
     if (!r) {
         qDebug() << "Failed to open image:" << pathStr;
         QErrorMessage errMsg { this };
         errMsg.showMessage(tr("Failed to load image"));
         return;
     }
-    updateImageView();
 }
 
 void MainWindow::openLut(const QString &pathStr) {
     qDebug() << "Opening requested LUT:" << pathStr;
     image::Path path = pathStr.toStdString();
-    auto r = processor.loadLutFromFile(path);
+    auto r = processor->loadLutFromFile(path);
     if (!r) {
         qDebug() << "Failed to open LUT:" << pathStr;
         QErrorMessage errMsg { this };
@@ -118,10 +123,10 @@ void MainWindow::openLut(const QString &pathStr) {
     openLutFileText->setText(QString::fromStdString(path.filename()));
 }
 
-void MainWindow::updateImageView() {
+void MainWindow::updateImageView(Processor &p) {
     qDebug() << "Updating image view";
-    auto &img = processor.image;
-    QSize size { processor.imageWidth, processor.imageHeight };
-    imageView->load(size, img.data());
+    auto rawImg = p.image.reinterpret<image::U8>();
+    QSize size { p.imageWidth, p.imageHeight };
+    imageView->load(size, rawImg.data());
     qDebug() << "Finished updating image view";
 }

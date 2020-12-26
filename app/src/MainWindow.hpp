@@ -18,14 +18,15 @@ protected:
     void setupActions();
     void setupMenus();
     void setupToolBars();
+    void setupProcessor();
 
     void openImage(const QString &path);
     void openLut(const QString &path);
 
-    void updateImageView();
+    void updateImageView(Processor &p);
 
 private:
-    Processor processor;
+    Processor *processor { nullptr };
     
     ImageView *imageView;
     QLineEdit *openLutFileText;

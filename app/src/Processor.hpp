@@ -1,5 +1,7 @@
 #pragma once
 
+#include <QObject>
+
 #include <image/CoreTypes.hpp>
 #include <image/Expected.hpp>
 #include <image/NDArray.hpp>
@@ -17,14 +19,24 @@ struct ImageLoadFailure {
     image::String reason;
 };
 
-struct Processor {
-    image::luts::FastInterpolator<image::U8, image::luts::TetrahedralInterpolator> interp;
+struct Processor : public QObject {
+    Q_OBJECT
+public:
+    image::luts::FastInterpolator<image::luts::TetrahedralInterpolator, image::U8, image::U8> interp;
     image::luts::LUT lut;
-    image::NDArray<image::U8> image;
+    image::NDArray<image::ColorRGB<image::U8>> originalImage;
+    image::NDArray<image::ColorRGB<image::U8>> image;
     int imageWidth;
     int imageHeight;
     bool lutLoaded { false };
 
     image::Expected<void, LutLoadFailure> loadLutFromFile(image::Path path);
     image::Expected<void, ImageLoadFailure> loadImageFromFile(image::Path path);
+
+    void update();
+
+    Processor(QObject *parent = nullptr);
+
+signals:
+    void imageChanged(Processor &processor);
 };
