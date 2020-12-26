@@ -6,14 +6,14 @@
 namespace image::luts {
 
     namespace {
-        std::istream &operator>>(std::istream &input, ColorRGB &color) {
+        std::istream &operator>>(std::istream &input, ColorRGB<F32> &color) {
             input >> color.r;
             input >> color.g;
             input >> color.b;
             return input;
         }
 
-        std::ostream &operator<<(std::ostream &output, const ColorRGB &color) {
+        std::ostream &operator<<(std::ostream &output, const ColorRGB<F32> &color) {
             output << color.r << " " << color.g << " " << color.b;
             return output;
         }
@@ -54,7 +54,7 @@ namespace image::luts {
             return stream;
         }
 
-        cube.table = NDArray<ColorRGB>(Shape{ cube.size, cube.size, cube.size });
+        cube.table = NDArray<ColorRGB<F32>>(Shape{ cube.size, cube.size, cube.size });
 
         for (std::size_t i = 0; i < cube.table.size(); i++) {
             stream >> cube.table.at(i);

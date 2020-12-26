@@ -39,13 +39,13 @@ namespace image::luts {
         }
     }
 
-    const SimpleCube &TetrahedralInterpolator::findCube(ColorRGB color) const {
+    const SimpleCube &TetrahedralInterpolator::findCube(ColorRGB<F32> color) const {
         auto coordf = color * static_cast<F32>(lutSize - 1); // Cooridnate scaled-up to size of LUT.
         auto baseCoord = glm::clamp(static_cast<glm::u64vec3>(glm::floor(coordf)), static_cast<std::size_t>(0), lutSize - 2); // Truncate to int and clamp to find index of cube.
         return cubeTable.at(Shape {baseCoord.r, baseCoord.g, baseCoord.b});
     }
 
-    ColorRGB TetrahedralInterpolator::map(const ColorRGB& color) const noexcept {
+    ColorRGB<F32> TetrahedralInterpolator::map(const ColorRGB<F32>& color) const noexcept {
         if (glm::length(color - inCache) < 0.01f) {
             return outCache;
         }

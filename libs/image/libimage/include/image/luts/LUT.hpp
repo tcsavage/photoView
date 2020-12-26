@@ -13,9 +13,9 @@ namespace image::luts {
         LUT(std::size_t size) noexcept;
     
         std::size_t size { 0 };
-        ColorRGB domainMin { 0.0f, 0.0f, 0.0f };
-        ColorRGB domainMax { 1.0f, 1.0f, 1.0f };
-        NDArray<ColorRGB> table { Shape{} };
+        ColorRGB<F32> domainMin { 0.0f, 0.0f, 0.0f };
+        ColorRGB<F32> domainMax { 1.0f, 1.0f, 1.0f };
+        NDArray<ColorRGB<F32>> table { Shape{} };
     };
 
 }

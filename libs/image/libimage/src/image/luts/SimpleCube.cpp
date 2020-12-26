@@ -34,10 +34,10 @@ namespace image::luts {
         
     }
 
-    ColorRGB SimpleCube::map(ColorRGB color) const {
+    ColorRGB<F32> SimpleCube::map(ColorRGB<F32> color) const {
         auto idx2 = closer3(inVerts[1], 1, inVerts[2], 2, inVerts[4], 4, color);
-        ColorRGB v1, v2, v3, v4;
-        ColorRGB c1, c2, c3, c4;
+        ColorRGB<F32> v1, v2, v3, v4;
+        ColorRGB<F32> c1, c2, c3, c4;
         std::size_t idx3;
         v1 = inVerts[0];
         v4 = inVerts[7];
@@ -63,7 +63,7 @@ namespace image::luts {
 
         auto lam = barycentric(v1, v2, v3, v4, color);
 
-        ColorRGB out { 0, 0, 0 };
+        ColorRGB<F32> out { 0, 0, 0 };
         out += c1 * lam[0];
         out += c2 * lam[1];
         out += c3 * lam[2];

@@ -22,9 +22,9 @@ namespace image::luts {
 
         std::size_t size { 0 };
         String title { "" };
-        ColorRGB domainMin { 0.0f, 0.0f, 0.0f };
-        ColorRGB domainMax { 1.0f, 1.0f, 1.0f };
-        NDArray<ColorRGB> table { Shape{} };
+        ColorRGB<F32> domainMin { 0.0f, 0.0f, 0.0f };
+        ColorRGB<F32> domainMax { 1.0f, 1.0f, 1.0f };
+        NDArray<ColorRGB<F32>> table { Shape{} };
     };
 
 }

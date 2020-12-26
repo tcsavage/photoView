@@ -12,18 +12,20 @@ namespace image::luts {
     
     class TetrahedralInterpolator {
     public:
+        using InType = F32;
+        using OutType = F32;
         void load(const LUT& lut) noexcept;
 
-        ColorRGB map(const ColorRGB& color) const noexcept;
+        ColorRGB<F32> map(const ColorRGB<F32>& color) const noexcept;
 
     protected:
-        const SimpleCube &findCube(ColorRGB color) const;
+        const SimpleCube &findCube(ColorRGB<F32> color) const;
 
     private:
         NDArray<SimpleCube> cubeTable { Shape{} };
         std::size_t lutSize { 0 };
-        mutable ColorRGB inCache { -1.0f };
-        mutable ColorRGB outCache { -1.0f };
+        mutable ColorRGB<F32> inCache { -1.0f };
+        mutable ColorRGB<F32> outCache { -1.0f };
     };
 
 }

@@ -11,10 +11,10 @@
 namespace image::luts {
 
     struct SimpleCube {
-        std::array<ColorRGB, 8> inVerts;
-        std::array<ColorRGB, 8> outVerts;
+        std::array<ColorRGB<F32>, 8> inVerts;
+        std::array<ColorRGB<F32>, 8> outVerts;
 
-        ColorRGB map(ColorRGB color) const;
+        ColorRGB<F32> map(ColorRGB<F32> color) const;
 
         void dump() const noexcept;
     };
