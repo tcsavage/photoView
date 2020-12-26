@@ -73,3 +73,7 @@ CMakeUserPresets.json
 
 ### clangd ###
 .cache/clangd
+
+### Flatpak ###
+flatpak-build
+.flatpak-builder
