@@ -46,6 +46,19 @@ image::Expected<void, ImageLoadFailure> Processor::loadImageFromFile(image::Path
     return image::success;
 }
 
+image::Expected<void, ImageExportFailure> Processor::exportImageToFile(image::Path path) const {
+    auto iout = OIIO::ImageOutput::create(path.string());
+    OIIO::ImageSpec spec(imageWidth, imageHeight, 3, OIIO::TypeDesc::UINT8);
+    if (!iout->open(path.string(), spec)) {
+        return image::Unexpected(ImageExportFailure(path, OIIO::geterror()));
+    }
+    if (!iout->write_image(OIIO::TypeDesc::UINT8, image.data())) {
+        return image::Unexpected(ImageExportFailure(path, OIIO::geterror()));
+    }
+    iout->close();
+    return image::success;
+}
+
 namespace {
     template <class T>
     std::ostream &operator<<(std::ostream &output, const image::ColorRGB<T> &vec) {

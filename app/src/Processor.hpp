@@ -19,6 +19,11 @@ struct ImageLoadFailure {
     image::String reason;
 };
 
+struct ImageExportFailure {
+    image::Path path;
+    image::String reason;
+};
+
 struct Processor : public QObject {
     Q_OBJECT
 public:
@@ -32,6 +37,7 @@ public:
 
     image::Expected<void, LutLoadFailure> loadLutFromFile(image::Path path);
     image::Expected<void, ImageLoadFailure> loadImageFromFile(image::Path path);
+    image::Expected<void, ImageExportFailure> exportImageToFile(image::Path path) const;
 
     void update();
 

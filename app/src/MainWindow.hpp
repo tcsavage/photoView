@@ -22,6 +22,7 @@ protected:
 
     void openImage(const QString &path);
     void openLut(const QString &path);
+    void exportImage(const QString &path);
 
     void updateImageView(bool showOriginal = false);
 

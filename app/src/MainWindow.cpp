@@ -39,8 +39,9 @@ void MainWindow::setupDialogs() {
     exportImageDialog = new QFileDialog(this, "Export image");
     exportImageDialog->setAcceptMode(QFileDialog::AcceptMode::AcceptSave);
     exportImageDialog->setFileMode(QFileDialog::FileMode::AnyFile);
-    exportImageDialog->setNameFilter("Images (*.jpg, *.jpeg)");
+    exportImageDialog->setNameFilter("Images (*.jpg *.jpeg)");
     exportImageDialog->setDirectory(QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
+    connect(exportImageDialog, &QFileDialog::fileSelected, this, [this] (const QString &path) { exportImage(path); });
 
     openLutDialog = new QFileDialog(this, "Open LUT");
     openLutDialog->setAcceptMode(QFileDialog::AcceptMode::AcceptOpen);
@@ -133,6 +134,17 @@ void MainWindow::openLut(const QString &pathStr) {
         return;
     }
     openLutFileText->setText(QString::fromStdString(path.filename()));
+}
+
+void MainWindow::exportImage(const QString &pathStr) {
+    image::Path path = pathStr.toStdString();
+    auto r = processor->exportImageToFile(path);
+    if (!r) {
+        qDebug() << "Failed to export image to:" << pathStr;
+        QErrorMessage errMsg { this };
+        errMsg.showMessage(tr("Failed to export image"));
+        return;
+    }
 }
 
 void MainWindow::updateImageView(bool showOriginal) {
