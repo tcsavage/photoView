@@ -13,8 +13,7 @@ ImageView::ImageView(QWidget* parent, Qt::WindowFlags f)
     }
 
 void ImageView::clear() {
-    auto pixmap = QPixmap(QSize { 50, 50 });
-    pixmap.fill(Qt::magenta);
+    auto pixmap = QPixmap();
     setPixmap(pixmap);
 }
 
