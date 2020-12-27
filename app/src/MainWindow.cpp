@@ -3,8 +3,11 @@
 #include <QAction>
 #include <QApplication>
 #include <QDebug>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 #include <QErrorMessage>
 #include <QMenuBar>
+#include <QMimeData>
 #include <QStandardPaths>
 #include <QStyle>
 #include <QToolBar>
@@ -21,6 +24,7 @@ MainWindow::MainWindow() {
     setupMenus();
     setupToolBars();
     setupProcessor();
+    setAcceptDrops(true);
 }
 
 void MainWindow::setupMainWidget() {
@@ -154,4 +158,19 @@ void MainWindow::updateImageView(bool showOriginal) {
     QSize size { processor->imageWidth, processor->imageHeight };
     imageView->load(size, rawImg.data());
     qDebug() << "Finished updating image view";
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *event) {
+    qDebug() << "Drag enter event: " << event->mimeData()->formats();
+    if (event->mimeData()->hasUrls()) {
+        event->acceptProposedAction();
+        centralWidget()->setForegroundRole(QPalette::Highlight);
+    }
+}
+
+void MainWindow::dropEvent(QDropEvent *event) {
+    qDebug() << "Drop event: " << event->mimeData()->formats();
+    auto url = event->mimeData()->urls().first();
+    centralWidget()->setForegroundRole(QPalette::Dark);
+    openImage(url.toLocalFile());
 }

@@ -26,6 +26,10 @@ protected:
 
     void updateImageView(bool showOriginal = false);
 
+protected:
+    virtual void dragEnterEvent(QDragEnterEvent *event) override;
+    virtual void dropEvent(QDropEvent *event) override;
+
 private:
     Processor *processor { nullptr };
     
