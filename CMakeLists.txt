@@ -14,3 +14,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 add_subdirectory(external)
 add_subdirectory(libs)
 add_subdirectory(app)
+
+include(GNUInstallDirs)
+install(FILES "dev.tcsavage.PhotoLuts.desktop" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications/")
+install(FILES "dev.tcsavage.PhotoLuts.png" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/48x48/apps/")

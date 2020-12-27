@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Photo LUTs
+Exec=photo_luts
+Type=Application
+Icon=dev.tcsavage.PhotoLuts
+Categories=Qt;Graphics;RasterGraphics;Viewer;Photography;ImageProcessing;
