@@ -38,7 +38,7 @@ image::Expected<void, ImageLoadFailure> Processor::loadImageFromFile(image::Path
     }
     // Assumes a packed, interleaved, RGB layout.
     auto rawArray = originalImage.reinterpret<image::U8>();
-    iin->read_image(OIIO::TypeDesc::UINT8, originalImage.data());
+    iin->read_image(0, 0, 0, 4, OIIO::TypeDesc::UINT8, originalImage.data(), OIIO::AutoStride, OIIO::AutoStride, OIIO::AutoStride, nullptr, nullptr);
     imageWidth = spec.width;
     imageHeight = spec.height;
     iin->close();
@@ -84,7 +84,4 @@ void Processor::update() {
         std::cerr << "Coppying original as-is\n";
         std::copy(originalImage.begin(), originalImage.end(), image.begin());
     }
-    imageChanged();
 }
-
-Processor::Processor(QObject *parent) : QObject(parent) {}

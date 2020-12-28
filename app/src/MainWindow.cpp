@@ -5,7 +5,6 @@
 #include <QDebug>
 #include <QDragEnterEvent>
 #include <QDropEvent>
-#include <QErrorMessage>
 #include <QMenuBar>
 #include <QMimeData>
 #include <QStandardPaths>
@@ -110,52 +109,39 @@ void MainWindow::setupToolBars() {
 }
 
 void MainWindow::setupProcessor() {
-    processor = new Processor(this);
-    connect(processor, &Processor::imageChanged, this, [this] { updateImageView(); });
+    processorController = new ProcessorController(processor);
+    connect(processorController, &ProcessorController::imageChanged, this, [this] { updateImageView(); });
+    connect(processorController, &ProcessorController::imageOpened, this, &MainWindow::imageOpened);
+    connect(processorController, &ProcessorController::lutOpened, this, &MainWindow::lutOpened);
 }
 
 void MainWindow::openImage(const QString &pathStr) {
-    qDebug() << "Opening requested image:" << pathStr;
-    image::Path path = pathStr.toStdString();
-    auto r = processor->loadImageFromFile(path);
-    if (!r) {
-        qDebug() << "Failed to open image:" << pathStr;
-        QErrorMessage errMsg { this };
-        errMsg.showMessage(tr("Failed to load image"));
-        return;
-    }
-    setWindowTitle(QString::fromStdString(path.filename()));
+    processorController->openImage(pathStr);
 }
 
 void MainWindow::openLut(const QString &pathStr) {
-    qDebug() << "Opening requested LUT:" << pathStr;
-    image::Path path = pathStr.toStdString();
-    auto r = processor->loadLutFromFile(path);
-    if (!r) {
-        qDebug() << "Failed to open LUT:" << pathStr;
-        QErrorMessage errMsg { this };
-        errMsg.showMessage(tr("Failed to load LUT"));
-        return;
-    }
-    openLutFileText->setText(QString::fromStdString(path.filename()));
+    processorController->openLut(pathStr);
 }
 
 void MainWindow::exportImage(const QString &pathStr) {
+    processorController->exportImage(pathStr);
+}
+
+void MainWindow::imageOpened(const QString &pathStr) {
     image::Path path = pathStr.toStdString();
-    auto r = processor->exportImageToFile(path);
-    if (!r) {
-        qDebug() << "Failed to export image to:" << pathStr;
-        QErrorMessage errMsg { this };
-        errMsg.showMessage(tr("Failed to export image"));
-        return;
-    }
+    setWindowTitle(QString::fromStdString(path.filename()));
+}
+
+void MainWindow::lutOpened(const QString &pathStr) {
+    image::Path path = pathStr.toStdString();
+    openLutFileText->setText(QString::fromStdString(path.filename()));
 }
 
 void MainWindow::updateImageView(bool showOriginal) {
     qDebug() << "Updating image view";
-    auto &img = showOriginal ? processor->originalImage : processor->image;
+    auto &img = showOriginal ? processor.originalImage : processor.image;
     auto rawImg = img.reinterpret<image::U8>();
-    QSize size { processor->imageWidth, processor->imageHeight };
+    QSize size { processor.imageWidth, processor.imageHeight };
     imageView->load(size, rawImg.data());
     qDebug() << "Finished updating image view";
 }

@@ -6,6 +6,7 @@
 
 #include "ImageView.hpp"
 #include "Processor.hpp"
+#include "ProcessorController.hpp"
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -24,6 +25,9 @@ protected:
     void openLut(const QString &path);
     void exportImage(const QString &path);
 
+    void imageOpened(const QString &path);
+    void lutOpened(const QString &path);
+
     void updateImageView(bool showOriginal = false);
 
 protected:
@@ -31,7 +35,8 @@ protected:
     virtual void dropEvent(QDropEvent *event) override;
 
 private:
-    Processor *processor { nullptr };
+    Processor processor;
+    ProcessorController *processorController { nullptr };
     
     ImageView *imageView;
     QLineEdit *openLutFileText;

@@ -9,6 +9,8 @@ set(photo_luts_sources
     src/ImageView.cpp
     src/MainWindow.cpp
     src/Processor.cpp
+    src/ProcessorController.cpp
+    src/ProcessorWorker.cpp
 )
 
 add_executable(photo_luts ${photo_luts_sources})

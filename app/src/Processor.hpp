@@ -1,7 +1,5 @@
 #pragma once
 
-#include <QObject>
-
 #include <image/CoreTypes.hpp>
 #include <image/Expected.hpp>
 #include <image/NDArray.hpp>
@@ -24,9 +22,7 @@ struct ImageExportFailure {
     image::String reason;
 };
 
-struct Processor : public QObject {
-    Q_OBJECT
-public:
+struct Processor {
     image::luts::FastInterpolator<image::luts::TetrahedralInterpolator, image::U8, image::U8> interp;
     image::luts::LUT lut;
     image::NDArray<image::ColorRGB<image::U8>> originalImage;
@@ -40,9 +36,4 @@ public:
     image::Expected<void, ImageExportFailure> exportImageToFile(image::Path path) const;
 
     void update();
-
-    Processor(QObject *parent = nullptr);
-
-signals:
-    void imageChanged();
 };
