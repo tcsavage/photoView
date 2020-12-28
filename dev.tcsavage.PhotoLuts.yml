@@ -45,6 +45,20 @@ modules:
       - type: git
         url: https://github.com/Tessil/robin-map.git
         tag: v0.6.3
+  - name: libraw
+    cleanup:
+      - '/share/doc'
+    config-opts:
+      - '--disable-examples'
+      - '--disable-static'
+    sources:
+      - type: git
+        url: https://github.com/LibRaw/LibRaw.git
+        tag: '0.20.2'
+      - type: script
+        commands:
+          - 'autoreconf -vfi'
+        dest-filename: autogen.sh
   - name: openimageio
     buildsystem: cmake-ninja
     builddir: true
