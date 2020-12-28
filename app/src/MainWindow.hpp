@@ -19,6 +19,7 @@ protected:
     void setupActions();
     void setupMenus();
     void setupToolBars();
+    void setupStatusBar();
     void setupProcessor();
 
     void openImage(const QString &path);
