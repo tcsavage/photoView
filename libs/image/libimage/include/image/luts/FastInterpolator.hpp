@@ -8,7 +8,7 @@
 #include <image/CoreTypes.hpp>
 #include <image/NDArray.hpp>
 #include <image/Color.hpp>
-#include <image/luts/LUT.hpp>
+#include <image/luts/Lut.hpp>
 
 namespace image::luts {
     
@@ -25,7 +25,7 @@ namespace image::luts {
                 std::cerr << "New fast interpolator with size " << size << "\n";
             }
 
-        void load(const LUT& lut) {
+        void load(const Lut& lut) {
             interp.load(lut);
             buildTable();
         }

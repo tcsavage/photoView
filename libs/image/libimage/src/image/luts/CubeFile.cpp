@@ -80,14 +80,14 @@ namespace image::luts {
         return stream;
     }
 
-    CubeFile::CubeFile(LUT &lut) noexcept
+    CubeFile::CubeFile(Lut &lut) noexcept
         : size(lut.size)
         , domainMin(lut.domainMin)
         , domainMax(lut.domainMax)
         , table(lut.table) {}
 
-    LUT CubeFile::lut() const noexcept {
-        LUT out(size);
+    Lut CubeFile::lut() const noexcept {
+        Lut out(size);
         out.domainMin = domainMin;
         out.domainMax = domainMax;
         out.table = table;

@@ -5,7 +5,7 @@
 #include <image/CoreTypes.hpp>
 #include <image/Color.hpp>
 #include <image/NDArray.hpp>
-#include <image/luts/LUT.hpp>
+#include <image/luts/Lut.hpp>
 #include <image/luts/SimpleCube.hpp>
 
 namespace image::luts {
@@ -14,7 +14,7 @@ namespace image::luts {
     public:
         using InType = F32;
         using OutType = F32;
-        void load(const LUT& lut) noexcept;
+        void load(const Lut& lut) noexcept;
 
         ColorRGB<F32> map(const ColorRGB<F32>& color) const noexcept;
 

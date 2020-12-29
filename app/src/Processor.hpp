@@ -24,7 +24,7 @@ struct ImageExportFailure {
 
 struct Processor {
     image::luts::FastInterpolator<image::luts::TetrahedralInterpolator, image::U8, image::U8> interp;
-    image::luts::LUT lut;
+    image::luts::Lut lut;
     image::NDArray<image::ColorRGB<image::U8>> originalImage;
     image::NDArray<image::ColorRGB<image::U8>> image;
     int imageWidth;

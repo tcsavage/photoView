@@ -6,7 +6,7 @@
 
 namespace image::luts {
 
-    void TetrahedralInterpolator::load(const LUT& lut) noexcept {
+    void TetrahedralInterpolator::load(const Lut& lut) noexcept {
         lutSize = lut.size;
         cubeTable = NDArray<SimpleCube>(Shape { lutSize - 1, lutSize - 1, lutSize - 1 });
         auto sizef = static_cast<F32>(lutSize - 1);
