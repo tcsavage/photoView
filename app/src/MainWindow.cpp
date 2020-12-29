@@ -18,7 +18,7 @@
 
 MainWindow::MainWindow() {
     qDebug() << "Constructing MainWindow";
-    setWindowTitle("Photo LUTs");
+    setWindowTitle("Photo View");
     setupMainWidget();
     setupDialogs();
     setupActions();

@@ -1,5 +1,5 @@
 <RCC>
     <qresource prefix="/icons">
-        <file alias="appIcon">../packaging/icons/dev.tcsavage.PhotoLuts.png</file>
+        <file alias="appIcon">../packaging/icons/dev.tcsavage.PhotoView.png</file>
     </qresource>
 </RCC>

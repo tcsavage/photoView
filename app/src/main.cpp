@@ -10,7 +10,7 @@ int main(int argc, char* argv[]) {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QCoreApplication::setOrganizationName("Tom Savage");
     QCoreApplication::setOrganizationDomain("tomsavage.dev");
-    QCoreApplication::setApplicationName("Photo LUTs");
+    QCoreApplication::setApplicationName("Photo View");
     QApplication app(argc, argv);
     MainWindow wnd;
     wnd.show();

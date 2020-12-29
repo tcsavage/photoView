@@ -1,8 +1,8 @@
-app-id: dev.tcsavage.PhotoLuts
+app-id: dev.tcsavage.PhotoView
 runtime: org.kde.Platform
 runtime-version: '5.15'
 sdk: org.kde.Sdk
-command: photo_luts
+command: photoView
 finish-args:
   - "--share=ipc"
   - "--socket=x11"
@@ -71,7 +71,7 @@ modules:
       - type: git
         url: https://github.com/OpenImageIO/oiio.git
         tag: Release-2.2.8.0
-  - name: photo_luts
+  - name: photoView
     buildsystem: cmake-ninja
     config-opts:
       - -DCMAKE_BUILD_TYPE=RelWithDebInfo

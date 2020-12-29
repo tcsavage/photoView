@@ -9,7 +9,7 @@ project(
     DESCRIPTION "Image manipulation library"
 )
 
-set(CMAKE_FOLDER "photo_luts/image")
+set(CMAKE_FOLDER "photoView/image")
 
 option(IMAGE_BUILD_TESTS "Build tests targets for Image" BUILD_TESTING)
 option(IMAGE_DISABLE_ASAN "Disable ASAN even in debug" OFF)
