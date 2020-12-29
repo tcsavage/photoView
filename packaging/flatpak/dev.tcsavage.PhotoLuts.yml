@@ -77,4 +77,4 @@ modules:
       - -DCMAKE_BUILD_TYPE=RelWithDebInfo
     sources:
       - type: dir
-        path: .
+        path: ../..
