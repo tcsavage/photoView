@@ -4,7 +4,7 @@ let
 in pkgs.callPackage (
   { gcc10, pkg-config, cmake, openexr, qt5 }:
   qt5.mkDerivationWith pkgs.stdenvNoCC.mkDerivation {
-    pname = "photo_luts";
+    pname = "photoView";
     version = "0.0.0";
     src = ./.;
     nativeBuildInputs = [
