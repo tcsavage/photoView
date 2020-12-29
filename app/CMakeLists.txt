@@ -5,6 +5,7 @@ set(CMAKE_AUTORCC ON)
 find_package(Qt5Widgets CONFIG REQUIRED)
 
 set(photo_luts_sources
+    resources.qrc
     src/main.cpp
     src/ImageView.cpp
     src/MainWindow.cpp

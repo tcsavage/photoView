@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QDragEnterEvent>
 #include <QDropEvent>
+#include <QIcon>
 #include <QMenuBar>
 #include <QMimeData>
 #include <QStandardPaths>
@@ -26,6 +27,7 @@ MainWindow::MainWindow() {
     setupStatusBar();
     setupProcessor();
     setAcceptDrops(true);
+    setWindowIcon(QIcon(":/icons/appIcon"));
 }
 
 void MainWindow::setupMainWidget() {

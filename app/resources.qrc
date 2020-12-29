@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file alias="appIcon">../packaging/icons/dev.tcsavage.PhotoLuts.png</file>
+    </qresource>
+</RCC>
