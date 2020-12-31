@@ -2,5 +2,5 @@
 Name=Photo View
 Exec=photoView
 Type=Application
-Icon=dev.tcsavage.PhotoView
+Icon=dev.tomsavage.PhotoView
 Categories=Qt;Graphics;RasterGraphics;Viewer;Photography;ImageProcessing;

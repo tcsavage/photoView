@@ -17,6 +17,6 @@ add_subdirectory(app)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     include(GNUInstallDirs)
-    install(FILES "packaging/xdg/dev.tcsavage.PhotoView.desktop" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications/")
-    install(FILES "packaging/icons/dev.tcsavage.PhotoView.png" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/48x48/apps/")
+    install(FILES "packaging/xdg/dev.tomsavage.PhotoView.desktop" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications/")
+    install(FILES "packaging/icons/dev.tomsavage.PhotoView.png" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/48x48/apps/")
 endif()
