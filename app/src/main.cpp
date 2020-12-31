@@ -2,6 +2,7 @@
 #include <string>
 
 #include <QApplication>
+#include <QIcon>
 
 #include "MainWindow.hpp"
 
@@ -12,6 +13,7 @@ int main(int argc, char* argv[]) {
     QCoreApplication::setOrganizationDomain("tomsavage.dev");
     QCoreApplication::setApplicationName("Photo View");
     QApplication app(argc, argv);
+    app.setWindowIcon(QIcon(":/icons/appIcon"));
     MainWindow wnd;
     wnd.show();
     return app.exec();
