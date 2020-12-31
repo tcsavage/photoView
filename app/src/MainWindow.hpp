@@ -13,7 +13,6 @@ class MainWindow : public QMainWindow {
 public:
     MainWindow();
 
-protected:
     void setupMainWidget();
     void setupDialogs();
     void setupActions();

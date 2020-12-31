@@ -15,6 +15,10 @@ int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
     app.setWindowIcon(QIcon(":/icons/appIcon"));
     MainWindow wnd;
+    if (argc > 1) {
+        QString filename = argv[1];
+        wnd.openImage(filename);
+    }
     wnd.show();
     return app.exec();
 }
