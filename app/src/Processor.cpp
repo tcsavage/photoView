@@ -6,6 +6,17 @@
 
 #include <OpenImageIO/imageio.h>
 
+#include <image/luts/Hald.hpp>
+
+void Processor::loadHald() {
+    originalImage = image::generateHald<image::U8>(64);
+    auto shape = originalImage.shape();
+    image = image::NDArray<image::ColorRGB<image::U8>>(shape);
+    imageWidth = shape.at(0);
+    imageHeight = shape.at(1);
+    update();
+}
+
 image::Expected<void, LutLoadFailure> Processor::loadLutFromFile(image::Path path) {
     std::ifstream is;
     is.open(path);

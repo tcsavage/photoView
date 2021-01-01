@@ -31,6 +31,8 @@ struct Processor {
     int imageHeight;
     bool lutLoaded { false };
 
+    void loadHald();
+
     image::Expected<void, LutLoadFailure> loadLutFromFile(image::Path path);
     image::Expected<void, ImageLoadFailure> loadImageFromFile(image::Path path);
     image::Expected<void, ImageExportFailure> exportImageToFile(image::Path path) const;

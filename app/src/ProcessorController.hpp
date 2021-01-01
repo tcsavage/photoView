@@ -18,8 +18,11 @@ signals:
     void imageOpened(const QString &path);
     void failedToOpenImage(const QString &path);
     void exportImage(const QString &path);
+
     void openLut(const QString &path);
     void lutOpened(const QString &path);
+
+    void loadHaldImage();
 
     void imageChanged();
 

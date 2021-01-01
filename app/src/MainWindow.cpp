@@ -14,16 +14,14 @@
 #include <QToolBar>
 #include <QUrl>
 
-#include <image/NDArray.hpp>
-
 MainWindow::MainWindow() {
     qDebug() << "Constructing MainWindow";
+    setupProcessor();
     setupMainWidget();
     setupDialogs();
     setupActions();
     setupMenus();
     setupToolBars();
-    setupProcessor();
     clear();
     setAcceptDrops(true);
 }
@@ -105,6 +103,9 @@ void MainWindow::setupActions() {
         }
     });
 
+    loadHaldImageAction = new QAction("Load Hald image", this);
+    connect(loadHaldImageAction, &QAction::triggered, processorController, &ProcessorController::loadHaldImage);
+
     quitAction = new QAction("&Quit", this);
     quitAction->setShortcuts(QKeySequence::Quit);
     connect(quitAction, &QAction::triggered, this, &QApplication::quit);
@@ -114,6 +115,7 @@ void MainWindow::setupMenus() {
     // File
     auto fileMenu = menuBar()->addMenu("&File");
     fileMenu->addAction(openImageAction);
+    fileMenu->addAction(loadHaldImageAction);
     fileMenu->addAction(quitAction);
 }
 

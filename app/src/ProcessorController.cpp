@@ -16,6 +16,8 @@ ProcessorController::ProcessorController(Processor &processor, QObject *parent) 
 
     connect(this, &ProcessorController::exportImage, worker, &ProcessorWorker::exportImage, Qt::ConnectionType::QueuedConnection);
 
+    connect(this, &ProcessorController::loadHaldImage, worker, &ProcessorWorker::loadHaldImage, Qt::ConnectionType::QueuedConnection);
+
     connect(worker, &ProcessorWorker::imageChanged, this, &ProcessorController::imageChanged, Qt::ConnectionType::QueuedConnection);
 }
 

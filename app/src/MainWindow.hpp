@@ -53,6 +53,7 @@ private:
     QAction *toggleShowOriginalAction;
     QAction *prevImageAction;
     QAction *nextImageAction;
+    QAction *loadHaldImageAction;
     QAction *quitAction;
 
     QFileDialog *openImageDialog;

@@ -23,3 +23,8 @@ void ProcessorWorker::openLut(const QString &path) {
     emit lutOpened(path);
     emit imageChanged();
 }
+
+void ProcessorWorker::loadHaldImage() {
+    processor.loadHald();
+    emit imageChanged();
+}
