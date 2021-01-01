@@ -9,6 +9,7 @@ ProcessorController::ProcessorController(Processor &processor, QObject *parent) 
 
     connect(this, &ProcessorController::openImage, worker, &ProcessorWorker::openImage, Qt::ConnectionType::QueuedConnection);
     connect(worker, &ProcessorWorker::imageOpened, this, &ProcessorController::imageOpened, Qt::ConnectionType::QueuedConnection);
+    connect(worker, &ProcessorWorker::failedToOpenImage, this, &ProcessorController::failedToOpenImage, Qt::ConnectionType::QueuedConnection);
 
     connect(this, &ProcessorController::openLut, worker, &ProcessorWorker::openLut, Qt::ConnectionType::QueuedConnection);
     connect(worker, &ProcessorWorker::lutOpened, this, &ProcessorController::lutOpened, Qt::ConnectionType::QueuedConnection);

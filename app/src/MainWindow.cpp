@@ -18,14 +18,19 @@
 
 MainWindow::MainWindow() {
     qDebug() << "Constructing MainWindow";
-    setWindowTitle("Photo View");
     setupMainWidget();
     setupDialogs();
     setupActions();
     setupMenus();
     setupToolBars();
     setupProcessor();
+    clear();
     setAcceptDrops(true);
+}
+
+void MainWindow::clear() {
+    imageView->clear();
+    setWindowTitle("Photo View");
 }
 
 void MainWindow::setupMainWidget() {
@@ -120,6 +125,7 @@ void MainWindow::setupProcessor() {
     processorController = new ProcessorController(processor);
     connect(processorController, &ProcessorController::imageChanged, this, [this] { updateImageView(); });
     connect(processorController, &ProcessorController::imageOpened, this, &MainWindow::imageOpened);
+    connect(processorController, &ProcessorController::failedToOpenImage, this, &MainWindow::failedToOpenImage);
     connect(processorController, &ProcessorController::lutOpened, this, &MainWindow::lutOpened);
 }
 
@@ -141,6 +147,11 @@ void MainWindow::imageOpened(const QString &pathStr) {
     image::Path path = pathStr.toStdString();
     setWindowTitle(QString::fromStdString(path.filename()));
     processingIndicator->setVisible(false);
+}
+
+void MainWindow::failedToOpenImage(const QString &) {
+    processingIndicator->setVisible(false);
+    clear();
 }
 
 void MainWindow::lutOpened(const QString &pathStr) {

@@ -24,6 +24,9 @@ image::Expected<void, LutLoadFailure> Processor::loadLutFromFile(image::Path pat
 image::Expected<void, ImageLoadFailure> Processor::loadImageFromFile(image::Path path) {
     OIIO::ImageSpec spec;
     auto iin = OIIO::ImageInput::create(path.string());
+    if (!iin) {
+        return image::Unexpected(ImageLoadFailure(path, "Invalid image file"));
+    }
     if (!iin->open(path, spec, spec)) {
         return image::Unexpected(ImageLoadFailure(path, OIIO::geterror()));
     }

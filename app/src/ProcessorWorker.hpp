@@ -19,6 +19,7 @@ signals:
     void imageOpened(const QString &path);
     void lutOpened(const QString &path);
     void imageChanged();
+    void failedToOpenImage(const QString &path);
 
 private:
     Processor &processor;

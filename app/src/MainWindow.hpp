@@ -14,6 +14,8 @@ class MainWindow : public QMainWindow {
 public:
     MainWindow();
 
+    void clear();
+
     void setupMainWidget();
     void setupDialogs();
     void setupActions();
@@ -26,6 +28,7 @@ public:
     void exportImage(const QString &path);
 
     void imageOpened(const QString &path);
+    void failedToOpenImage(const QString &path);
     void lutOpened(const QString &path);
 
     void updateImageView(bool showOriginal = false);

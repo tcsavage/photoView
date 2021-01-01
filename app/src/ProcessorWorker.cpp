@@ -5,9 +5,13 @@ ProcessorWorker::ProcessorWorker(Processor &processor, QObject *parent)
     , processor(processor) {}
 
 void ProcessorWorker::openImage(const QString &path) {
-    processor.loadImageFromFile(path.toStdString());
-    emit imageOpened(path);
-    emit imageChanged();
+    auto r = processor.loadImageFromFile(path.toStdString());
+    if (r.hasError()) {
+        emit failedToOpenImage(path);
+    } else {
+        emit imageOpened(path);
+        emit imageChanged();
+    }
 }
 
 void ProcessorWorker::exportImage(const QString &path) {
