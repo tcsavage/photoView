@@ -5,6 +5,7 @@
 #include <QMainWindow>
 
 #include "ImageView.hpp"
+#include "ProcessingIndicator.hpp"
 #include "Processor.hpp"
 #include "ProcessorController.hpp"
 
@@ -18,7 +19,6 @@ public:
     void setupActions();
     void setupMenus();
     void setupToolBars();
-    void setupStatusBar();
     void setupProcessor();
 
     void openImage(const QString &path);
@@ -39,6 +39,7 @@ private:
     ProcessorController *processorController { nullptr };
     
     ImageView *imageView;
+    ProcessingIndicator *processingIndicator;
     QLineEdit *openLutFileText;
 
     QAction *openImageAction;

@@ -2,6 +2,7 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QVBoxLayout>
 #include <QDebug>
 #include <QDragEnterEvent>
 #include <QDropEvent>
@@ -23,7 +24,6 @@ MainWindow::MainWindow() {
     setupActions();
     setupMenus();
     setupToolBars();
-    setupStatusBar();
     setupProcessor();
     setAcceptDrops(true);
 }
@@ -31,6 +31,12 @@ MainWindow::MainWindow() {
 void MainWindow::setupMainWidget() {
     imageView = new ImageView();
     setCentralWidget(imageView);
+    imageView->setLayout(new QVBoxLayout());
+
+    processingIndicator = new ProcessingIndicator();
+    imageView->layout()->addWidget(processingIndicator);
+    imageView->layout()->setAlignment(Qt::AlignCenter);
+    processingIndicator->setVisible(false);
 }
 
 void MainWindow::setupDialogs() {
@@ -110,10 +116,6 @@ void MainWindow::setupToolBars() {
     }
 }
 
-void MainWindow::setupStatusBar() {
-    statusBar();
-}
-
 void MainWindow::setupProcessor() {
     processorController = new ProcessorController(processor);
     connect(processorController, &ProcessorController::imageChanged, this, [this] { updateImageView(); });
@@ -123,12 +125,12 @@ void MainWindow::setupProcessor() {
 
 void MainWindow::openImage(const QString &pathStr) {
     processorController->openImage(pathStr);
-    statusBar()->showMessage("Loading image...");
+    processingIndicator->setVisible(true);
 }
 
 void MainWindow::openLut(const QString &pathStr) {
     processorController->openLut(pathStr);
-    statusBar()->showMessage("Loading LUT...");
+    processingIndicator->setVisible(true);
 }
 
 void MainWindow::exportImage(const QString &pathStr) {
@@ -138,13 +140,13 @@ void MainWindow::exportImage(const QString &pathStr) {
 void MainWindow::imageOpened(const QString &pathStr) {
     image::Path path = pathStr.toStdString();
     setWindowTitle(QString::fromStdString(path.filename()));
-    statusBar()->clearMessage();
+    processingIndicator->setVisible(false);
 }
 
 void MainWindow::lutOpened(const QString &pathStr) {
     image::Path path = pathStr.toStdString();
     openLutFileText->setText(QString::fromStdString(path.filename()));
-    statusBar()->clearMessage();
+    processingIndicator->setVisible(false);
 }
 
 void MainWindow::updateImageView(bool showOriginal) {
