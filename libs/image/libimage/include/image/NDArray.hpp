@@ -228,6 +228,11 @@ namespace image {
         NDArray<U> reinterpret() {
             return NDArray<U>(Shape { sizeBytes() / sizeof(U) }, ptr);
         }
+        
+        NDArray reshape(Shape s) {
+            assert(s.size() == size());
+            return NDArray(s, ptr);
+        }
 
         explicit NDArray(Shape shape, size_type alignment = 0) : NDArrayBase(RepresentType<T>::get(), shape, alignment) {}
         explicit NDArray(std::initializer_list<Shape::size_type> dims) : NDArray(Shape(dims)) {}
