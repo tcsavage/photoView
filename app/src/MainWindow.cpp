@@ -78,7 +78,7 @@ void MainWindow::setupActions() {
     exportImageAction->setIcon(style()->standardIcon(QStyle::StandardPixmap::SP_DialogSaveButton));
     connect(exportImageAction, &QAction::triggered, this, [this] { exportImageDialog->show(); });
 
-    openLutAction = new QAction("&Open LUT", this);
+    openLutAction = new QAction("Open &LUT", this);
     openLutAction->setShortcuts(QKeySequence::Open);
     connect(openLutAction, &QAction::triggered, this, [this] { openLutDialog->show(); });
 
