@@ -89,6 +89,7 @@ void MainWindow::setupActions() {
 
     nextImageAction = new QAction("&Next", this);
     nextImageAction->setEnabled(false);
+    nextImageAction->setShortcut(QKeySequence::MoveToNextChar);
     connect(nextImageAction, &QAction::triggered, this, [this] {
         if (auto next = openFileState.next()) {
             openImage(QString::fromStdString(next->string()));
@@ -97,6 +98,7 @@ void MainWindow::setupActions() {
 
     prevImageAction = new QAction("&Previous", this);
     prevImageAction->setEnabled(false);
+    prevImageAction->setShortcut(QKeySequence::MoveToPreviousChar);
     connect(prevImageAction, &QAction::triggered, this, [this] {
         if (auto prev = openFileState.prev()) {
             openImage(QString::fromStdString(prev->string()));
@@ -170,9 +172,11 @@ void MainWindow::imageOpened(const QString &pathStr) {
     nextImageAction->setEnabled(true);
 }
 
-void MainWindow::failedToOpenImage(const QString &) {
+void MainWindow::failedToOpenImage(const QString &pathStr) {
+    image::Path path = pathStr.toStdString();
+    setWindowTitle(QString::fromStdString(path.filename()));
     processingIndicator->setVisible(false);
-    clear();
+    imageView->clear();
 }
 
 void MainWindow::lutOpened(const QString &pathStr) {
