@@ -5,6 +5,7 @@
 #include <QMainWindow>
 
 #include "ImageView.hpp"
+#include "OpenFileState.hpp"
 #include "ProcessingIndicator.hpp"
 #include "Processor.hpp"
 #include "ProcessorController.hpp"
@@ -40,6 +41,7 @@ protected:
 private:
     Processor processor;
     ProcessorController *processorController { nullptr };
+    OpenFileState openFileState;
     
     ImageView *imageView;
     ProcessingIndicator *processingIndicator;
@@ -49,6 +51,8 @@ private:
     QAction *exportImageAction;
     QAction *openLutAction;
     QAction *toggleShowOriginalAction;
+    QAction *prevImageAction;
+    QAction *nextImageAction;
     QAction *quitAction;
 
     QFileDialog *openImageDialog;

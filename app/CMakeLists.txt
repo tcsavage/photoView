@@ -9,6 +9,7 @@ set(photoView_sources
     src/main.cpp
     src/ImageView.cpp
     src/MainWindow.cpp
+    src/OpenFileState.cpp
     src/ProcessingIndicator.cpp
     src/Processor.cpp
     src/ProcessorController.cpp

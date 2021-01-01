@@ -87,6 +87,22 @@ void MainWindow::setupActions() {
     toggleShowOriginalAction->setChecked(false);
     connect(toggleShowOriginalAction, &QAction::toggled, this, [this](bool showOriginal) { updateImageView(showOriginal); });
 
+    nextImageAction = new QAction("&Next", this);
+    nextImageAction->setEnabled(false);
+    connect(nextImageAction, &QAction::triggered, this, [this] {
+        if (auto next = openFileState.next()) {
+            openImage(QString::fromStdString(next->string()));
+        }
+    });
+
+    prevImageAction = new QAction("&Previous", this);
+    prevImageAction->setEnabled(false);
+    connect(prevImageAction, &QAction::triggered, this, [this] {
+        if (auto prev = openFileState.prev()) {
+            openImage(QString::fromStdString(prev->string()));
+        }
+    });
+
     quitAction = new QAction("&Quit", this);
     quitAction->setShortcuts(QKeySequence::Quit);
     connect(quitAction, &QAction::triggered, this, &QApplication::quit);
@@ -104,6 +120,8 @@ void MainWindow::setupToolBars() {
         auto toolBar = this->addToolBar("Image");
         toolBar->addAction(openImageAction);
         toolBar->addAction(exportImageAction);
+        toolBar->addAction(prevImageAction);
+        toolBar->addAction(nextImageAction);
     }
     
     {
@@ -132,6 +150,7 @@ void MainWindow::setupProcessor() {
 void MainWindow::openImage(const QString &pathStr) {
     processorController->openImage(pathStr);
     processingIndicator->setVisible(true);
+    openFileState.setOpenFile(image::Path { pathStr.toStdString() });
 }
 
 void MainWindow::openLut(const QString &pathStr) {
@@ -147,6 +166,8 @@ void MainWindow::imageOpened(const QString &pathStr) {
     image::Path path = pathStr.toStdString();
     setWindowTitle(QString::fromStdString(path.filename()));
     processingIndicator->setVisible(false);
+    prevImageAction->setEnabled(true);
+    nextImageAction->setEnabled(true);
 }
 
 void MainWindow::failedToOpenImage(const QString &) {
