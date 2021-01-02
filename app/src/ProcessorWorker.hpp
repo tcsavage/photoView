@@ -15,7 +15,7 @@ public:
     void exportImage(const QString &path);
     void openLut(const QString &path);
 
-    void loadHaldImage();
+    void loadHaldImage(int lutSize);
 
 signals:
     void imageOpened(const QString &path);

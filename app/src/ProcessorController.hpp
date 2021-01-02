@@ -22,7 +22,7 @@ signals:
     void openLut(const QString &path);
     void lutOpened(const QString &path);
 
-    void loadHaldImage();
+    void loadHaldImage(int lutSize);
 
     void imageChanged();
 

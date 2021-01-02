@@ -9,12 +9,13 @@
 namespace image {
 
     template <std::unsigned_integral T>
-    NDArray<ColorRGB<T>> generateHald(std::size_t lutSize) {
+    NDArray<ColorRGB<T>> generateHald(std::size_t sizeClass) {
+        std::size_t lutSize = sizeClass * sizeClass;
+        std::size_t haldSize = lutSize * sizeClass;
         std::size_t sizeBits = sizeof(T) * 8;
         std::size_t size = 1 << sizeBits;
         std::size_t step = size / lutSize;
 
-        auto haldSize = lutSize * sizeBits;
         NDArray<ColorRGB<T>> lut { Shape { lutSize, lutSize, lutSize }};
         for (std::size_t b = 0; b < lutSize; ++b) {
             for (std::size_t g = 0; g < lutSize; ++g) {
@@ -24,7 +25,8 @@ namespace image {
                 }
             }
         }
-        return lut.reshape(Shape { haldSize, haldSize });
+        auto haldShape = Shape { haldSize, haldSize };
+        return lut.reshape(haldShape);
     }
 
 }

@@ -24,7 +24,7 @@ void ProcessorWorker::openLut(const QString &path) {
     emit imageChanged();
 }
 
-void ProcessorWorker::loadHaldImage() {
-    processor.loadHald();
+void ProcessorWorker::loadHaldImage(int lutSize) {
+    processor.loadHald(static_cast<std::size_t>(lutSize));
     emit imageChanged();
 }

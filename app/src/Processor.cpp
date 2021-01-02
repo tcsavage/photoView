@@ -8,8 +8,8 @@
 
 #include <image/luts/Hald.hpp>
 
-void Processor::loadHald() {
-    originalImage = image::generateHald<image::U8>(64);
+void Processor::loadHald(std::size_t lutSize) {
+    originalImage = image::generateHald<image::U8>(lutSize);
     auto shape = originalImage.shape();
     image = image::NDArray<image::ColorRGB<image::U8>>(shape);
     imageWidth = shape.at(0);

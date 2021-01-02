@@ -7,6 +7,7 @@ find_package(Qt5Widgets CONFIG REQUIRED)
 set(photoView_sources
     resources.qrc
     src/main.cpp
+    src/HaldImageDialog.cpp
     src/ImageView.cpp
     src/MainWindow.cpp
     src/OpenFileState.cpp

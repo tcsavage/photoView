@@ -14,6 +14,8 @@
 #include <QToolBar>
 #include <QUrl>
 
+#include "HaldImageDialog.hpp"
+
 MainWindow::MainWindow() {
     qDebug() << "Constructing MainWindow";
     setupProcessor();
@@ -53,7 +55,7 @@ void MainWindow::setupDialogs() {
     exportImageDialog = new QFileDialog(this, "Export image");
     exportImageDialog->setAcceptMode(QFileDialog::AcceptMode::AcceptSave);
     exportImageDialog->setFileMode(QFileDialog::FileMode::AnyFile);
-    exportImageDialog->setNameFilter("Images (*.jpg *.jpeg)");
+    exportImageDialog->setNameFilter("Images (*.jpg *.jpeg *.png)");
     exportImageDialog->setDirectory(QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
     connect(exportImageDialog, &QFileDialog::fileSelected, this, [this] (const QString &path) { exportImage(path); });
 
@@ -104,7 +106,12 @@ void MainWindow::setupActions() {
     });
 
     loadHaldImageAction = new QAction("Load Hald image", this);
-    connect(loadHaldImageAction, &QAction::triggered, processorController, &ProcessorController::loadHaldImage);
+    connect(loadHaldImageAction, &QAction::triggered, this, [this]{
+        HaldImageDialog dialog(this);
+        if (auto r = dialog.exec()) {
+            processorController->loadHaldImage(r);
+        }
+    });
 
     quitAction = new QAction("&Quit", this);
     quitAction->setShortcuts(QKeySequence::Quit);
