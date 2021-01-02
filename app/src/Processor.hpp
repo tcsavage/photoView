@@ -27,6 +27,7 @@ struct Processor {
     image::luts::Lut lut;
     image::NDArray<image::ColorRGB<image::U8>> originalImage;
     image::NDArray<image::ColorRGB<image::U8>> image;
+    image::F32 lutMixFactor { 1.0f };
     int imageWidth;
     int imageHeight;
     bool lutLoaded { false };

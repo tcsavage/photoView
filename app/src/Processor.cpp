@@ -91,7 +91,7 @@ void Processor::update() {
     if (lutLoaded) {
         std::transform(originalImage.begin(), originalImage.end(), image.begin(), [this](const image::ColorRGB<image::U8> &color) {
             auto out = interp.map(color);
-            return out;
+            return image::mix<image::U8, image::F32>(lutMixFactor, color, out);
         });
     } else {
         std::copy(originalImage.begin(), originalImage.end(), image.begin());

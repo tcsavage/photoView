@@ -8,6 +8,7 @@
 #include <QDropEvent>
 #include <QMenuBar>
 #include <QMimeData>
+#include <QSlider>
 #include <QStandardPaths>
 #include <QStatusBar>
 #include <QStyle>
@@ -142,6 +143,16 @@ void MainWindow::setupToolBars() {
         openLutFileText->setEnabled(false);
         openLutFileText->setMaximumWidth(200);
         toolBar->addWidget(openLutFileText);
+
+        auto lutMixSlider = new QSlider(Qt::Orientation::Horizontal);
+        lutMixSlider->setRange(0, 100);
+        lutMixSlider->setValue(static_cast<int>(processor.lutMixFactor * 100));
+        toolBar->addWidget(lutMixSlider);
+        connect(lutMixSlider, &QSlider::valueChanged, this, [this](int value) {
+            processor.lutMixFactor = static_cast<image::F32>(value) / 100.0f;
+            processor.update();
+            updateImageView();
+        });
     }
 
     {

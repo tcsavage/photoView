@@ -41,4 +41,23 @@ namespace image {
         return ColorRGB<Out> { conv<In, Out>(in.r), conv<In, Out>(in.g), conv<In, Out>(in.b) };
     }
 
+    template <std::floating_point T>
+    T mix(T factor, T a, T b) {
+        return ((1 - factor) * a) + (factor * b);
+    }
+
+    template <std::unsigned_integral T, std::floating_point F = F32>
+    T mix(F factor, T a, T b) {
+        return conv<F, T>(mix(factor, conv<T, F>(a), conv<T, F>(b)));
+    }
+
+    template <class T, std::floating_point F = F32>
+    ColorRGB<T> mix(F factor, ColorRGB<T> a, ColorRGB<T> b) {
+        return ColorRGB<T> {
+            mix<T, F>(factor, a.r, b.r),
+            mix<T, F>(factor, a.g, b.g),
+            mix<T, F>(factor, a.b, b.b)
+        };
+    }
+
 }
