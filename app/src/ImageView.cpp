@@ -19,7 +19,6 @@ void ImageView::clear() {
 }
 
 void ImageView::load(QSize size, const image::U8 *data) {
-    qDebug() << "Loading image data into ImageView:" << size;
     std::size_t w = size.width();
     std::size_t h = size.height();
     // QImage ctor without bytesPerLine requires the image buffer, and each row

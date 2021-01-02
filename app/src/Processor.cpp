@@ -89,13 +89,11 @@ namespace {
 
 void Processor::update() {
     if (lutLoaded) {
-        std::cerr << "Applying LUT to original\n";
         std::transform(originalImage.begin(), originalImage.end(), image.begin(), [this](const image::ColorRGB<image::U8> &color) {
             auto out = interp.map(color);
             return out;
         });
     } else {
-        std::cerr << "Coppying original as-is\n";
         std::copy(originalImage.begin(), originalImage.end(), image.begin());
     }
 }
