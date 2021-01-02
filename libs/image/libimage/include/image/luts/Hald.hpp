@@ -4,12 +4,13 @@
 
 #include <image/CoreTypes.hpp>
 #include <image/Color.hpp>
+#include <image/ImageBuf.hpp>
 #include <image/NDArray.hpp>
 
 namespace image {
 
     template <std::unsigned_integral T>
-    NDArray<ColorRGB<T>> generateHald(std::size_t sizeClass) {
+    ImageBuf<T> generateHald(std::size_t sizeClass) {
         std::size_t lutSize = sizeClass * sizeClass;
         std::size_t haldSize = lutSize * sizeClass;
         std::size_t sizeBits = sizeof(T) * 8;
@@ -26,7 +27,7 @@ namespace image {
             }
         }
         auto haldShape = Shape { haldSize, haldSize };
-        return lut.reshape(haldShape);
+        return ImageBuf<T>{ lut.reshape(haldShape) };
     }
 
 }

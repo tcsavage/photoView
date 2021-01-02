@@ -207,9 +207,8 @@ void MainWindow::lutOpened(const QString &pathStr) {
 
 void MainWindow::updateImageView(bool showOriginal) {
     auto &img = showOriginal ? processor.originalImage : processor.image;
-    auto rawImg = img.reinterpret<image::U8>();
     QSize size { processor.imageWidth, processor.imageHeight };
-    imageView->load(size, rawImg.data());
+    imageView->load(size, img.data());
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event) {

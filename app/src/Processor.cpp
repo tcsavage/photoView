@@ -10,10 +10,9 @@
 
 void Processor::loadHald(std::size_t lutSize) {
     originalImage = image::generateHald<image::U8>(lutSize);
-    auto shape = originalImage.shape();
-    image = image::NDArray<image::ColorRGB<image::U8>>(shape);
-    imageWidth = shape.at(0);
-    imageHeight = shape.at(1);
+    imageWidth = originalImage.width();
+    imageHeight = originalImage.height();
+    image = image::ImageBuf<image::U8>(imageWidth, imageHeight);
     update();
 }
 
@@ -46,12 +45,11 @@ image::Expected<void, ImageLoadFailure> Processor::loadImageFromFile(image::Path
         static_cast<std::size_t>(spec.height)
     };
     // Only re-create image buffers if shape is different.
-    if (originalImage.shape() != shape) {
-        originalImage = image::NDArray<image::ColorRGB<image::U8>>(shape);
-        image = image::NDArray<image::ColorRGB<image::U8>>(shape);
+    if (originalImage.width() != static_cast<std::size_t>(spec.width) || originalImage.height() != static_cast<std::size_t>(spec.height)) {
+        originalImage = image::ImageBuf<image::U8>(spec.width, spec.height);
+        image = image::ImageBuf<image::U8>(spec.width, spec.height);
     }
     // Assumes a packed, interleaved, RGB layout.
-    auto rawArray = originalImage.reinterpret<image::U8>();
     iin->read_image(0, 0, 0, 4, OIIO::TypeDesc::UINT8, originalImage.data(), OIIO::AutoStride, OIIO::AutoStride, OIIO::AutoStride, nullptr, nullptr);
     imageWidth = spec.width;
     imageHeight = spec.height;
