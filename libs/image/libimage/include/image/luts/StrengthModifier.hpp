@@ -19,7 +19,7 @@ namespace image::luts {
         using OutType = Wrapped::OutType;
 
         ColorRGB<OutType> map(const ColorRGB<InType> &color) const noexcept {
-            return mix(factor, conv<InType, OutType>(color), Wrapped::map(color));
+            return mix(factor, Wrapped::map(color), conv<OutType, InType>(color));
         }
 
         F factor { 1.0 };

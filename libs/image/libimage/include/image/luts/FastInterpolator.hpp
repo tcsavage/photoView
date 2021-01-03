@@ -38,7 +38,7 @@ namespace image::luts {
 
         template <class In, class Out>
         ColorRGB<Out> mapConv(const ColorRGB<In> &color) {
-            return conv<StoredType, Out>(map(conv<In, IndexType>(color)));
+            return conv<Out, StoredType>(map(conv<IndexType, In>(color)));
         }
 
         void buildTable() {
@@ -46,7 +46,7 @@ namespace image::luts {
                 for (std::size_t g = 0; g < size; ++g) {
                     for (std::size_t r = 0; r < size; ++r) {
                         IndexColorType in { r, g, b };
-                        auto out = conv<typename Interpolator::OutType, StoredType>(Interpolator::map(conv<IndexType, typename Interpolator::InType>(in)));
+                        auto out = conv<StoredType, typename Interpolator::OutType>(Interpolator::map(conv<typename Interpolator::InType, IndexType>(in)));
                         table.at(Shape { r, g, b }) = out;
                     }
                 }
