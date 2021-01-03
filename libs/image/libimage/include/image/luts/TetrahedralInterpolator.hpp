@@ -14,18 +14,19 @@ namespace image::luts {
     public:
         using InType = F32;
         using OutType = F32;
+
         void load(const Lut& lut) noexcept;
 
-        ColorRGB<F32> map(const ColorRGB<F32>& color) const noexcept;
+        ColorRGB<OutType> map(const ColorRGB<InType>& color) const noexcept;
 
     protected:
-        const SimpleCube &findCube(ColorRGB<F32> color) const;
+        const SimpleCube &findCube(ColorRGB<InType> color) const;
 
     private:
         NDArray<SimpleCube> cubeTable { Shape{} };
         std::size_t lutSize { 0 };
-        mutable ColorRGB<F32> inCache { -1.0f };
-        mutable ColorRGB<F32> outCache { -1.0f };
+        mutable ColorRGB<InType> inCache { -1.0f };
+        mutable ColorRGB<OutType> outCache { -1.0f };
     };
 
 }

@@ -1,6 +1,7 @@
 #include "Processor.hpp"
 
 #include <algorithm>
+#include <execution>
 #include <fstream>
 #include <iostream>
 
@@ -85,11 +86,15 @@ namespace {
     }
 }
 
+void Processor::setLutStrengthFactor(image::F32 factor) {
+    interp.factor = factor;
+    interp.buildTable();
+}
+
 void Processor::update() {
     if (lutLoaded) {
-        std::transform(originalImage.begin(), originalImage.end(), image.begin(), [this](const image::ColorRGB<image::U8> &color) {
-            auto out = interp.map(color);
-            return image::mix<image::U8, image::F32>(lutMixFactor, color, out);
+        std::transform(std::execution::par_unseq, originalImage.begin(), originalImage.end(), image.begin(), [this](const image::ColorRGB<image::U8> &color) {
+            return interp.map(color);
         });
     } else {
         std::copy(originalImage.begin(), originalImage.end(), image.begin());
