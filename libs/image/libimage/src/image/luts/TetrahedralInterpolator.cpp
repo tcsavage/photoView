@@ -13,7 +13,7 @@ namespace image::luts {
         for (std::size_t b = 0 ; b < lutSize - 1 ; ++b) {
             for (std::size_t g = 0 ; g < lutSize - 1 ; ++g) {
                 for (std::size_t r = 0 ; r < lutSize - 1 ; ++r) {
-                    auto& cube = cubeTable.at(Shape{ r, g, b });
+                    auto& cube = cubeTable.at(r, g, b);
                     cube.inVerts = {
                         static_cast<glm::vec3>(glm::u64vec3(r, g, b)) / sizef,
                         static_cast<glm::vec3>(glm::u64vec3(r + 1, g, b)) / sizef,
@@ -25,14 +25,14 @@ namespace image::luts {
                         static_cast<glm::vec3>(glm::u64vec3(r + 1, g + 1, b + 1)) / sizef,
                     };
                     cube.outVerts = {
-                        lut.table.at(Shape {r, g, b}),
-                        lut.table.at(Shape {r + 1, g, b}),
-                        lut.table.at(Shape {r, g + 1, b}),
-                        lut.table.at(Shape {r + 1, g + 1, b}),
-                        lut.table.at(Shape {r, g, b + 1}),
-                        lut.table.at(Shape {r + 1, g, b + 1}),
-                        lut.table.at(Shape {r, g + 1, b + 1}),
-                        lut.table.at(Shape {r + 1, g + 1, b + 1})
+                        lut.table.at(r, g, b),
+                        lut.table.at(r + 1, g, b),
+                        lut.table.at(r, g + 1, b),
+                        lut.table.at(r + 1, g + 1, b),
+                        lut.table.at(r, g, b + 1),
+                        lut.table.at(r + 1, g, b + 1),
+                        lut.table.at(r, g + 1, b + 1),
+                        lut.table.at(r + 1, g + 1, b + 1)
                     };
                 }
             }
@@ -42,7 +42,7 @@ namespace image::luts {
     const SimpleCube &TetrahedralInterpolator::findCube(ColorRGB<F32> color) const {
         auto coordf = color * static_cast<F32>(lutSize - 1); // Cooridnate scaled-up to size of LUT.
         auto baseCoord = glm::clamp(static_cast<glm::u64vec3>(glm::floor(coordf)), static_cast<std::size_t>(0), lutSize - 2); // Truncate to int and clamp to find index of cube.
-        return cubeTable.at(Shape {baseCoord.r, baseCoord.g, baseCoord.b});
+        return cubeTable.at(baseCoord.r, baseCoord.g, baseCoord.b);
     }
 
     ColorRGB<F32> TetrahedralInterpolator::map(const ColorRGB<F32>& color) const noexcept {

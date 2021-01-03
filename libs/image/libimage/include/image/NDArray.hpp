@@ -85,7 +85,7 @@ namespace image {
         }
 
         Shape() : dims_() {}
-        Shape(std::initializer_list<size_type> dims) : dims_(dims) {}
+        explicit Shape(std::initializer_list<size_type> dims) : dims_(dims) {}
 
     private:
         SmallVector<size_type, 4> dims_;
@@ -146,6 +146,12 @@ namespace image {
 
         size_type shapeOffset(const Shape& idx) const noexcept {
             return std::inner_product(idx.begin(), idx.end(), strides_.begin(), 0);
+        }
+
+        template <class... Ts>
+        constexpr size_type dimsOffset(Ts&&... dims) const noexcept {
+            std::array<size_type, sizeof...(Ts)> dimsArr { std::forward<Ts>(dims)... };
+            return std::inner_product(dimsArr.begin(), dimsArr.end(), strides_.begin(), 0);
         }
 
         NDArrayBase(TypeRef type, Shape shape, size_type alignment = 0)
@@ -222,6 +228,15 @@ namespace image {
         }
         const_reference at(Shape idx) const {
             return begin()[shapeOffset(idx)];
+        }
+
+        template <class... Ts>
+        reference at(Ts&&... dims) {
+            return begin()[dimsOffset(std::forward<Ts>(dims)...)];
+        }
+        template <class... Ts>
+        const_reference at(Ts&&... dims) const {
+            return begin()[dimsOffset(std::forward<Ts>(dims)...)];
         }
 
         template <class U>

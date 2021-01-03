@@ -21,8 +21,7 @@ namespace image {
         for (std::size_t b = 0; b < lutSize; ++b) {
             for (std::size_t g = 0; g < lutSize; ++g) {
                 for (std::size_t r = 0; r < lutSize; ++r) {
-                    auto shape = Shape { r, g, b };
-                    lut.at(shape) = ColorRGB<T>(r * step, g * step, b * step);
+                    lut.at(r, g, b) = ColorRGB<T>(r * step, g * step, b * step);
                 }
             }
         }

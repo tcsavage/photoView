@@ -33,7 +33,7 @@ namespace image::luts {
         }
 
         StoredColorType map(const IndexColorType &color) const noexcept {
-            return table.at(Shape { color.r, color.g, color.b });
+            return table.at(color.r, color.g, color.b);
         }
 
         template <class In, class Out>
@@ -47,7 +47,7 @@ namespace image::luts {
                     for (std::size_t r = 0; r < size; ++r) {
                         IndexColorType in { r, g, b };
                         auto out = conv<StoredType, typename Interpolator::OutType>(Interpolator::map(conv<typename Interpolator::InType, IndexType>(in)));
-                        table.at(Shape { r, g, b }) = out;
+                        table.at(r, g, b) = out;
                     }
                 }
             }
