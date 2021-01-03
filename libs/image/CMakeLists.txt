@@ -21,3 +21,5 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 # include(ClangTidy)
 
 add_subdirectory(libimage)
+
+add_subdirectory(examples)
