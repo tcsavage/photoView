@@ -24,7 +24,14 @@ struct ImageExportFailure {
 };
 
 struct Processor {
-    image::luts::FastInterpolator<image::luts::StrengthModifier<image::luts::FastInterpolator<image::luts::TetrahedralInterpolator, image::U8, image::F32>>, image::U8, image::U8> interp;
+    image::luts::FastInterpolator<
+        image::luts::StrengthModifier<
+            image::luts::FastInterpolator<
+                image::luts::TetrahedralInterpolator, image::U8, image::F32
+            >
+        >,
+        image::U8, image::U8
+    > interp;
     image::luts::Lut lut;
     image::ImageBuf<image::U8> originalImage;
     image::ImageBuf<image::U8> image;
