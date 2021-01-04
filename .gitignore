@@ -77,3 +77,7 @@ CMakeUserPresets.json
 ### Flatpak ###
 flatpak-build
 .flatpak-builder
+
+### Perf ###
+perf.data
+perf.data.old

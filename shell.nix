@@ -13,5 +13,6 @@ in pkgs.stdenvNoCC.mkDerivation {
       pkgs.openexr
       pkgs.qt5.qtbase
       pkgs.flatpak-builder
+      pkgs.linuxPackages.perf
   ];
 }
