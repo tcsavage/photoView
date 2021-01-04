@@ -18,7 +18,6 @@ target_include_directories(libimage PUBLIC include)
 target_link_libraries(libimage
     PUBLIC
     glm::glm
-    PRIVATE
     OpenImageIO::OpenImageIO
 )
 

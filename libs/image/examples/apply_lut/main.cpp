@@ -5,6 +5,7 @@
 
 #include <image/CoreTypes.hpp>
 #include <image/ImageBuf.hpp>
+#include <image/IO.hpp>
 #include <image/luts/CubeFile.hpp>
 #include <image/luts/FastInterpolator.hpp>
 #include <image/luts/Lut.hpp>
@@ -26,33 +27,6 @@ private:
     std::string name_;
     std::chrono::time_point<std::chrono::steady_clock> start_;
 };
-
-ImageBuf<U8> readImage(Path path) {
-    OIIO::ImageSpec spec;
-    auto iin = OIIO::ImageInput::create(path.string());
-    if (!iin) {
-        throw std::exception();
-    }
-    if (!iin->open(path, spec, spec)) {
-        throw std::exception();
-    }
-    auto imageBuf = image::ImageBuf<image::U8>(spec.width, spec.height);
-    // Assumes a packed, interleaved, RGB layout.
-    iin->read_image(0, 0, 0, 4, OIIO::TypeDesc::UINT8, imageBuf.data(), OIIO::AutoStride, OIIO::AutoStride, OIIO::AutoStride, nullptr, nullptr);
-    return imageBuf;
-}
-
-void writeImage(Path path, const ImageBuf<U8> imageBuf) {
-    auto iout = OIIO::ImageOutput::create(path.string());
-    OIIO::ImageSpec spec(imageBuf.width(), imageBuf.height(), 3, OIIO::TypeDesc::UINT8);
-    if (!iout->open(path.string(), spec)) {
-        throw std::exception();
-    }
-    if (!iout->write_image(OIIO::TypeDesc::UINT8, imageBuf.data())) {
-        throw std::exception();
-    }
-    iout->close();
-}
 
 int main(int argc, const char* argv[]) {
     if (argc < 4) {
@@ -91,7 +65,8 @@ int main(int argc, const char* argv[]) {
     }
 
     std::cerr << "Reading input image\n";
-    auto image = readImage(inputImagePath);
+    auto imageResult = image::readImageBufFromFile<image::U8>(inputImagePath);
+    auto image = *imageResult;
 
     std::cerr << "Applying LUT\n";
     {
@@ -101,7 +76,7 @@ int main(int argc, const char* argv[]) {
     std::cerr << "Finished applying LUT\n";
 
     std::cerr << "Writing output\n";
-    writeImage(outputImagePath, image);
+    image::writeImageBufToFile(outputImagePath, image);
 
     std::cerr << "Done.\n";
 
