@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cassert>
-#include <exception>
 #include <optional>
 
 namespace image {
@@ -104,10 +103,18 @@ namespace image {
             }
         }
 
+        constexpr ~Expected() {
+            if (isValue_) {
+                value_.~T();
+            } else {
+                error_.~E();
+            }
+        }
+
     private:
         union {
             T value_;
-            std::exception_ptr error_;
+            E error_;
         };
         bool isValue_ { true };
     };
