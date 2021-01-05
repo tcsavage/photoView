@@ -5,11 +5,11 @@
 
 #include <image/CoreTypes.hpp>
 #include <image/ImageBuf.hpp>
+#include <image/ImageProcessor.hpp>
 #include <image/IO.hpp>
+#include <image/filters/Lut.hpp>
 #include <image/luts/CubeFile.hpp>
-#include <image/luts/FastInterpolator.hpp>
 #include <image/luts/Lut.hpp>
-#include <image/luts/StrengthModifier.hpp>
 #include <image/luts/TetrahedralInterpolator.hpp>
 
 using namespace image;
@@ -36,47 +36,43 @@ int main(int argc, const char* argv[]) {
     String lutPath = argv[2];
     String outputImagePath = argv[3];
 
+    ImageProcessor<
+        filters::Lut<
+            luts::TetrahedralInterpolator,
+            F32, true
+        >,
+        F32, U8, true
+    > proc;
+
     std::cerr << "Loading LUT\n";
 
     std::ifstream lutStream;
     lutStream.open(lutPath);
     luts::CubeFile cube;
     lutStream >> cube;
-    luts::Lut lut = cube.lut();
-    std::cerr << "Loaded LUT: " << lutPath << "\n";
-
-    luts::FastInterpolator<
-        luts::StrengthModifier<
-            luts::FastInterpolator<
-                luts::TetrahedralInterpolator,
-                U8, F32
-            >
-        >,
-        U8, U8
-    > interp;
+    std::cerr << "Loaded Cube: " << lutPath << "\n";
     {
         Timer timer { "Loading LUT into interpolator" };
-        interp.load(lut);
+        proc.filter.impl.setLut(cube.lut());
     }
     {
         Timer timer { "Updating LUT strength factor" };
-        interp.factor = 0.5;
-        interp.buildTable();
+        proc.filter.setStrength(0.5);
     }
 
     std::cerr << "Reading input image\n";
-    auto imageResult = image::readImageBufFromFile<image::U8>(inputImagePath);
-    auto image = *imageResult;
+    auto imageResult = readImageBufFromFile<F32>(inputImagePath);
+    proc.setOriginal(*imageResult);
 
     std::cerr << "Applying LUT\n";
     {
         Timer timer { "Applying LUT" };
-        std::transform(image.begin(), image.end(), image.begin(), [&] (const ColorRGB<U8> &color) { return interp.map(color); });
+        proc.process();
     }
     std::cerr << "Finished applying LUT\n";
 
     std::cerr << "Writing output\n";
-    image::writeImageBufToFile(outputImagePath, image);
+    writeImageBufToFile<U8>(outputImagePath, proc.viewportOutput);
 
     std::cerr << "Done.\n";
 
