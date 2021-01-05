@@ -39,7 +39,7 @@ namespace image {
         constexpr T* operator->() { return &**this; }
         constexpr const T* operator->() const { return &**this; }
 
-        constexpr E& error() const {
+        constexpr const E& error() const {
             assert(!isValue_);
             return error_;
         }
@@ -123,9 +123,9 @@ namespace image {
     template <class E>
     class Expected<void, E> {
     public:
-        constexpr E& error() const {
+        constexpr const E& error() const {
             assert(!error_.has_value());
-            return error_;
+            return *error_;
         }
         bool hasError() const noexcept { return error_.has_value(); }
 
