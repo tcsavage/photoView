@@ -33,29 +33,38 @@ namespace image {
     template <filters::FilterImpl FI, class In, class Out, bool PrecalculateFilter = true>
     struct ImageProcessor {
         ImageBuf<In> original;
-        ImageBuf<In> viewportProcessed;
         ImageBuf<Out> viewportOutput;
         filters::Filter<FI, In, PrecalculateFilter> filter;
 
-        std::atomic<bool> isDirty { true };
+        std::atomic<bool> isProcessingEnabled { true };
 
         void setOriginal(const ImageBuf<In> &buf) noexcept {
-            isDirty = true;
             original = buf;
-            viewportProcessed = ImageBuf<In>(buf.width(), buf.height());
             viewportOutput = ImageBuf<Out>(buf.width(), buf.height());
         }
 
+        void setProcessingEnabled(bool processingEnabled) noexcept {
+            isProcessingEnabled = processingEnabled;
+        }
+
         void process() noexcept {
-            if (!isDirty) { return; }
-            isDirty = false;
-            std::transform(
-                std::execution::par_unseq,
-                std::ranges::cbegin(original), std::ranges::cend(original), std::ranges::begin(viewportOutput),
-                [this] (const ColorRGB<In> &color) {
-                    return conv<Out>(filter.applyToColor(color));
-                }
-            );
+            if (isProcessingEnabled) {
+                std::transform(
+                    std::execution::par_unseq,
+                    std::ranges::cbegin(original), std::ranges::cend(original), std::ranges::begin(viewportOutput),
+                    [this] (const ColorRGB<In> &color) {
+                        return conv<Out>(filter.applyToColor(color));
+                    }
+                );
+            } else {
+                std::transform(
+                    std::execution::par_unseq,
+                    std::ranges::cbegin(original), std::ranges::cend(original), std::ranges::begin(viewportOutput),
+                    [this] (const ColorRGB<In> &color) {
+                        return conv<Out>(color);
+                    }
+                );
+            }
         }
     };
 

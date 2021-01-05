@@ -17,9 +17,11 @@ namespace image::filters {
         Interpolator interp;
         Precalculator<U8, T> precalc;
 
-        constexpr void setLut(luts::Lut l) noexcept {
-            lut = l;
-            interp.load(lut);
+        constexpr Lut() noexcept {
+            update();
+        }
+
+        constexpr void update() noexcept {
             if constexpr(Precalculate) {
                 precalc.buildTable([this](const ColorRGB<U8> &color) {
                     return interp.map(conv<T>(color));
@@ -27,7 +29,16 @@ namespace image::filters {
             }
         }
 
+        constexpr void setLut(luts::Lut l) noexcept {
+            lut = l;
+            interp.load(lut);
+            update();
+        }
+
         constexpr ColorRGB<T> applyToColor(const ColorRGB<T> &color) const noexcept {
+            if (lut.size == 0) {
+                return color;
+            }
             if constexpr(Precalculate) {
                 return precalc.map(conv<U8, T>(color));
             } else {

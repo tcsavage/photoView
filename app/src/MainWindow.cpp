@@ -86,7 +86,10 @@ void MainWindow::setupActions() {
     toggleShowOriginalAction = new QAction("Show original", this);
     toggleShowOriginalAction->setCheckable(true);
     toggleShowOriginalAction->setChecked(false);
-    connect(toggleShowOriginalAction, &QAction::toggled, this, [this](bool showOriginal) { updateImageView(showOriginal); });
+    connect(toggleShowOriginalAction, &QAction::toggled, this, [this](bool showOriginal) {
+        processor.setProcessingEnabled(!showOriginal);
+        updateImageView();
+    });
 
     nextImageAction = new QAction("&Next", this);
     nextImageAction->setEnabled(false);
@@ -150,7 +153,6 @@ void MainWindow::setupToolBars() {
         toolBar->addWidget(lutMixSlider);
         connect(lutMixSlider, &QSlider::valueChanged, this, [this](int value) {
             processor.setLutStrengthFactor(static_cast<image::F32>(value) / 100.0f);
-            processor.update();
             updateImageView();
         });
     }
@@ -205,9 +207,9 @@ void MainWindow::lutOpened(const QString &pathStr) {
     processingIndicator->setVisible(false);
 }
 
-void MainWindow::updateImageView(bool showOriginal) {
-    auto &img = showOriginal ? processor.originalImage : processor.image;
-    QSize size { processor.imageWidth, processor.imageHeight };
+void MainWindow::updateImageView(bool) {
+    auto &img = processor.proc.viewportOutput;
+    QSize size { static_cast<int>(img.width()), static_cast<int>(img.height()) };
     imageView->load(size, img.data());
 }
 
