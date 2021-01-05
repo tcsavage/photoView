@@ -36,7 +36,7 @@ namespace image::luts {
             return table.at(color.r, color.g, color.b);
         }
 
-        template <class In, class Out>
+        template <class Out, class In>
         ColorRGB<Out> mapConv(const ColorRGB<In> &color) {
             return conv<Out, StoredType>(map(conv<IndexType, In>(color)));
         }
