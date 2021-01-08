@@ -5,8 +5,6 @@
 #include <image/Color.hpp>
 #include <image/Precalculator.hpp>
 #include <image/filters/Concepts.hpp>
-#include <image/luts/Lut.hpp>
-#include <image/luts/TetrahedralInterpolator.hpp>
 
 namespace image::filters {
 

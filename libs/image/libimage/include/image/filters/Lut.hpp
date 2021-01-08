@@ -1,8 +1,5 @@
 #pragma once
 
-#include <execution>
-#include <ranges>
-
 #include <image/Color.hpp>
 #include <image/Precalculator.hpp>
 #include <image/filters/Concepts.hpp>
