@@ -33,7 +33,7 @@ namespace image {
 
     template <std::unsigned_integral Out, std::floating_point In>
     constexpr Out conv(const In &in) noexcept {
-        return static_cast<Out>(in * static_cast<In>(std::numeric_limits<Out>::max()));
+        return static_cast<Out>(std::clamp(in * static_cast<In>(std::numeric_limits<Out>::max()), static_cast<In>(0), static_cast<In>(std::numeric_limits<Out>::max())));
     }
 
     template <class Out, class In>
