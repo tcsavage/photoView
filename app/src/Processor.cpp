@@ -76,3 +76,11 @@ void Processor::setLutStrengthFactor(image::F32 factor) {
     proc.update();
     proc.process();
 }
+
+void Processor::setExposure(image::F32 exposure) {
+    auto &filter = proc.getFilter<image::filters::Exposure<image::F32>, image::F32, true>();
+    filter.impl.setExposure(exposure);
+    filter.update();
+    proc.update();
+    proc.process();
+}

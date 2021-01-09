@@ -161,6 +161,18 @@ void MainWindow::setupToolBars() {
         auto toolBar = this->addToolBar("Processing");
         toolBar->addAction(toggleShowOriginalAction);
     }
+
+    {
+        auto toolBar = this->addToolBar("Exposure");
+        auto exposureSlider = new QSlider(Qt::Orientation::Horizontal);
+        exposureSlider->setRange(-30, 30);
+        exposureSlider->setValue(0);
+        toolBar->addWidget(exposureSlider);
+        connect(exposureSlider, &QSlider::valueChanged, this, [this](int value) {
+            processor.setExposure(static_cast<image::F32>(value) / 30.0f);
+            updateImageView();
+        });
+    }
 }
 
 void MainWindow::setupProcessor() {

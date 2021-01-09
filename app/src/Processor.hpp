@@ -4,6 +4,7 @@
 #include <image/Expected.hpp>
 #include <image/ImageBuf.hpp>
 #include <image/ImageProcessor.hpp>
+#include <image/filters/Exposure.hpp>
 #include <image/filters/Lut.hpp>
 #include <image/luts/CubeFile.hpp>
 #include <image/luts/FastInterpolator.hpp>
@@ -28,6 +29,7 @@ struct ImageExportFailure {
 struct Processor {
     image::ImageProcessor<
         image::F32, image::U8, true,
+        image::filters::Exposure<image::F32>,
         image::filters::Lut<image::luts::TetrahedralInterpolator, image::F32, true>
     > proc;
     bool lutLoaded { false };
@@ -40,4 +42,5 @@ struct Processor {
 
     void setProcessingEnabled(bool processingEnabled);
     void setLutStrengthFactor(image::F32 factor);
+    void setExposure(image::F32 exposure = 0.0f);
 };
