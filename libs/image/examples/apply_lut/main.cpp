@@ -7,6 +7,7 @@
 #include <image/ImageBuf.hpp>
 #include <image/ImageProcessor.hpp>
 #include <image/IO.hpp>
+#include <image/filters/Filter.hpp>
 #include <image/filters/Lut.hpp>
 #include <image/luts/CubeFile.hpp>
 #include <image/luts/Lut.hpp>
@@ -37,11 +38,8 @@ int main(int argc, const char* argv[]) {
     String outputImagePath = argv[3];
 
     ImageProcessor<
-        filters::Lut<
-            luts::TetrahedralInterpolator,
-            F32, true
-        >,
-        F32, U8, true
+        F32, U8, true,
+        filters::Lut<luts::TetrahedralInterpolator, F32, true>
     > proc;
 
     std::cerr << "Loading LUT\n";
@@ -53,11 +51,18 @@ int main(int argc, const char* argv[]) {
     std::cerr << "Loaded Cube: " << lutPath << "\n";
     {
         Timer timer { "Loading LUT into interpolator" };
-        proc.filter.impl.setLut(cube.lut());
+        auto &f = proc.getFilter<filters::Lut<luts::TetrahedralInterpolator, F32, true>, F32, true>();
+        f.impl.setLut(cube.lut());
     }
     {
         Timer timer { "Updating LUT strength factor" };
-        proc.filter.setStrength(0.5);
+        auto &f = proc.getFilter<filters::Lut<luts::TetrahedralInterpolator, F32, true>, F32, true>();
+        f.setStrength(0.5);
+        f.update();
+    }
+    {
+        Timer timer { "Updating precalculated filter output" };
+        proc.update();
     }
 
     std::cerr << "Reading input image\n";

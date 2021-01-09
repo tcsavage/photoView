@@ -37,8 +37,10 @@ image::Expected<void, LutLoadFailure> Processor::loadLutFromFile(image::Path pat
     }
     image::luts::CubeFile cubeFile;
     is >> cubeFile;
-    proc.filter.withImpl([&](auto impl) { impl->setLut(cubeFile.lut()); });
-    proc.filter.update();
+    auto &filter = proc.getFilter<image::filters::Lut<image::luts::TetrahedralInterpolator, image::F32, true>, image::F32, true>();
+    filter.impl.setLut(cubeFile.lut());
+    filter.update();
+    proc.update();
     lutLoaded = true;
     proc.process();
     return image::success;
@@ -68,7 +70,9 @@ void Processor::setProcessingEnabled(bool processingEnabled) {
 }
 
 void Processor::setLutStrengthFactor(image::F32 factor) {
-    proc.filter.setStrength(factor);
-    proc.filter.update();
+    auto &filter = proc.getFilter<image::filters::Lut<image::luts::TetrahedralInterpolator, image::F32, true>, image::F32, true>();
+    filter.setStrength(factor);
+    filter.update();
+    proc.update();
     proc.process();
 }

@@ -7,7 +7,9 @@
 
 namespace image::filters {
 
-    template <class F>
-    concept FilterImpl = std::default_initializable<F>;
+    template <class F, class T>
+    concept FilterImpl = requires(F filter, const ColorRGB<T> &color) {
+        { filter.applyToColor(color) } noexcept -> std::same_as<ColorRGB<T>>;
+    };
 
 }

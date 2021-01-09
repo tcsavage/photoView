@@ -27,11 +27,8 @@ struct ImageExportFailure {
 
 struct Processor {
     image::ImageProcessor<
-        image::filters::Lut<
-            image::luts::TetrahedralInterpolator,
-            image::F32, true
-        >,
-        image::F32, image::U8, true
+        image::F32, image::U8, true,
+        image::filters::Lut<image::luts::TetrahedralInterpolator, image::F32, true>
     > proc;
     bool lutLoaded { false };
 
