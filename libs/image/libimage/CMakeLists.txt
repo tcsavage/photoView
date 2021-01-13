@@ -10,6 +10,7 @@ add_library(libimage
     src/image/luts/Lut.cpp
     src/image/luts/SimpleCube.cpp
     src/image/luts/TetrahedralInterpolator.cpp
+    src/image/memory/Buffer.cpp
 )
 add_library(image::libimage ALIAS libimage)
 

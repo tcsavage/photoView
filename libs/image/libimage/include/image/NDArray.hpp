@@ -15,6 +15,7 @@
 #include <image/Exception.hpp>
 #include <image/SmallVector.hpp>
 #include <image/Type.hpp>
+#include <image/memory/Buffer.hpp>
 
 namespace image {
 
@@ -97,34 +98,33 @@ namespace image {
         return output << "}";
     }
 
-    using NDArrayStoragePtr = std::shared_ptr<void>;
-
     struct NDArrayStorage {
         std::size_t size;
-        std::size_t alignment;
-        NDArrayStoragePtr ptr;
+        std::shared_ptr<memory::Buffer> buffer;
+        void *bufferHostPtr { nullptr }; // This must be kept in-sync with buffer->hostPtr
 
         template <class T>
-        T *getPtr() { return static_cast<T*>(ptr.get()); }
+        T *getPtr() { return static_cast<T*>(bufferHostPtr); }
 
         template <class T>
-        const T *getPtr() const { return static_cast<T*>(ptr.get()); }
+        const T *getPtr() const { return static_cast<T*>(bufferHostPtr); }
 
-        NDArrayStorage(std::size_t requestedSize, std::size_t alignment)
+        explicit NDArrayStorage(std::size_t requestedSize, std::size_t alignment)
             : size(detail::roundUpToMultiple(requestedSize, alignment))
-            , alignment(alignment)
-            , ptr(
-                std::aligned_alloc(alignment, size),
-                [](auto p) { std::free(p); }
-            ) {
-                auto p = reinterpret_cast<std::intptr_t>(ptr.get());
-                std::cerr << "Created NDArray storage - size 0x" << std::hex << size
-                          << " (0x" << requestedSize << " requested) at [0x"
-                          << p << ", 0x"
-                          << p + size << ")\n" << std::dec;
+            , buffer(std::make_shared<memory::Buffer>(size, alignment)) {
+                buffer->malloc();
+                bufferHostPtr = buffer->hostPtr;
+                std::cerr << "[NDArray] Created new storage - size 0x" << std::hex << size
+                          << " (0x" << requestedSize << " requested) at ["
+                          << bufferHostPtr << ", "
+                          << reinterpret_cast<void*>(reinterpret_cast<intptr_t>(bufferHostPtr) + size)
+                          << ")\n" << std::dec;
             }
 
-        explicit NDArrayStorage(NDArrayStoragePtr ptr) : ptr(ptr) {}
+        explicit NDArrayStorage(std::shared_ptr<memory::Buffer> buffer)
+            : size(buffer->size)
+            , buffer(buffer)
+            , bufferHostPtr(buffer->hostPtr) {}
     };
 
     inline Shape shapeStride(const Shape& shape) {
@@ -150,9 +150,12 @@ namespace image {
 
         template <class... Ts>
         constexpr size_type dimsOffset(Ts&&... dims) const noexcept {
-            std::array<size_type, sizeof...(Ts)> dimsArr { std::forward<Ts>(dims)... };
+            std::array<size_type, sizeof...(Ts)> dimsArr { static_cast<size_type>(dims)... };
             return std::inner_product(dimsArr.begin(), dimsArr.end(), strides_.begin(), 0);
         }
+
+        memory::Buffer &buffer() noexcept { return *NDArrayStorage::buffer; }
+        const memory::Buffer &buffer() const noexcept { return *NDArrayStorage::buffer; }
 
         NDArrayBase(TypeRef type, Shape shape, size_type alignment = 0)
             : NDArrayStorage(type->size() * shape.size(), alignment ? alignment : type->alignment())
@@ -161,8 +164,8 @@ namespace image {
             , type_(type) {}
 
     protected:
-        NDArrayBase(TypeRef type, Shape shape, NDArrayStoragePtr ptr)
-            : NDArrayStorage(ptr)
+        NDArrayBase(TypeRef type, Shape shape, std::shared_ptr<memory::Buffer> buffer)
+            : NDArrayStorage(buffer)
             , shape_(shape)
             , strides_(shapeStride(shape_))
             , type_(type) {}
@@ -190,8 +193,8 @@ namespace image {
         using pointer = T *;
         using const_pointer = const T *;
 
-        iterator begin() { return (iterator)this->getPtr<T>(); }
-        const_iterator begin() const { return (const_iterator)this->getPtr<T>(); }
+        iterator begin() { return (iterator)getPtr<T>(); }
+        const_iterator begin() const { return (const_iterator)getPtr<T>(); }
         iterator end() { return begin() + size(); }
         const_iterator end() const { return begin() + size(); }
 
@@ -241,12 +244,12 @@ namespace image {
 
         template <class U>
         NDArray<U> reinterpret() {
-            return NDArray<U>(Shape { sizeBytes() / sizeof(U) }, ptr);
+            return NDArray<U>(Shape { sizeBytes() / sizeof(U) }, NDArrayStorage::buffer);
         }
         
         NDArray reshape(Shape s) {
             assert(s.size() == size());
-            return NDArray(s, ptr);
+            return NDArray(s, NDArrayStorage::buffer);
         }
 
         explicit NDArray(Shape shape, size_type alignment = 0) : NDArrayBase(RepresentType<T>::get(), shape, alignment) {}
@@ -254,7 +257,7 @@ namespace image {
         explicit NDArray() : NDArray(Shape()) {}
 
     private:
-        NDArray(Shape shape, NDArrayStoragePtr ptr) : NDArrayBase(RepresentType<T>::get(), shape, ptr) {}
+        NDArray(Shape shape, std::shared_ptr<memory::Buffer> buffer) : NDArrayBase(RepresentType<T>::get(), shape, buffer) {}
     };
 
 }
