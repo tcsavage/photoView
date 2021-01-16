@@ -1,6 +1,9 @@
 # OpenImageIO
 find_package(OpenImageIO REQUIRED)
 
+# OpenCL
+find_package(OpenCL REQUIRED)
+
 # libimage
 add_library(libimage
     src/image/Exception.cpp
@@ -11,6 +14,10 @@ add_library(libimage
     src/image/luts/SimpleCube.cpp
     src/image/luts/TetrahedralInterpolator.cpp
     src/image/memory/Buffer.cpp
+    src/image/opencl/BufferDevice.cpp
+    src/image/opencl/Context.cpp
+    src/image/opencl/Manager.cpp
+    src/image/opencl/Program.cpp
 )
 add_library(image::libimage ALIAS libimage)
 
@@ -20,6 +27,7 @@ target_link_libraries(libimage
     PUBLIC
     glm::glm
     OpenImageIO::OpenImageIO
+    OpenCL::OpenCL
 )
 
 target_compile_features(libimage PUBLIC cxx_std_20)
