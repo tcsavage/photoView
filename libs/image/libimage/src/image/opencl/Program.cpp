@@ -41,11 +41,16 @@ namespace image::opencl {
     }
 
     Expected<void, Error> Kernel::run(const CommandQueueHandle &queue, const Shape &globalWorkShape) noexcept {
+        cl_event ev;
         cl_int ret = clEnqueueNDRangeKernel(
             queue.get(), handle.get(),
             globalWorkShape.dims().size(), nullptr, globalWorkShape.begin(),
-            nullptr, 0, nullptr, nullptr
+            nullptr, 0, nullptr, &ev
         );
+        if (ret != CL_SUCCESS) {
+            return Unexpected(Error(ret));
+        }
+        ret = clWaitForEvents(1, &ev);
         if (ret != CL_SUCCESS) {
             return Unexpected(Error(ret));
         }
