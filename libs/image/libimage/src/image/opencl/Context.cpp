@@ -203,7 +203,7 @@ namespace image::opencl {
     }
     CommandQueue::~CommandQueue() {
         if (handle.get()) {
-            std::cerr << "Finalizing OpenCL command queue\n";
+            std::cerr << "[OpenCL] Finalizing command queue\n";
             clFlush(handle.get());
             clFinish(handle.get());
         }

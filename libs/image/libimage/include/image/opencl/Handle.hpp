@@ -53,7 +53,7 @@ namespace image::opencl {
         Handle() noexcept {}
 
         Handle(const Handle &other) noexcept : handle(other.handle) {
-            std::cerr << "Retaining " << TypeName<T>::get() << " resource (copy constructor)\n";
+            std::cerr << "[Handle: " << TypeName<T>::get() << "] Retaining resource (copy constructor)\n";
             Retain(handle);
         }
 
@@ -61,7 +61,7 @@ namespace image::opencl {
 
         Handle &operator=(const Handle &rhs) noexcept {
             handle = rhs.handle;
-            std::cerr << "Retaining " << TypeName<T>::get() << " resource (copy assignment)\n";
+            std::cerr << "[Handle: " << TypeName<T>::get() << "] Retaining resource (copy assignment)\n";
             Retain(handle);
             return *this;
         }
@@ -73,7 +73,7 @@ namespace image::opencl {
 
         ~Handle() noexcept {
             if (handle) {
-                std::cerr << "Releasing " << TypeName<T>::get() << " resource\n";
+                std::cerr << "[Handle: " << TypeName<T>::get() << "] Releasing resource\n";
                 Release(handle);
                 handle = 0;
             }
@@ -81,7 +81,7 @@ namespace image::opencl {
     
     protected:
         explicit Handle(const T &handle) noexcept : handle(handle) {
-            std::cerr << "Acquired new " << TypeName<T>::get() << " resource\n";
+            std::cerr << "[Handle: " << TypeName<T>::get() << "] Acquired new resource\n";
         }
 
     private:
