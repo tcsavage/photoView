@@ -10,7 +10,7 @@
 #include <image/filters/Filter.hpp>
 #include <image/filters/Lut.hpp>
 #include <image/luts/CubeFile.hpp>
-#include <image/luts/Lut.hpp>
+#include <image/luts/Lattice3D.hpp>
 #include <image/luts/TetrahedralInterpolator.hpp>
 
 using namespace image;
@@ -52,7 +52,7 @@ int main(int argc, const char* argv[]) {
     {
         Timer timer { "Loading LUT into interpolator" };
         auto &f = proc.getFilter<filters::Lut<luts::TetrahedralInterpolator, F32, true>, F32, true>();
-        f.impl.setLut(cube.lut());
+        f.impl.setLattice(cube.lattice());
     }
     {
         Timer timer { "Updating LUT strength factor" };

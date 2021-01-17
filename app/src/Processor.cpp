@@ -38,7 +38,7 @@ image::Expected<void, LutLoadFailure> Processor::loadLutFromFile(image::Path pat
     image::luts::CubeFile cubeFile;
     is >> cubeFile;
     auto &filter = proc.getFilter<image::filters::Lut<image::luts::TetrahedralInterpolator, image::F32, true>, image::F32, true>();
-    filter.impl.setLut(cubeFile.lut());
+    filter.impl.setLattice(cubeFile.lattice());
     filter.update();
     proc.update();
     lutLoaded = true;

@@ -17,7 +17,7 @@
 #include <image/filters/Concepts.hpp>
 #include <image/filters/Filter.hpp>
 #include <image/filters/FilterStack.hpp>
-#include <image/luts/Lut.hpp>
+#include <image/luts/Lattice3D.hpp>
 
 namespace image {
 

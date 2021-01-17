@@ -10,7 +10,7 @@ add_library(libimage
     src/image/Type.cpp
     src/image/luts/Barycentric.cpp
     src/image/luts/CubeFile.cpp
-    src/image/luts/Lut.cpp
+    src/image/luts/Lattice3D.cpp
     src/image/luts/SimpleCube.cpp
     src/image/luts/TetrahedralInterpolator.cpp
     src/image/memory/Buffer.cpp

@@ -7,8 +7,6 @@
 #include <image/filters/Exposure.hpp>
 #include <image/filters/Lut.hpp>
 #include <image/luts/CubeFile.hpp>
-#include <image/luts/FastInterpolator.hpp>
-#include <image/luts/StrengthModifier.hpp>
 #include <image/luts/TetrahedralInterpolator.hpp>
 
 struct LutLoadFailure {

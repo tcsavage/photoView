@@ -6,16 +6,16 @@
 #include <image/CoreTypes.hpp>
 #include <image/NDArray.hpp>
 #include <image/Color.hpp>
-#include <image/luts/Lut.hpp>
+#include <image/luts/Lattice3D.hpp>
 
 namespace image::luts {
 
     struct CubeFile {
         CubeFile() noexcept {}
 
-        CubeFile(Lut &lut) noexcept;
+        CubeFile(Lattice3D &lattice) noexcept;
         
-        Lut lut() const noexcept;
+        Lattice3D lattice() const noexcept;
         
         friend std::istream &operator>>(std::istream &input, CubeFile &data);
         friend std::ostream &operator<<(std::ostream &output, const CubeFile &data);
