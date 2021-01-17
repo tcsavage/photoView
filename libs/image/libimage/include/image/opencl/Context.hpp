@@ -51,6 +51,7 @@ namespace image::opencl {
             MISALIGNED_SUB_BUFFER_OFFSET = CL_MISALIGNED_SUB_BUFFER_OFFSET,
             OUT_OF_HOST_MEMORY = CL_OUT_OF_HOST_MEMORY,
             OUT_OF_RESOURCES = CL_OUT_OF_RESOURCES,
+            NV_ILLEGAL_READ_OR_WRITE_TO_BUFFER = -9999,
         };
 
         Error() { generateMsg(); }

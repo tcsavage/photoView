@@ -47,6 +47,7 @@ namespace image::opencl {
             PROCESS_VAL(Error::Code::MISALIGNED_SUB_BUFFER_OFFSET);
             PROCESS_VAL(Error::Code::OUT_OF_HOST_MEMORY);
             PROCESS_VAL(Error::Code::OUT_OF_RESOURCES);
+            PROCESS_VAL(Error::Code::NV_ILLEGAL_READ_OR_WRITE_TO_BUFFER);
             default: s = "Unknown code";
         }
 #undef PROCESS_VAL
