@@ -8,9 +8,9 @@
 
 namespace image::luts {
     
-    struct Lut {
-        Lut() noexcept;
-        Lut(std::size_t size) noexcept;
+    struct Lattice3D {
+        Lattice3D() noexcept;
+        Lattice3D(std::size_t size) noexcept;
     
         std::size_t size { 0 };
         ColorRGB<F32> domainMin { 0.0f, 0.0f, 0.0f };

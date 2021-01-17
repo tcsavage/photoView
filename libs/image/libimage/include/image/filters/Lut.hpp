@@ -3,14 +3,14 @@
 #include <image/Color.hpp>
 #include <image/Precalculator.hpp>
 #include <image/filters/Concepts.hpp>
-#include <image/luts/Lut.hpp>
+#include <image/luts/Lattice3D.hpp>
 #include <image/luts/TetrahedralInterpolator.hpp>
 
 namespace image::filters {
 
     template <class Interpolator, class T, bool Precalculate = true>
     struct Lut {
-        luts::Lut lut;
+        luts::Lattice3D lattice;
         Interpolator interp;
         Precalculator<U8, T> precalc;
 
@@ -26,14 +26,14 @@ namespace image::filters {
             }
         }
 
-        constexpr void setLut(luts::Lut l) noexcept {
-            lut = l;
-            interp.load(lut);
+        constexpr void setLattice(luts::Lattice3D l) noexcept {
+            lattice = l;
+            interp.load(lattice);
             update();
         }
 
         constexpr ColorRGB<T> applyToColor(const ColorRGB<T> &color) const noexcept {
-            if (lut.size == 0) {
+            if (lattice.size == 0) {
                 return color;
             }
             if constexpr(Precalculate) {

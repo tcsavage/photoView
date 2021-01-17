@@ -5,7 +5,7 @@
 #include <image/CoreTypes.hpp>
 #include <image/Color.hpp>
 #include <image/NDArray.hpp>
-#include <image/luts/Lut.hpp>
+#include <image/luts/Lattice3D.hpp>
 #include <image/luts/SimpleCube.hpp>
 
 namespace image::luts {
@@ -15,7 +15,7 @@ namespace image::luts {
         using InType = F32;
         using OutType = F32;
 
-        void load(const Lut& lut) noexcept;
+        void load(const Lattice3D& lattice) noexcept;
 
         ColorRGB<OutType> map(const ColorRGB<InType>& color) const noexcept;
 
@@ -24,7 +24,7 @@ namespace image::luts {
 
     private:
         NDArray<SimpleCube> cubeTable { Shape{} };
-        std::size_t lutSize { 0 };
+        std::size_t latticeSize { 0 };
         mutable ColorRGB<InType> inCache { -1.0f };
         mutable ColorRGB<OutType> outCache { -1.0f };
     };
