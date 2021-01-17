@@ -48,10 +48,12 @@ namespace image::opencl {
             nullptr, 0, nullptr, &ev
         );
         if (ret != CL_SUCCESS) {
+            std::cerr << "[OpenCL] Error running kernel\n";
             return Unexpected(Error(ret));
         }
         ret = clWaitForEvents(1, &ev);
         if (ret != CL_SUCCESS) {
+            std::cerr << "[OpenCL] Error kernel result\n";
             return Unexpected(Error(ret));
         }
         return success;
@@ -80,22 +82,23 @@ namespace image::opencl {
         cl_uint numDevices { 0 };
         ret = clGetContextInfo(ctx, CL_CONTEXT_NUM_DEVICES, sizeof(cl_uint), &numDevices, nullptr);
         if (ret != CL_SUCCESS) { return Unexpected(Error(ret)); }
+        if (numDevices == 0) { return Unexpected(Error(Error::Code::UNKNOWN_ERROR)); }
         std::vector<cl_device_id> devices;
-        devices.reserve(numDevices);
+        devices.resize(numDevices);
         ret = clGetContextInfo(ctx, CL_CONTEXT_DEVICES, sizeof(cl_device_id) * numDevices, devices.data(), nullptr);
         if (ret != CL_SUCCESS) { return Unexpected(Error(ret)); }
 
         // Build.
         ret = clBuildProgram(handle.get(), numDevices, devices.data(), nullptr, nullptr, nullptr);
-        // if (ret == CL_BUILD_PROGRAM_FAILURE) {
-        //     size_t logSize;
-        //     clGetProgramBuildInfo(handle, device.id, CL_PROGRAM_BUILD_LOG, 0, nullptr, &logSize);
-        //     char *log = new char[logSize];
-        //     clGetProgramBuildInfo(handle, device.id, CL_PROGRAM_BUILD_LOG, logSize, log, nullptr);
-        //     std::cerr << "Error building program:\n" << log << "End of build log.\n";
-        //     delete[] log;
-        //     throw Error(ret);
-        // }
+        if (ret == CL_BUILD_PROGRAM_FAILURE) {
+            cl_device_id deviceHandle = devices.at(0);
+            std::size_t logSize;
+            clGetProgramBuildInfo(handle.get(), deviceHandle, CL_PROGRAM_BUILD_LOG, 0, nullptr, &logSize);
+            String log(logSize, '\0');
+            clGetProgramBuildInfo(handle.get(), deviceHandle, CL_PROGRAM_BUILD_LOG, logSize, log.data(), nullptr);
+            std::cerr << "[OpenCL] Error building program:\n" << log << "End of build log.\n";
+            return Unexpected(Error(ret));
+        }
         if (ret != CL_SUCCESS) {
             return Unexpected(Error(ret));
         }
