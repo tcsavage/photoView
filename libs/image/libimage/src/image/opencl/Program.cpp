@@ -27,6 +27,14 @@ namespace image::opencl {
         return success;
     }
 
+    Expected<void, Error> Kernel::setArg(cl_uint idx, const SamplerHandle& sampler) noexcept {
+        cl_int ret = clSetKernelArg(handle.get(), idx, sizeof(cl_sampler), &(sampler.get()));
+        if (ret != CL_SUCCESS) {
+            return Unexpected(Error(ret));
+        }
+        return success;
+    }
+
     Expected<void, Error> Kernel::setArg(cl_uint idx, const memory::Buffer& buf) noexcept {
         auto dev = std::dynamic_pointer_cast<memory::OpenCLDevice>(buf.device);
         if (!dev) {

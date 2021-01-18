@@ -15,6 +15,12 @@ namespace image::opencl {
 
     using ProgramHandle = Handle<cl_program, &clRetainProgram, &clReleaseProgram>;
     using KernelHandle = Handle<cl_kernel, &clRetainKernel, &clReleaseKernel>;
+    using SamplerHandle = opencl::Handle<cl_sampler, &clRetainSampler, &clReleaseSampler>;
+
+    struct SetArgsError {
+        cl_uint argIdx;
+        Error error;
+    };
 
     struct Kernel {
         KernelHandle handle;
@@ -33,14 +39,15 @@ namespace image::opencl {
 
         Expected<void, Error> setArg(cl_uint idx, const std::nullptr_t&) noexcept;
         Expected<void, Error> setArg(cl_uint idx, const cl_mem& mem) noexcept;
+        Expected<void, Error> setArg(cl_uint idx, const SamplerHandle& sampler) noexcept;
         Expected<void, Error> setArg(cl_uint idx, const memory::Buffer& buf) noexcept;
         Expected<void, Error> setArg(cl_uint idx, const NDArrayBase& arr) noexcept;
 
         template <class T, class... Ts>
-        Expected<void, Error> setArgsFromIdx(cl_uint idx, T &arg, Ts&&... args) noexcept {
+        Expected<void, SetArgsError> setArgsFromIdx(cl_uint idx, T &arg, Ts&&... args) noexcept {
             auto res = setArg(idx, arg);
             if (res.hasError()) {
-                return res;
+                return Unexpected(SetArgsError { idx, res.error() });
             }
             if constexpr(sizeof...(Ts) > 0) {
                 return setArgsFromIdx<Ts...>(++idx, std::forward<Ts>(args)...);
@@ -50,7 +57,7 @@ namespace image::opencl {
         }
 
         template <class... Ts>
-        Expected<void, Error> setArgs(Ts&&... args) noexcept {
+        Expected<void, SetArgsError> setArgs(Ts&&... args) noexcept {
             assert(sizeof...(Ts) == getNumArgs());
             return setArgsFromIdx(0, std::forward<Ts>(args)...);
         }
