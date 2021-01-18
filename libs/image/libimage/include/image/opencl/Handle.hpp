@@ -19,7 +19,8 @@ namespace image::opencl {
         /**
          * @brief Returns the underlying handle value.
          */
-        constexpr T get() const noexcept { return handle; }
+        constexpr T &get() noexcept { return handle; }
+        constexpr const T &get() const noexcept { return handle; }
 
         void incRef() const noexcept {
             if (handle) { Retain(handle); }
