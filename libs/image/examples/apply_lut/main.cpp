@@ -12,6 +12,7 @@
 #include <image/luts/CubeFile.hpp>
 #include <image/luts/Lattice3D.hpp>
 #include <image/luts/TetrahedralInterpolator.hpp>
+#include <image/opencl/Manager.hpp>
 
 using namespace image;
 
@@ -37,10 +38,16 @@ int main(int argc, const char* argv[]) {
     String lutPath = argv[2];
     String outputImagePath = argv[3];
 
+    opencl::Manager oclMan;
+
     ImageProcessor<
-        F32, U8, true,
-        filters::Lut<luts::TetrahedralInterpolator, F32, true>
+        filters::Lut<luts::TetrahedralInterpolator, F32, false>
     > proc;
+
+    {
+        Timer timer { "Image Processor - Init" };
+        proc.init();
+    }
 
     std::cerr << "Loading LUT\n";
 
@@ -51,12 +58,13 @@ int main(int argc, const char* argv[]) {
     std::cerr << "Loaded Cube: " << lutPath << "\n";
     {
         Timer timer { "Loading LUT into interpolator" };
-        auto &f = proc.getFilter<filters::Lut<luts::TetrahedralInterpolator, F32, true>, F32, true>();
+        auto &f = proc.getFilter<filters::Lut<luts::TetrahedralInterpolator, F32, false>>();
         f.impl.setLattice(cube.lattice());
+        f.update();
     }
     {
         Timer timer { "Updating LUT strength factor" };
-        auto &f = proc.getFilter<filters::Lut<luts::TetrahedralInterpolator, F32, true>, F32, true>();
+        auto &f = proc.getFilter<filters::Lut<luts::TetrahedralInterpolator, F32, false>>();
         f.setStrength(0.5);
         f.update();
     }
@@ -67,7 +75,7 @@ int main(int argc, const char* argv[]) {
 
     std::cerr << "Reading input image\n";
     auto imageResult = readImageBufFromFile<F32>(inputImagePath);
-    proc.setOriginal(*imageResult);
+    proc.setInput(*imageResult);
 
     std::cerr << "Applying LUT\n";
     {
@@ -77,7 +85,7 @@ int main(int argc, const char* argv[]) {
     std::cerr << "Finished applying LUT\n";
 
     std::cerr << "Writing output\n";
-    writeImageBufToFile<U8>(outputImagePath, proc.viewportOutput);
+    writeImageBufToFile<U8>(outputImagePath, proc.output);
 
     std::cerr << "Done.\n";
 

@@ -77,6 +77,9 @@ namespace image::memory {
         explicit Buffer(std::size_t size, std::size_t alignment) noexcept : size(size), alignment(alignment) {}
 
         ~Buffer() noexcept {
+            if (device) {
+                deviceFree();
+            }
             free();
         }
     };

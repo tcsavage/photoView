@@ -25,7 +25,7 @@ namespace {
 }
 
 void Processor::loadHald(std::size_t lutSize) {
-    proc.setOriginal(image::generateHald<image::F32, image::U8>(lutSize));
+    proc.setInput(image::generateHald<image::F32, image::U8>(lutSize));
     proc.process();
 }
 
@@ -37,7 +37,7 @@ image::Expected<void, LutLoadFailure> Processor::loadLutFromFile(image::Path pat
     }
     image::luts::CubeFile cubeFile;
     is >> cubeFile;
-    auto &filter = proc.getFilter<image::filters::Lut<image::luts::TetrahedralInterpolator, image::F32, true>, image::F32, true>();
+    auto &filter = proc.getFilter<image::filters::Lut<image::luts::TetrahedralInterpolator, image::F32, true>>();
     filter.impl.setLattice(cubeFile.lattice());
     filter.update();
     proc.update();
@@ -51,13 +51,13 @@ image::Expected<void, ImageLoadFailure> Processor::loadImageFromFile(image::Path
     if (result.hasError()) {
         return image::Unexpected(ImageLoadFailure(path, result.error().reason));
     }
-    proc.setOriginal(*result);
+    proc.setInput(*result);
     proc.process();
     return image::success;
 }
 
 image::Expected<void, ImageExportFailure> Processor::exportImageToFile(image::Path path) const {
-    auto result = image::writeImageBufToFile<image::U8>(path, proc.viewportOutput);
+    auto result = image::writeImageBufToFile<image::U8>(path, proc.output);
     if (result.hasError()) {
         return image::Unexpected(ImageExportFailure(path, result.error().reason));
     }
@@ -70,7 +70,7 @@ void Processor::setProcessingEnabled(bool processingEnabled) {
 }
 
 void Processor::setLutStrengthFactor(image::F32 factor) {
-    auto &filter = proc.getFilter<image::filters::Lut<image::luts::TetrahedralInterpolator, image::F32, true>, image::F32, true>();
+    auto &filter = proc.getFilter<image::filters::Lut<image::luts::TetrahedralInterpolator, image::F32, true>>();
     filter.setStrength(factor);
     filter.update();
     proc.update();
@@ -78,9 +78,13 @@ void Processor::setLutStrengthFactor(image::F32 factor) {
 }
 
 void Processor::setExposure(image::F32 exposure) {
-    auto &filter = proc.getFilter<image::filters::Exposure<image::F32>, image::F32, true>();
+    auto &filter = proc.getFilter<image::filters::Exposure<image::F32>>();
     filter.impl.setExposure(exposure);
     filter.update();
     proc.update();
     proc.process();
+}
+
+Processor::Processor() noexcept {
+    proc.init();
 }

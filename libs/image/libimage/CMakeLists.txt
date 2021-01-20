@@ -7,6 +7,7 @@ find_package(OpenCL REQUIRED)
 # libimage
 add_library(libimage
     src/image/Exception.cpp
+    src/image/ImageProcessor.cpp
     src/image/Type.cpp
     src/image/luts/Barycentric.cpp
     src/image/luts/CubeFile.cpp

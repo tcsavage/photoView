@@ -14,6 +14,9 @@
 #include <image/CoreTypes.hpp>
 #include <image/ImageBuf.hpp>
 #include <image/Precalculator.hpp>
+#include <image/opencl/BufferDevice.hpp>
+#include <image/opencl/Manager.hpp>
+#include <image/opencl/Program.hpp>
 #include <image/filters/Concepts.hpp>
 #include <image/filters/Filter.hpp>
 #include <image/filters/FilterStack.hpp>
@@ -21,74 +24,48 @@
 
 namespace image {
 
-    template <class In, class Out, bool PrecalculateFilter, filters::FilterImpl<In>... Impls>
-    struct ImageProcessor {
-        ImageBuf<In> original;
-        ImageBuf<Out> viewportOutput;
-        filters::FilterStack<In, PrecalculateFilter, Impls...> filterStack;
-        Precalculator<Out, Out> precalc;
+    struct ImageProcessorBase {
+        ImageBuf<F32> input;
+        ImageBuf<U8> output;
+
+        luts::Lattice3D filtersLattice { 32 };
+        NDArray<F32> latticeImage;
 
         std::atomic<bool> isProcessingEnabled { true };
+
+        opencl::Program oclProgram;
+        opencl::Kernel oclKernel;
+        opencl::SamplerHandle oclSampler;
+
+        void init();
+        void setProcessingEnabled(bool processingEnabled) noexcept;
+        void setInput(const ImageBuf<F32> &img) noexcept;
+        void syncLattice() noexcept;
+        void process() noexcept;
+
+        virtual ~ImageProcessorBase() {}
+    };
+
+    template <filters::FilterImpl<F32>... Impls>
+    struct ImageProcessor final : public ImageProcessorBase {
+        filters::FilterStack<F32, false, Impls...> filterStack;
 
         ImageProcessor() noexcept {
             update();
         }
 
         void update() noexcept {
-            if constexpr(PrecalculateFilter) {
-                precalc.buildTable([this](const ColorRGB<Out> &color) {
-                    auto fcolor = conv<In>(color);
-                    return conv<Out>(applyToColor(fcolor, filterStack));
-                });
-            }
+            filtersLattice.fromFunction([this](const ColorRGB<F32> &c) { return applyToColor(c, filterStack); });
+            syncLattice();
         }
 
-        void setOriginal(const ImageBuf<In> &buf) noexcept {
-            original = buf;
-            viewportOutput = ImageBuf<Out>(buf.width(), buf.height());
+        template <class Impl>
+        requires filters::FilterImpl<Impl, F32>
+        constexpr filters::Filter<F32, Impl, false> &getFilter() noexcept {
+            return filters::get<Impl, F32, false>(filterStack);
         }
 
-        void setProcessingEnabled(bool processingEnabled) noexcept {
-            isProcessingEnabled = processingEnabled;
-        }
-
-        [[gnu::noinline]]
-        void process() noexcept {
-            if (isProcessingEnabled) {
-                if constexpr(PrecalculateFilter) {
-                    std::transform(
-                        std::execution::par_unseq,
-                        std::ranges::cbegin(original), std::ranges::cend(original), std::ranges::begin(viewportOutput),
-                        [this] (const ColorRGB<In> &color) {
-                            return precalc.map(conv<Out>(color));
-                        }
-                    );
-                } else {
-                    std::transform(
-                        std::execution::par_unseq,
-                        std::ranges::cbegin(original), std::ranges::cend(original), std::ranges::begin(viewportOutput),
-                        [this] (const ColorRGB<In> &color) {
-                            auto fcolor = conv<In>(color);
-                            return conv<Out>(applyToColor(fcolor, filterStack));
-                        }
-                    );
-                }
-            } else {
-                std::transform(
-                    std::execution::par_unseq,
-                    std::ranges::cbegin(original), std::ranges::cend(original), std::ranges::begin(viewportOutput),
-                    [this] (const ColorRGB<In> &color) {
-                        return conv<Out>(color);
-                    }
-                );
-            }
-        }
-
-        template <class Impl, class T, bool Preprocess>
-        requires filters::FilterImpl<Impl, T>
-        constexpr filters::Filter<T, Impl, Preprocess> &getFilter() noexcept {
-            return filters::get<Impl>(filterStack);
-        }
+        virtual ~ImageProcessor() {}
     };
 
 }

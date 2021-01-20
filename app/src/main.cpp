@@ -4,9 +4,13 @@
 #include <QApplication>
 #include <QIcon>
 
+#include <image/opencl/Manager.hpp>
+
 #include "MainWindow.hpp"
 
 int main(int argc, char* argv[]) {
+    // Initialise OpenCL.
+    image::opencl::Manager oclMan;
     // Initialise Qt and QML.
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QCoreApplication::setOrganizationName("Tom Savage");

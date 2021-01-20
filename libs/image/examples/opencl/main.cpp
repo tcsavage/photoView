@@ -54,7 +54,7 @@ int main(int, const char*[]) {
 
     auto setArgsResult = maybeKernel->setArgs(arr1, arr2);
     if (setArgsResult.hasError()) {
-        std::cerr << setArgsResult.error() << "\n";
+        std::cerr << setArgsResult.error().error << "\n";
     }
 
     maybeKernel->run(image::opencl::Manager::the()->queue.getHandle(), image::Shape { 256 });

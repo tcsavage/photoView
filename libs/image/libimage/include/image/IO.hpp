@@ -46,7 +46,7 @@ namespace image {
         if (!iout->open(path.string(), spec)) {
             return Unexpected(ImageIOError(path, OIIO::geterror()));
         }
-        if (!iout->write_image(OIIO::TypeDesc::UINT8, imageBuf.data())) {
+        if (!iout->write_image(OIIO::TypeDescFromC<T>::value(), imageBuf.data())) {
             return Unexpected(ImageIOError(path, OIIO::geterror()));
         }
         iout->close();

@@ -38,7 +38,10 @@ namespace image::opencl {
     Expected<void, Error> Kernel::setArg(cl_uint idx, const memory::Buffer& buf) noexcept {
         auto dev = std::dynamic_pointer_cast<memory::OpenCLDevice>(buf.device);
         if (!dev) {
-            return Unexpected(Error(Error::Code::INVALID_VALUE));
+            auto dev2 = std::dynamic_pointer_cast<memory::OpenCLImageDevice>(buf.device);
+            if (!dev2) {
+                return Unexpected(Error(Error::Code::INVALID_VALUE));
+            }
         }
         auto memHandle = reinterpret_cast<cl_mem>(buf.deviceHandle);
         return setArg(idx, memHandle);
