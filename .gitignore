@@ -81,3 +81,6 @@ flatpak-build
 ### Perf ###
 perf.data
 perf.data.old
+
+### Local data ###
+scratch/*
