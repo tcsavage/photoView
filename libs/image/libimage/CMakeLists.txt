@@ -4,6 +4,15 @@ find_package(OpenImageIO REQUIRED)
 # OpenCL
 find_package(OpenCL REQUIRED)
 
+# resources
+include(../../../external/cmrc/CMakeRC)
+cmrc_add_resource_library(
+    libimage-resources
+    ALIAS image::rc
+    NAMESPACE image::rc
+    kernels/apply3DLut_F32_U8.cl
+)
+
 # libimage
 add_library(libimage
     src/image/Exception.cpp
@@ -29,6 +38,8 @@ target_link_libraries(libimage
     glm::glm
     OpenImageIO::OpenImageIO
     OpenCL::OpenCL
+    PRIVATE
+    image::rc
 )
 
 target_compile_features(libimage PUBLIC cxx_std_20)

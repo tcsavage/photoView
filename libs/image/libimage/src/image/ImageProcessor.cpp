@@ -1,17 +1,17 @@
 #include <image/ImageProcessor.hpp>
 
-#include <fstream>
+#include <cmrc/cmrc.hpp>
+
+CMRC_DECLARE(image::rc);
 
 namespace image {
 
     void ImageProcessorBase::init() {
         {
-            // load kernel source.
-            std::ifstream ifs;
-            ifs.open("libs/image/libimage/kernels/apply3DLut_F32_U8.cl");
-            std::stringstream ss;
-            ss << ifs.rdbuf();
-            auto src = ss.str();
+            auto fs = cmrc::image::rc::get_filesystem();
+            auto f = fs.open("kernels/apply3DLut_F32_U8.cl");
+            String src { f.begin(), f.end() };
+            
             auto maybeProg = opencl::Program::fromSource(opencl::Manager::the()->context, src);
             if (maybeProg.hasError()) {
                 std::cerr << "Error loading program\n";
