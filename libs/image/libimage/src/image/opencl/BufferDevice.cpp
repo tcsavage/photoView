@@ -22,15 +22,15 @@ namespace image::memory {
 
     void OpenCLDevice::copyDeviceToHost(Buffer &buf) noexcept {
         auto handle = reinterpret_cast<cl_mem>(buf.deviceHandle);
-        std::cerr << "[OpenCLDevice] copying: " << std::hex << buf.size << std::dec
-                  << " bytes to host ptr " << std::hex << buf.hostPtr << std::dec << "\n";
+        // std::cerr << "[OpenCLDevice] copying: " << std::hex << buf.size << std::dec
+        //           << " bytes to host ptr " << std::hex << buf.hostPtr << std::dec << "\n";
         clEnqueueReadBuffer(queue.get(), handle, true, 0, buf.size, buf.hostPtr, 0, nullptr, nullptr);
     }
 
     void OpenCLDevice::copyHostToDevice(Buffer &buf) noexcept {
         auto handle = reinterpret_cast<cl_mem>(buf.deviceHandle);
-        std::cerr << "[OpenCLDevice] copying: " << std::hex << buf.size << std::dec
-                  << " bytes from host ptr " << std::hex << buf.hostPtr << std::dec << "\n";
+        // std::cerr << "[OpenCLDevice] copying: " << std::hex << buf.size << std::dec
+        //           << " bytes from host ptr " << std::hex << buf.hostPtr << std::dec << "\n";
         clEnqueueWriteBuffer(queue.get(), handle, true, 0, buf.size, buf.hostPtr, 0, nullptr, nullptr);
     }
 
@@ -75,8 +75,8 @@ namespace image::memory {
     void OpenCLImageDevice::copyDeviceToHost(Buffer &buf) noexcept {
         cl_event ev;
         auto handle = reinterpret_cast<cl_mem>(buf.deviceHandle);
-        std::cerr << "[OpenCLImageDevice] copying: " << std::hex << buf.size << std::dec
-                  << " bytes to host ptr " << std::hex << buf.hostPtr << std::dec << "\n";
+        // std::cerr << "[OpenCLImageDevice] copying: " << std::hex << buf.size << std::dec
+        //           << " bytes to host ptr " << std::hex << buf.hostPtr << std::dec << "\n";
         std::array<std::size_t, 3> origin { 0, 0, 0 };
         std::array<std::size_t, 3> region { imageSize.at(0), imageSize.at(1), imageSize.at(2) };
         auto ret = clEnqueueReadImage(queue.get(), handle, true, origin.data(), region.data(), 0, 0, buf.hostPtr, 0, nullptr, nullptr);
@@ -92,8 +92,8 @@ namespace image::memory {
     void OpenCLImageDevice::copyHostToDevice(Buffer &buf) noexcept {
         cl_event ev;
         auto handle = reinterpret_cast<cl_mem>(buf.deviceHandle);
-        std::cerr << "[OpenCLImageDevice] copying: " << std::hex << buf.size << std::dec
-                  << " bytes from host ptr " << std::hex << buf.hostPtr << std::dec << "\n";
+        // std::cerr << "[OpenCLImageDevice] copying: " << std::hex << buf.size << std::dec
+        //           << " bytes from host ptr " << std::hex << buf.hostPtr << std::dec << "\n";
         std::array<std::size_t, 3> origin { 0, 0, 0 };
         std::array<std::size_t, 3> region { imageSize.at(0), imageSize.at(1), imageSize.at(2) };
         auto ret = clEnqueueWriteImage(queue.get(), handle, true, origin.data(), region.data(), 0, 0, buf.hostPtr, 0, nullptr, &ev);
