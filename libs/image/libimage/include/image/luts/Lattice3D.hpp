@@ -19,9 +19,9 @@ namespace image::luts {
 
         template <class F>
         void accumulate(F f) noexcept {
-            for (std::size_t b = 0 ; b < size - 1 ; ++b) {
-                for (std::size_t g = 0 ; g < size - 1 ; ++g) {
-                    for (std::size_t r = 0 ; r < size - 1 ; ++r) {
+            for (std::size_t b = 0 ; b < size ; ++b) {
+                for (std::size_t g = 0 ; g < size ; ++g) {
+                    for (std::size_t r = 0 ; r < size ; ++r) {
                         auto &node = table.at(r, g, b);
                         ColorRGB<F32> cOut = f(node);
                         node = cOut;
@@ -32,13 +32,13 @@ namespace image::luts {
 
         template <class F>
         void fromFunction(F f) noexcept {
-            auto sizef = static_cast<F32>(size);
-            auto step = 1.0f / sizef;
-            for (std::size_t b = 0 ; b < size - 1 ; ++b) {
+            auto maxf = static_cast<F32>(size - 1);
+            auto step = 1.0f / maxf;
+            for (std::size_t b = 0 ; b < size ; ++b) {
                 F32 bf = b * step;
-                for (std::size_t g = 0 ; g < size - 1 ; ++g) {
+                for (std::size_t g = 0 ; g < size ; ++g) {
                     F32 gf = g * step;
-                    for (std::size_t r = 0 ; r < size - 1 ; ++r) {
+                    for (std::size_t r = 0 ; r < size ; ++r) {
                         F32 rf = r * step;
                         ColorRGB<F32> cIn { rf, gf, bf };
                         ColorRGB<F32> cOut = f(cIn);
