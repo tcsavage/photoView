@@ -37,7 +37,7 @@ image::Expected<void, LutLoadFailure> Processor::loadLutFromFile(image::Path pat
     }
     image::luts::CubeFile cubeFile;
     is >> cubeFile;
-    auto &filter = proc.getFilter<image::filters::Lut<image::luts::TetrahedralInterpolator, image::F32, true>>();
+    auto &filter = proc.getFilter<image::filters::Lut<image::luts::TetrahedralInterpolator, image::F32>>();
     filter.impl.setLattice(cubeFile.lattice());
     filter.update();
     proc.update();
@@ -66,11 +66,12 @@ image::Expected<void, ImageExportFailure> Processor::exportImageToFile(image::Pa
 
 void Processor::setProcessingEnabled(bool processingEnabled) {
     proc.setProcessingEnabled(processingEnabled);
+    proc.syncLattice();
     proc.process();
 }
 
 void Processor::setLutStrengthFactor(image::F32 factor) {
-    auto &filter = proc.getFilter<image::filters::Lut<image::luts::TetrahedralInterpolator, image::F32, true>>();
+    auto &filter = proc.getFilter<image::filters::Lut<image::luts::TetrahedralInterpolator, image::F32>>();
     filter.setStrength(factor);
     filter.update();
     proc.update();

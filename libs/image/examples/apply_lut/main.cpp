@@ -41,7 +41,7 @@ int main(int argc, const char* argv[]) {
     opencl::Manager oclMan;
 
     ImageProcessor<
-        filters::Lut<luts::TetrahedralInterpolator, F32, false>
+        filters::Lut<luts::TetrahedralInterpolator, F32>
     > proc;
 
     {
@@ -58,19 +58,15 @@ int main(int argc, const char* argv[]) {
     std::cerr << "Loaded Cube: " << lutPath << "\n";
     {
         Timer timer { "Loading LUT into interpolator" };
-        auto &f = proc.getFilter<filters::Lut<luts::TetrahedralInterpolator, F32, false>>();
+        auto &f = proc.getFilter<filters::Lut<luts::TetrahedralInterpolator, F32>>();
         f.impl.setLattice(cube.lattice());
         f.update();
     }
     {
         Timer timer { "Updating LUT strength factor" };
-        auto &f = proc.getFilter<filters::Lut<luts::TetrahedralInterpolator, F32, false>>();
+        auto &f = proc.getFilter<filters::Lut<luts::TetrahedralInterpolator, F32>>();
         f.setStrength(0.5);
         f.update();
-    }
-    {
-        Timer timer { "Updating precalculated filter output" };
-        proc.update();
     }
 
     std::cerr << "Reading input image\n";
