@@ -75,4 +75,40 @@ namespace image {
         return mix(factor, a, 1 - factor, b);
     }
 
+    template <std::floating_point T>
+    constexpr T sRgbToLinear(T in) noexcept {
+        if (in <= 0.04045) {
+            return in / 12.92;
+        } else {
+            return glm::pow((in + 0.055) / 1.055, 2.4);
+        }
+    }
+
+    template <std::floating_point T>
+    constexpr T linearToSRgb(T in) noexcept {
+        if (in <= 0.0031308) {
+            return in * 12.92;
+        } else {
+            return (1.055 * glm::pow(in, 1.0 / 2.4)) - 0.055;
+        }
+    }
+
+    template <std::floating_point T>
+    constexpr ColorRGB<T> sRgbToLinear(ColorRGB<T> in) noexcept {
+        return ColorRGB<T> {
+            sRgbToLinear(in.x),
+            sRgbToLinear(in.y),
+            sRgbToLinear(in.z)
+        };
+    }
+
+    template <std::floating_point T>
+    constexpr ColorRGB<T> linearToSRgb(ColorRGB<T> in) noexcept {
+        return ColorRGB<T> {
+            linearToSRgb(in.x),
+            linearToSRgb(in.y),
+            linearToSRgb(in.z)
+        };
+    }
+
 }
