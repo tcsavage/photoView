@@ -27,14 +27,17 @@ namespace image {
     struct ImageProcessorBase {
         ImageBuf<F32> input;
         ImageBuf<U8> output;
+        memory::Buffer intermediateBuffer;
 
-        luts::Lattice3D filtersLattice { 32 };
+        luts::Lattice3D identityLattice { 64 };
+        luts::Lattice3D filtersLattice { 64 };
         NDArray<F32> latticeImage;
 
         std::atomic<bool> isProcessingEnabled { true };
 
         opencl::Program oclProgram;
-        opencl::Kernel oclKernel;
+        opencl::Kernel oclKernelApplyLutF32F32;
+        opencl::Kernel oclKernelGammaCorrectF32U8;
         opencl::SamplerHandle oclSampler;
 
         void init();
@@ -55,7 +58,9 @@ namespace image {
         }
 
         void update() noexcept {
-            filtersLattice.fromFunction([this](const ColorRGB<F32> &c) { return applyToColor(c, filterStack); });
+            filtersLattice.fromFunction([this](const ColorRGB<F32> &c) {
+                return applyToColor(c, filterStack);
+            });
             syncLattice();
         }
 

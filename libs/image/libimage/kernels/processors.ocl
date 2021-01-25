@@ -1,0 +1,36 @@
+float linearToSRgb(float in) {
+    if (in <= 0.0031308f) {
+        return in * 12.92f;
+    } else {
+        return (1.055f * pow(in, 1.0f / 2.4f)) - 0.055f;
+    }
+}
+
+__kernel void gammaCorrect_F32_U8(
+    __global const float *inputImage,
+    __global uchar *outputImage
+) {
+    // float gammaCoeff = 1.0 / 2.2;
+
+    size_t globalId = get_global_id(0);
+
+    float3 colorIn = vload3(globalId, inputImage);
+    // float3 colorOut = pow(colorIn, gammaCoeff);
+    float3 colorOut = (float3)(linearToSRgb(colorIn.x), linearToSRgb(colorIn.y), linearToSRgb(colorIn.z));
+    // vstore3(convert_uchar3(colorIn * 255), globalId, outputImage);
+    vstore3(convert_uchar3(colorOut * 255), globalId, outputImage);
+}
+
+__kernel void apply3DLut_F32_F32(
+    __read_only image3d_t lutImage,
+    sampler_t lutSampler,
+    __global const float *inputImage,
+    __global float *outputImage
+) {
+    size_t globalId = get_global_id(0);
+
+    float3 colorIn = vload3(globalId, inputImage);
+    float4 lutCoord = (float4)(colorIn, 0);
+    float4 lutValue = read_imagef(lutImage, lutSampler, lutCoord);
+    vstore3(lutValue.xyz, globalId, outputImage);
+}

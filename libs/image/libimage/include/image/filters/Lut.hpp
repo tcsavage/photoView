@@ -26,7 +26,7 @@ namespace image::filters {
             if (lattice.size == 0) {
                 return color;
             }
-            return interp.map(color);
+            return sRgbToLinear(interp.map(linearToSRgb(color)));
         }
     };
 

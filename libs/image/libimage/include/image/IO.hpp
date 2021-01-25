@@ -21,6 +21,7 @@ namespace image {
     template <class T>
     Expected<ImageBuf<T>, ImageIOError> readImageBufFromFile(const Path &path) {
         OIIO::ImageSpec spec;
+        spec.attribute("raw:ColorSpace", "linear");
         auto iin = OIIO::ImageInput::create(path.string());
         if (!iin) {
             return Unexpected(ImageIOError(path, OIIO::geterror()));
