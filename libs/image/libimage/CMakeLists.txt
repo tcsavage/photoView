@@ -23,7 +23,7 @@ add_library(libimage
     src/image/luts/Lattice3D.cpp
     src/image/luts/SimpleCube.cpp
     src/image/luts/TetrahedralInterpolator.cpp
-    src/image/memory/Buffer.cpp
+    src/image/memory/Allocator.cpp
     src/image/opencl/BufferDevice.cpp
     src/image/opencl/Context.cpp
     src/image/opencl/Manager.cpp

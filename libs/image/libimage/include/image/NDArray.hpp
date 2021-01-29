@@ -101,7 +101,7 @@ namespace image {
     struct NDArrayStorage {
         std::size_t size;
         std::shared_ptr<memory::Buffer> buffer;
-        void *bufferHostPtr { nullptr }; // This must be kept in-sync with buffer->hostPtr
+        void *bufferHostPtr { nullptr }; // This must be kept in-sync with buffer->data()
 
         template <class T>
         T *getPtr() { return static_cast<T*>(bufferHostPtr); }
@@ -113,7 +113,7 @@ namespace image {
             : size(detail::roundUpToMultiple(requestedSize, alignment))
             , buffer(std::make_shared<memory::Buffer>(size, alignment)) {
                 buffer->malloc();
-                bufferHostPtr = buffer->hostPtr;
+                bufferHostPtr = buffer->data();
                 std::cerr << "[NDArray] Created new storage - size 0x" << std::hex << size
                           << " (0x" << requestedSize << " requested) at ["
                           << bufferHostPtr << ", "
@@ -124,7 +124,7 @@ namespace image {
         explicit NDArrayStorage(std::shared_ptr<memory::Buffer> buffer)
             : size(buffer->size)
             , buffer(buffer)
-            , bufferHostPtr(buffer->hostPtr) {}
+            , bufferHostPtr(buffer->data()) {}
     };
 
     inline Shape shapeStride(const Shape& shape) {

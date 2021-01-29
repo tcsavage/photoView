@@ -3,52 +3,41 @@
 #include <cstddef>
 #include <memory>
 
+#include <image/memory/Allocator.hpp>
+
 namespace image::memory {
 
     struct Buffer;
 
-    struct AbstractAllocator {
-        virtual void malloc(Buffer &) noexcept = 0;
-        virtual void free(Buffer &) noexcept = 0;
-    };
-
-    using AllocatorRef = std::shared_ptr<AbstractAllocator>;
-
     struct AbstractDevice {
         std::size_t size;
 
-        virtual void malloc(Buffer &) noexcept  = 0;
-        virtual void free(Buffer &) noexcept  = 0;
-        virtual void sync(Buffer &) noexcept  = 0;
-        virtual void copyDeviceToHost(Buffer &) noexcept  = 0;
-        virtual void copyHostToDevice(Buffer &) noexcept  = 0;
+        virtual void malloc(Buffer &) noexcept = 0;
+        virtual void free(Buffer &) noexcept = 0;
+        virtual void sync(Buffer &) noexcept = 0;
+        virtual void copyDeviceToHost(Buffer &) noexcept = 0;
+        virtual void copyHostToDevice(Buffer &) noexcept = 0;
 
         virtual ~AbstractDevice() noexcept {}
     };
 
-    struct DefaultAllocator final : public AbstractAllocator {
-        void malloc(Buffer &buf) noexcept override;
-
-        void free(Buffer &buf) noexcept override;
-    };
-
-    inline AllocatorRef defaultAllocator = std::make_shared<DefaultAllocator>();
-
     struct Buffer {
-        void *hostPtr { nullptr };
+        Block hostBlock;
         std::size_t size { 0 };
         std::size_t alignment { 0 };
         std::shared_ptr<AbstractDevice> device;
         std::intptr_t deviceHandle { 0 };
         bool hostOwnsPtr { false };
-        std::shared_ptr<AbstractAllocator> allocator { defaultAllocator };
+        AbstractAllocator *allocator { &defaultAllocator };
+
+        constexpr void *data() noexcept { return hostBlock.ptr; }
 
         inline void malloc() noexcept {
-            allocator->malloc(*this);
+            hostBlock = allocator->alloc(size);
         }
 
         inline void free() noexcept {
-            allocator->free(*this);
+            allocator->free(hostBlock);
         }
 
         inline void setDevice(std::shared_ptr<AbstractDevice> dev) noexcept {
