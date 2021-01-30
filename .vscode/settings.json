@@ -83,6 +83,8 @@
         "stop_token": "cpp",
         "cfenv": "cpp",
         "typeindex": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "csetjmp": "cpp",
+        "rope": "cpp"
     }
 }
