@@ -2,12 +2,9 @@
 
 #include <image/CoreTypes.hpp>
 #include <image/Expected.hpp>
+#include <image/Filters.hpp>
 #include <image/ImageBuf.hpp>
-#include <image/ImageProcessor.hpp>
-#include <image/filters/Exposure.hpp>
-#include <image/filters/Lut.hpp>
-#include <image/luts/CubeFile.hpp>
-#include <image/luts/TetrahedralInterpolator.hpp>
+#include <image/Look.hpp>
 
 struct LutLoadFailure {
     image::Path path;
@@ -25,10 +22,15 @@ struct ImageExportFailure {
 };
 
 struct Processor {
-    image::ImageProcessor<
-        image::filters::Exposure<image::F32>,
-        image::filters::Lut<image::luts::TetrahedralInterpolator, image::F32>
-    > proc;
+    image::ImageBuf<image::F32> input;
+    image::ImageBuf<image::U8> output;
+    std::shared_ptr<image::Look> identityLook;
+    std::shared_ptr<image::Look> look;
+    image::Processor proc;
+
+    image::LutFilterSpec *lutFilter { nullptr };
+    image::ExposureFilterSpec *exposureFilter { nullptr };
+
     bool lutLoaded { false };
 
     void loadHald(std::size_t lutSize);

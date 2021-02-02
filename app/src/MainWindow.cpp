@@ -220,7 +220,7 @@ void MainWindow::lutOpened(const QString &pathStr) {
 }
 
 void MainWindow::updateImageView(bool) {
-    auto &img = processor.proc.output;
+    auto &img = processor.output;
     QSize size { static_cast<int>(img.width()), static_cast<int>(img.height()) };
     imageView->load(size, img.data());
 }

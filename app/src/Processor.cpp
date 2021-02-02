@@ -1,48 +1,26 @@
 #include "Processor.hpp"
 
 #include <algorithm>
-#include <execution>
-#include <fstream>
 #include <iostream>
-
-#include <OpenImageIO/imageio.h>
 
 #include <image/IO.hpp>
 #include <image/luts/Hald.hpp>
-
-namespace {
-    template <class T>
-    std::ostream &operator<<(std::ostream &output, const image::ColorRGB<T> &vec) {
-        output << "[";
-        for (int i = 0; i < 3; i++) {
-            if (i > 0) {
-                output << ", ";
-            }
-            output << vec[i];
-        }
-        return output << "]";
-    }
-}
+#include <image/opencl/Manager.hpp>
 
 void Processor::loadHald(std::size_t lutSize) {
-    proc.setInput(image::generateHald<image::F32, image::U8>(lutSize));
-    proc.process();
+    input = image::generateHald<image::F32, image::U8>(lutSize);
+    proc.process(input, output);
 }
 
 image::Expected<void, LutLoadFailure> Processor::loadLutFromFile(image::Path path) {
-    std::ifstream is;
-    is.open(path);
-    if (!is.is_open()) {
+    lutFilter->lut.setPath(path);
+    auto result = lutFilter->lut.load();
+    if (result.hasError()) {
         return image::Unexpected(LutLoadFailure(path, "file cound not be opened"));
     }
-    image::luts::CubeFile cubeFile;
-    is >> cubeFile;
-    auto &filter = proc.getFilter<image::filters::Lut<image::luts::TetrahedralInterpolator, image::F32>>();
-    filter.impl.setLattice(cubeFile.lattice());
-    filter.update();
+    lutFilter->update();
     proc.update();
-    lutLoaded = true;
-    proc.process();
+    proc.process(input, output);
     return image::success;
 }
 
@@ -51,13 +29,22 @@ image::Expected<void, ImageLoadFailure> Processor::loadImageFromFile(image::Path
     if (result.hasError()) {
         return image::Unexpected(ImageLoadFailure(path, result.error().reason));
     }
-    proc.setInput(*result);
-    proc.process();
+    input = *result;
+    output = image::ImageBuf<image::U8>(input.width(), input.height());
+
+    input.pixelArray.buffer().device = image::opencl::Manager::the()->bufferDevice;
+    input.pixelArray.buffer().deviceMalloc();
+    input.pixelArray.buffer().copyHostToDevice();
+
+    output.pixelArray.buffer().device = image::opencl::Manager::the()->bufferDevice;
+    output.pixelArray.buffer().deviceMalloc();
+
+    proc.process(input, output);
     return image::success;
 }
 
 image::Expected<void, ImageExportFailure> Processor::exportImageToFile(image::Path path) const {
-    auto result = image::writeImageBufToFile<image::U8>(path, proc.output);
+    auto result = image::writeImageBufToFile<image::U8>(path, output);
     if (result.hasError()) {
         return image::Unexpected(ImageExportFailure(path, result.error().reason));
     }
@@ -65,27 +52,31 @@ image::Expected<void, ImageExportFailure> Processor::exportImageToFile(image::Pa
 }
 
 void Processor::setProcessingEnabled(bool processingEnabled) {
-    proc.setProcessingEnabled(processingEnabled);
-    proc.syncLattice();
-    proc.process();
+    proc.look = processingEnabled ? look : identityLook;
+    proc.update();
+    proc.process(input, output);
 }
 
 void Processor::setLutStrengthFactor(image::F32 factor) {
-    auto &filter = proc.getFilter<image::filters::Lut<image::luts::TetrahedralInterpolator, image::F32>>();
-    filter.setStrength(factor);
-    filter.update();
+    lutFilter->strength = factor;
+    lutFilter->update();
     proc.update();
-    proc.process();
+    proc.process(input, output);
 }
 
 void Processor::setExposure(image::F32 exposure) {
-    auto &filter = proc.getFilter<image::filters::Exposure<image::F32>>();
-    filter.impl.setExposure(exposure);
-    filter.update();
+    exposureFilter->exposureEvs = exposure;
+    exposureFilter->update();
     proc.update();
-    proc.process();
+    proc.process(input, output);
 }
 
-Processor::Processor() noexcept {
+Processor::Processor() noexcept
+    : identityLook(std::make_shared<image::Look>())
+    , look(std::make_shared<image::Look>())
+    , proc(look) {
     proc.init();
+    lutFilter = look->addFilter(image::LutFilterSpec {}).as<image::LutFilterSpec>();
+    exposureFilter = look->addFilter(image::ExposureFilterSpec {}).as<image::ExposureFilterSpec>();
+    proc.update();
 }
