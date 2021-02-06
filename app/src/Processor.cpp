@@ -32,12 +32,12 @@ image::Expected<void, ImageLoadFailure> Processor::loadImageFromFile(image::Path
     input = *result;
     output = image::ImageBuf<image::U8>(input.width(), input.height());
 
-    input.pixelArray.buffer().device = image::opencl::Manager::the()->bufferDevice;
-    input.pixelArray.buffer().deviceMalloc();
-    input.pixelArray.buffer().copyHostToDevice();
+    input.pixelArray.buffer()->device = image::opencl::Manager::the()->bufferDevice;
+    input.pixelArray.buffer()->deviceMalloc();
+    input.pixelArray.buffer()->copyHostToDevice();
 
-    output.pixelArray.buffer().device = image::opencl::Manager::the()->bufferDevice;
-    output.pixelArray.buffer().deviceMalloc();
+    output.pixelArray.buffer()->device = image::opencl::Manager::the()->bufferDevice;
+    output.pixelArray.buffer()->deviceMalloc();
 
     proc.process(input, output);
     return image::success;

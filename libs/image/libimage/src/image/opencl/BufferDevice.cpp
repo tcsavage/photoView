@@ -42,7 +42,6 @@ namespace image::memory {
 
 
     void OpenCLImageDevice::malloc(Buffer &buf) noexcept {
-        std::cerr << "[OpenCLImageDevice] Creating image of size " << std::hex << imageSize << std::dec << "\n";
         cl_int ret;
         // TODO: Generalise format and desc
         cl_image_format format;
@@ -109,7 +108,7 @@ namespace image::memory {
     OpenCLImageDevice::OpenCLImageDevice(
         const opencl::ContextHandle &ctx,
         const opencl::CommandQueueHandle &queue,
-        const Shape &imageSize
+        const SmallVectorImpl<Size> &imageSize
     ) noexcept : ctx(ctx), queue(queue), imageSize(imageSize) {
         ctx.incRef();
         queue.incRef();

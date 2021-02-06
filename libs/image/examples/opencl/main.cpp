@@ -22,11 +22,11 @@ int main(int, const char*[]) {
     std::fill(std::begin(arr2), std::end(arr2), 0);
 
     // Set-up device.
-    arr1.buffer().device = image::opencl::Manager::the()->bufferDevice;
-    arr1.buffer().deviceMalloc();
-    arr1.buffer().copyHostToDevice();
-    arr2.buffer().device = image::opencl::Manager::the()->bufferDevice;
-    arr2.buffer().deviceMalloc();
+    arr1.buffer()->device = image::opencl::Manager::the()->bufferDevice;
+    arr1.buffer()->deviceMalloc();
+    arr1.buffer()->copyHostToDevice();
+    arr2.buffer()->device = image::opencl::Manager::the()->bufferDevice;
+    arr2.buffer()->deviceMalloc();
 
     // load kernel source.
     std::ifstream ifs;
@@ -60,7 +60,7 @@ int main(int, const char*[]) {
     maybeKernel->run(image::opencl::Manager::the()->queue.getHandle(), image::Shape { 256 });
 
     // Read data back and display.
-    arr2.buffer().copyDeviceToHost();
+    arr2.buffer()->copyDeviceToHost();
     std::cerr << "@55:  " << arr1.at(55)  << ", " << arr2.at(55)  << "\n";
     std::cerr << "@128: " << arr1.at(128) << ", " << arr2.at(128) << "\n";
 

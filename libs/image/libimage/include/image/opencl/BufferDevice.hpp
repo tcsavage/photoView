@@ -8,7 +8,7 @@
 #include <CL/cl.h>
 #endif
 
-#include <image/NDArray.hpp>
+#include <image/SmallVector.hpp>
 #include <image/memory/Buffer.hpp>
 #include <image/opencl/Context.hpp>
 #include <image/opencl/Handle.hpp>
@@ -37,7 +37,7 @@ namespace image::memory {
     struct OpenCLImageDevice final : public AbstractDevice {
         opencl::ContextHandle ctx;
         opencl::CommandQueueHandle queue;
-        Shape imageSize;
+        SmallVector<Size, 3> imageSize;
 
         void malloc(Buffer &buf) noexcept override;
 
@@ -52,7 +52,7 @@ namespace image::memory {
         explicit OpenCLImageDevice(
             const opencl::ContextHandle &ctx,
             const opencl::CommandQueueHandle &queue,
-            const Shape &imageSize
+            const SmallVectorImpl<Size> &imageSize
         ) noexcept;
     };
 

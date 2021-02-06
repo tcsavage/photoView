@@ -47,6 +47,10 @@ namespace image::opencl {
         return setArg(idx, memHandle);
     }
 
+    Expected<void, Error> Kernel::setArg(cl_uint idx, const memory::SharedBuffer& buf) noexcept {
+        return setArg(idx, *buf);
+    }
+
     Expected<void, Error> Kernel::setArg(cl_uint idx, const NDArrayBase& arr) noexcept {
         return setArg(idx, arr.buffer());
     }

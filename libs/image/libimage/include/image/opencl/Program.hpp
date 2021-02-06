@@ -41,6 +41,7 @@ namespace image::opencl {
         Expected<void, Error> setArg(cl_uint idx, const cl_mem& mem) noexcept;
         Expected<void, Error> setArg(cl_uint idx, const SamplerHandle& sampler) noexcept;
         Expected<void, Error> setArg(cl_uint idx, const memory::Buffer& buf) noexcept;
+        Expected<void, Error> setArg(cl_uint idx, const memory::SharedBuffer& buf) noexcept;
         Expected<void, Error> setArg(cl_uint idx, const NDArrayBase& arr) noexcept;
 
         template <class T, class... Ts>

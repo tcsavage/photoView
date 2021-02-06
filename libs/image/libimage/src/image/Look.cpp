@@ -73,11 +73,11 @@ namespace image {
             auto latticeImageDevice = std::make_shared<memory::OpenCLImageDevice>(
                 opencl::Manager::the()->context.getHandle(),
                 opencl::Manager::the()->queue.getHandle(),
-                imageShape
+                imageShape.dims()
             );
             latticeImage = NDArray<F32>(shape);
-            latticeImage.buffer().device = latticeImageDevice;
-            latticeImage.buffer().deviceMalloc();
+            latticeImage.buffer()->device = latticeImageDevice;
+            latticeImage.buffer()->deviceMalloc();
         }
         for (std::size_t b = 0 ; b < latticeSize ; ++b) {
             for (std::size_t g = 0 ; g < latticeSize ; ++g) {
@@ -90,7 +90,7 @@ namespace image {
                 }
             }
         }
-        latticeImage.buffer().copyHostToDevice();
+        latticeImage.buffer()->copyHostToDevice();
     }
 
     void Processor::process(ImageBuf<F32> &in, ImageBuf<U8> &out) noexcept {
@@ -105,7 +105,7 @@ namespace image {
             std::cerr << "Error running kernel: " << runResult.error() << "\n";
             std::terminate();
         }
-        out.pixelArray.buffer().copyDeviceToHost();
+        out.pixelArray.buffer()->copyDeviceToHost();
     }
 
 }

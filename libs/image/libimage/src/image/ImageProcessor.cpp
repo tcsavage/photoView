@@ -54,13 +54,13 @@ namespace image {
 
     void ImageProcessorBase::setInput(const ImageBuf<F32> &img) noexcept {
         input = ImageBuf<F32>(img.width(), img.height());
-        input.pixelArray.buffer().device = opencl::Manager::the()->bufferDevice;
-        input.pixelArray.buffer().deviceMalloc();
+        input.pixelArray.buffer()->device = opencl::Manager::the()->bufferDevice;
+        input.pixelArray.buffer()->deviceMalloc();
         std::copy(img.begin(), img.end(), input.begin());
-        input.pixelArray.buffer().copyHostToDevice();
+        input.pixelArray.buffer()->copyHostToDevice();
         output = ImageBuf<U8>(img.width(), img.height());
-        output.pixelArray.buffer().device = opencl::Manager::the()->bufferDevice;
-        output.pixelArray.buffer().deviceMalloc();
+        output.pixelArray.buffer()->device = opencl::Manager::the()->bufferDevice;
+        output.pixelArray.buffer()->deviceMalloc();
     }
 
     void ImageProcessorBase::syncLattice() noexcept {
@@ -71,11 +71,11 @@ namespace image {
             auto latticeImageDevice = std::make_shared<memory::OpenCLImageDevice>(
                 opencl::Manager::the()->context.getHandle(),
                 opencl::Manager::the()->queue.getHandle(),
-                imageShape
+                imageShape.dims()
             );
             latticeImage = NDArray<F32>(shape);
-            latticeImage.buffer().device = latticeImageDevice;
-            latticeImage.buffer().deviceMalloc();
+            latticeImage.buffer()->device = latticeImageDevice;
+            latticeImage.buffer()->deviceMalloc();
         }
         for (std::size_t b = 0 ; b < latticeSize ; ++b) {
             for (std::size_t g = 0 ; g < latticeSize ; ++g) {
@@ -88,7 +88,7 @@ namespace image {
                 }
             }
         }
-        latticeImage.buffer().copyHostToDevice();
+        latticeImage.buffer()->copyHostToDevice();
     }
 
     [[gnu::noinline, gnu::flatten]]
@@ -104,7 +104,7 @@ namespace image {
                 std::cerr << "Error running kernel: " << runResult.error() << "\n";
                 std::terminate();
             }
-            output.pixelArray.buffer().copyDeviceToHost();
+            output.pixelArray.buffer()->copyDeviceToHost();
         } else {
             std::transform(
                 std::execution::par_unseq,

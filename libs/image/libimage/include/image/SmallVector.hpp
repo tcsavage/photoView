@@ -404,6 +404,12 @@ namespace image {
             }
         }
 
+        SmallVector(const SmallVectorImpl<T> &rhs) : SmallVectorImpl<T>(N) {
+            if (!rhs.empty()) {
+                SmallVectorImpl<T>::operator=(rhs);
+            }
+        }
+
         SmallVector(SmallVectorImpl<T> &&rhs) : SmallVectorImpl<T>(N) {
             if (!rhs.empty()) {
                 SmallVectorImpl<T>::operator=(std::move(rhs));

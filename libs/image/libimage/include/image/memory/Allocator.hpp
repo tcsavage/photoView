@@ -17,60 +17,61 @@ namespace image::memory {
         return !(iptr % alignment);
     }
 
-    constexpr Size roundToAlignment(Size x, Size alignment) {
-        return (x + alignment) & ~alignment;
-    }
+    constexpr Size roundToAlignment(Size x, Size alignment) { return (x + alignment) & ~alignment; }
 
     template <class T>
     constexpr T *roundToAlignment(T *x, Size alignment) {
-        return reinterpret_cast<void*>((reinterpret_cast<Size>(x) + alignment) & ~alignment);
+        return reinterpret_cast<void *>((reinterpret_cast<Size>(x) + alignment) & ~alignment);
     }
 
     struct Block {
         void *ptr { nullptr };
         Size size { 0 };
 
-        constexpr explicit operator bool() const noexcept {
-            return ptr != nullptr;
-        }
+        constexpr explicit operator bool() const noexcept { return ptr != nullptr; }
     };
 
-    constexpr Block nullBlock { };
+    constexpr Block nullBlock {};
 
     template <Size BlockSize, Size Alignment = alignof(std::max_align_t)>
-    struct alignas(Alignment) BlockObj {
-        char arr_[BlockSize];
+    struct BlockObj {
+        alignas(Alignment) unsigned char arr_[BlockSize];
 
-        constexpr Block get() noexcept {
-            return Block { &arr_[0], BlockSize };
-        }
+        constexpr Block get() noexcept { return Block { &arr_[0], BlockSize }; }
     };
 
     template <class Alloc>
     concept Allocator = requires(Alloc alloc, Size size, Size alignment, Block block) {
-        { Alloc::goodSize(size) } noexcept -> std::same_as<Size>;
+        { Alloc::goodSize(size) }
+        noexcept->std::same_as<Size>;
         // { Alloc::alignment } noexcept -> std::same_as<Size>;
-        { alloc.alloc(size) } noexcept -> std::same_as<Block>;
-        { alloc.alignedAlloc(size, alignment) } noexcept -> std::same_as<Block>;
-        { alloc.free(block) } noexcept -> std::same_as<void>;
+        { alloc.alloc(size) }
+        noexcept->std::same_as<Block>;
+        { alloc.alignedAlloc(size, alignment) }
+        noexcept->std::same_as<Block>;
+        { alloc.free(block) }
+        noexcept->std::same_as<void>;
     };
 
     template <class Alloc>
-    concept OwningAllocator = Allocator<Alloc> && requires(Alloc alloc, Size size, Size alignment, Block block) {
-        { alloc.owns(block) } noexcept -> std::same_as<bool>;
+    concept OwningAllocator = Allocator<Alloc> &&requires(Alloc alloc, Size size, Size alignment, Block block) {
+        { alloc.owns(block) }
+        noexcept->std::same_as<bool>;
     };
 
     template <class Alloc>
-    concept ChunkingAllocator = OwningAllocator<Alloc> && requires(Alloc alloc, Size size, Size alignment, Block block) {
-        { alloc.allocAll() } noexcept -> std::same_as<Block>;
-        { alloc.freeAll() } noexcept -> std::same_as<void>;
+    concept ChunkingAllocator = OwningAllocator<Alloc> &&requires(Alloc alloc, Size size, Size alignment, Block block) {
+        { alloc.allocAll() }
+        noexcept->std::same_as<Block>;
+        { alloc.freeAll() }
+        noexcept->std::same_as<void>;
     };
 
     template <class T, Allocator Alloc, class... Args>
-    T *typedAlloc(Alloc &alloc, Args&& ... args) {
+    T *typedAlloc(Alloc &alloc, Args &&... args) {
         auto block = alloc.alloc(sizeof(T));
         void *ptr = new (block.ptr) T;
-        return reinterpret_cast<T*>(ptr);
+        return reinterpret_cast<T *>(ptr);
     }
 
     struct AbstractAllocator {
@@ -83,17 +84,13 @@ namespace image::memory {
 
     template <Allocator Alloc>
     struct AnyAllocator : public AbstractAllocator {
-        virtual Block alloc(Size size) noexcept override {
-            return alloc_.alloc(size);
-        };
+        virtual Block alloc(Size size) noexcept override { return alloc_.alloc(size); };
 
         virtual Block alignedAlloc(Size size, Size alignment) noexcept override {
             return alloc_.alignedAlloc(size, alignment);
         };
 
-        virtual void free(Block block) noexcept override {
-            alloc_.free(block);
-        };
+        virtual void free(Block block) noexcept override { alloc_.free(block); };
 
         constexpr AnyAllocator(Alloc &alloc) noexcept : alloc_(alloc) {}
         virtual ~AnyAllocator() {}
@@ -117,27 +114,26 @@ namespace image::memory {
         PtrVal top_;
 
         StackAllocator(Block block) noexcept
-            : block_(block)
-            , top_(reinterpret_cast<PtrVal>(roundToAlignment(block.ptr, Alignment))) {}
+          : block_(block)
+          , top_(reinterpret_cast<PtrVal>(roundToAlignment(block.ptr, Alignment))) {}
 
         constexpr static Size alignment = Alignment;
         constexpr static Size goodSize(Size size) noexcept { return roundToAlignment(size, alignment); }
 
         Block alloc(Size size) noexcept {
             auto size1 = roundToAlignment(size, alignment);
-            if (size1 > (reinterpret_cast<PtrVal>(block_.ptr) + block_.size) - top_) {
-                return nullBlock;
-            }
+            if (size1 > (reinterpret_cast<PtrVal>(block_.ptr) + block_.size) - top_) { return nullBlock; }
             Block result { reinterpret_cast<void *>(top_), size };
             top_ += size1;
             return result;
         }
 
-        Block alignedAlloc(Size size, Size alignment) noexcept { return nullBlock; }
+        Block alignedAlloc(Size size, Size alignment) noexcept { return alloc(roundToAlignment(size, alignment)); }
 
         void free(Block block) noexcept {
-            if (reinterpret_cast<PtrVal>(block.ptr) + roundToAlignment(block.size, alignment) == top_) {
-                top_ = reinterpret_cast<PtrVal>(block.ptr);
+            auto ptr = reinterpret_cast<PtrVal>(block.ptr);
+            if (ptr + static_cast<PtrVal>(roundToAlignment(block.size, alignment)) == top_) {
+                top_ = ptr;
             }
         }
 
@@ -159,18 +155,14 @@ namespace image::memory {
         Block alloc(Size size) noexcept {
             Block b = nullBlock;
             primary.alloc(size);
-            if (!b) {
-                fallback.alloc(size);
-            }
+            if (!b) { fallback.alloc(size); }
             return b;
         }
 
         Block alignedAlloc(Size size, Size alignment) noexcept {
             Block b = nullBlock;
             primary.alignedAlloc(size, alignment);
-            if (!b) {
-                fallback.alignedAlloc(size, alignment);
-            }
+            if (!b) { fallback.alignedAlloc(size, alignment); }
             return b;
         }
 
@@ -182,9 +174,7 @@ namespace image::memory {
             }
         }
 
-        bool owns(Block block) const noexcept {
-            return primary.owns(block) || fallback.owns(block);
-        }
+        bool owns(Block block) const noexcept { return primary.owns(block) || fallback.owns(block); }
     };
 
     namespace {
