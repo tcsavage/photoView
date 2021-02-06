@@ -8,6 +8,7 @@ in pkgs.stdenvNoCC.mkDerivation {
       pkgs.gdb
       pkgs.pkg-config
       pkgs.cmake
+      pkgs.clang-tools
       openimageio2
       pkgs.libraw
       pkgs.openexr
