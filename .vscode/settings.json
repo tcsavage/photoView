@@ -1,5 +1,5 @@
 {
-    "nixEnvSelector.nixShellConfig": "${workspaceRoot}/default.nix",
+    "nixEnvSelector.nixShellConfig": "${workspaceRoot}/shell.nix",
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "cmake.configureOnOpen": true,
     "files.associations": {
@@ -85,6 +85,7 @@
         "typeindex": "cpp",
         "valarray": "cpp",
         "csetjmp": "cpp",
-        "rope": "cpp"
+        "rope": "cpp",
+        "any": "cpp"
     }
 }
