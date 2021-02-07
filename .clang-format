@@ -1,5 +1,5 @@
 ---
-AccessModifierOffset: '0'
+AccessModifierOffset: '-4'
 AlignAfterOpenBracket: Align
 AlignConsecutiveMacros: 'true'
 AlignEscapedNewlines: Left
@@ -22,7 +22,7 @@ BreakBeforeBraces: Attach
 BreakBeforeTernaryOperators: 'true'
 BreakConstructorInitializers: BeforeComma
 BreakInheritanceList: BeforeComma
-ColumnLimit: '100'
+ColumnLimit: '120'
 CompactNamespaces: 'true'
 ConstructorInitializerAllOnOneLineOrOnePerLine: 'true'
 ConstructorInitializerIndentWidth: '2'

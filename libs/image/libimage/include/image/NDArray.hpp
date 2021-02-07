@@ -30,7 +30,7 @@ namespace image {
      * Is also used to represent an N-dimensional index into an NDArray.
      */
     class Shape {
-        public:
+    public:
         using size_type = memory::Size;
         using difference_type = std::ptrdiff_t;
         using value_type = size_type;
@@ -66,7 +66,7 @@ namespace image {
         Shape() noexcept : dims_() {}
         explicit Shape(std::initializer_list<size_type> dims) noexcept : dims_(dims) {}
 
-        private:
+    private:
         SmallVector<size_type, 4> dims_;
     };
 
@@ -132,7 +132,7 @@ namespace image {
      * Stores the shape of the array, as well as stride and type information.
      */
     class NDArrayBase : protected NDArrayStorage {
-        public:
+    public:
         using size_type = memory::Size;
         using difference_type = std::ptrdiff_t;
 
@@ -172,14 +172,14 @@ namespace image {
           , strides_(detail::shapeStride(shape_))
           , type_(type) {}
 
-        protected:
+    protected:
         NDArrayBase(TypeRef type, Shape shape, memory::SharedBuffer buffer) noexcept
           : NDArrayStorage(buffer)
           , shape_(shape)
           , strides_(detail::shapeStride(shape_))
           , type_(type) {}
 
-        private:
+    private:
         Shape shape_;
         Shape strides_;
         TypeRef type_;
@@ -192,7 +192,7 @@ namespace image {
     class NDArray : public NDArrayBase {
         // template <class U>
         // friend class NDArray;
-        public:
+    public:
         using value_type = T;
         using iterator = T *;
         using const_iterator = const T *;
