@@ -161,6 +161,8 @@ namespace image {
         memory::SharedBuffer buffer() noexcept { return NDArrayStorage::buffer; }
         const memory::SharedBuffer buffer() const noexcept { return NDArrayStorage::buffer; }
 
+        TypeRef type() const noexcept { return type_; }
+
         NDArrayBase(TypeRef type,
                     Shape shape,
                     size_type alignment = 0,
@@ -265,7 +267,7 @@ namespace image {
         explicit NDArray() noexcept : NDArray(Shape()) {}
         explicit NDArray(Shape shape, memory::SharedBuffer buffer) noexcept
           : NDArrayBase(RepresentType<T>::get(), shape, buffer) {
-            assert(shape.size() * type_->size() <= buffer.size);
+            assert(shape.size() * type()->size() <= buffer->size);
         }
     };
 
