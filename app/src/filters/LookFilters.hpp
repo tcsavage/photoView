@@ -25,6 +25,8 @@ public:
 
     void setLookFiltersModel(LookFiltersModel *model) noexcept;
 
+    void setupContextMenu() noexcept;
+
 signals:
     void lookEnabledChanged(bool isEnabled);
 

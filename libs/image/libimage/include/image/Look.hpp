@@ -16,6 +16,8 @@ namespace image {
         std::vector<FilterSpec> filterSpecs;
 
         FilterSpec &addFilter(FilterSpec &&filter) noexcept;
+
+        void removeFilters(int start, int numFilters) noexcept;
     };
 
     struct Processor {

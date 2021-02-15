@@ -15,8 +15,9 @@ void LookFiltersModel::setLook(std::shared_ptr<Look> look) noexcept {
 void LookFiltersModel::addFilter(FilterSpec &&filter) noexcept {
     if (!look_) { return; }
     beginInsertRows(QModelIndex(), 0, 1);
-    look_->filterSpecs.emplace_back(std::move(filter));
+    look_->addFilter(std::move(filter));
     endInsertRows();
+    emit lookUpdated();
 }
 
 FilterSpec &LookFiltersModel::filterAtIndex(const QModelIndex &idx) const noexcept {
@@ -51,6 +52,15 @@ QVariant LookFiltersModel::data(const QModelIndex &idx, int role) const {
     default:
         return QVariant();
     }
+}
+
+bool LookFiltersModel::removeRows(int row, int count, const QModelIndex &parent) {
+    assert(look_);
+    beginRemoveRows(parent, row, row + count);
+    look_->removeFilters(row, count);
+    endRemoveRows();
+    emit lookUpdated();
+    return true;
 }
 
 Qt::ItemFlags LookFiltersModel::flags(const QModelIndex &index) const {

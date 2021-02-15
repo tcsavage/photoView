@@ -55,6 +55,9 @@ LookFilters::LookFilters(QWidget *parent) noexcept : QWidget(parent) {
     listView->setItemDelegate(delegate);
     layout->addWidget(listView);
 
+    // Context menu.
+    setupContextMenu();
+
     // Set-up connections.
 
     connect(addFilterBtn, &QToolButton::triggered, this, [this](QAction *action) {
@@ -85,6 +88,19 @@ void LookFilters::setLookFiltersModel(LookFiltersModel *model) noexcept {
 
     connect(model_, &QAbstractItemModel::modelReset, this, &LookFilters::syncWidgetEnabled);
     syncWidgetEnabled();
+}
+
+void LookFilters::setupContextMenu() noexcept {
+    listView->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
+    connect(listView, &QWidget::customContextMenuRequested, this, [this](const QPoint &pos) {
+        auto idx = listView->indexAt(pos);
+        if (!idx.isValid()) { return; }
+        QMenu menu;
+        auto deleteAction = menu.addAction("&Delete");
+        auto selectedAction = menu.exec(listView->mapToGlobal(pos));
+        if (!selectedAction) { return; }
+        if (selectedAction == deleteAction) { model_->removeRow(idx.row()); }
+    });
 }
 
 void LookFilters::syncWidgetEnabled() noexcept { setEnabled(model_ && model_->look()); }

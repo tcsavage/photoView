@@ -13,6 +13,11 @@ namespace image {
 
     FilterSpec &Look::addFilter(FilterSpec &&filter) noexcept { return filterSpecs.emplace_back(std::move(filter)); }
 
+    void Look::removeFilters(int start, int numFilters) noexcept {
+        auto it = filterSpecs.begin() + start;
+        filterSpecs.erase(it, it + numFilters);
+    }
+
     void Processor::init() noexcept {
         {
             auto fs = cmrc::image::rc::get_filesystem();
