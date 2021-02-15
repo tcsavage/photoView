@@ -22,6 +22,13 @@ public:
      */
     void openImage(const QString &path) noexcept;
 
+    /**
+     * @brief Export the output buffer to a file.
+     * 
+     * @param path Where to save the image
+     */
+    void exportImage(const QString &path) noexcept;
+
     void ensureOutput() noexcept;
     void resetProcessor() noexcept;
     void process() noexcept;

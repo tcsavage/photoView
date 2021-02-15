@@ -57,6 +57,13 @@ void PhotoWindow::setupDialogs() {
     openImageDialog->setNameFilters({ "Images (*.nef *.jpg *.jpeg)", "All files (*)" });
     openImageDialog->setDirectory(QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
     connect(openImageDialog, &QFileDialog::fileSelected, compositionManager, &CompositionManager::openImage);
+
+    exportImageDialog = new QFileDialog(this, "Export image");
+    exportImageDialog->setAcceptMode(QFileDialog::AcceptMode::AcceptSave);
+    exportImageDialog->setFileMode(QFileDialog::FileMode::AnyFile);
+    exportImageDialog->setNameFilter("Images (*.jpg *.jpeg *.png)");
+    exportImageDialog->setDirectory(QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
+    connect(exportImageDialog, &QFileDialog::fileSelected, compositionManager, &CompositionManager::exportImage);
 }
 
 void PhotoWindow::setupActions() {
@@ -64,6 +71,11 @@ void PhotoWindow::setupActions() {
     openImageAction->setShortcuts(QKeySequence::Open);
     openImageAction->setIcon(style()->standardIcon(QStyle::StandardPixmap::SP_DialogOpenButton));
     connect(openImageAction, &QAction::triggered, this, [this] { openImageDialog->show(); });
+
+    exportImageAction = new QAction("&Export image", this);
+    exportImageAction->setShortcuts(QKeySequence::SaveAs);
+    exportImageAction->setIcon(style()->standardIcon(QStyle::StandardPixmap::SP_DialogSaveButton));
+    connect(exportImageAction, &QAction::triggered, this, [this] { exportImageDialog->show(); });
 
     quitAction = new QAction("&Quit", this);
     quitAction->setShortcuts(QKeySequence::Quit);
@@ -74,6 +86,7 @@ void PhotoWindow::setupMenus() {
     // File
     auto fileMenu = menuBar()->addMenu("&File");
     fileMenu->addAction(openImageAction);
+    fileMenu->addAction(exportImageAction);
     fileMenu->addAction(quitAction);
 
     // View
@@ -85,6 +98,7 @@ void PhotoWindow::setupToolBars() {
     {
         auto toolBar = this->addToolBar("Image");
         toolBar->addAction(openImageAction);
+        toolBar->addAction(exportImageAction);
     }
 }
 

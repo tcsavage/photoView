@@ -3,6 +3,7 @@
 #include <cassert>
 #include <iostream>
 
+#include <image/IO.hpp>
 #include <image/opencl/Manager.hpp>
 
 using namespace image;
@@ -49,6 +50,12 @@ void CompositionManager::openImage(const QString &qPath) noexcept {
 
     lookFiltersModel_->setLook(composition_->look);
     emit lookChanged();
+}
+
+void CompositionManager::exportImage(const QString &qPath) noexcept {
+    std::cerr << "[CompositionManager] Exporting image to: " << qPath.toStdString() << "\n";
+    Path path = qPath.toStdString();
+    writeImageBufToFile(path, output_);
 }
 
 void CompositionManager::ensureOutput() noexcept {

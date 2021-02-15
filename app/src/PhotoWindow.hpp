@@ -43,7 +43,9 @@ private:
     QMenu *viewMenu;
 
     QAction *openImageAction;
+    QAction *exportImageAction;
     QAction *quitAction;
 
     QFileDialog *openImageDialog;
+    QFileDialog *exportImageDialog;
 };
