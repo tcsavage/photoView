@@ -6,7 +6,7 @@
 
 #include <image/opencl/Manager.hpp>
 
-#include "MainWindow.hpp"
+#include "PhotoWindow.hpp"
 
 int main(int argc, char* argv[]) {
     // Initialise OpenCL.
@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
     QCoreApplication::setApplicationName("Photo View");
     QApplication app(argc, argv);
     app.setWindowIcon(QIcon(":/icons/appIcon"));
-    MainWindow wnd;
+    PhotoWindow wnd;
     if (argc > 1) {
         QString filename = argv[1];
         wnd.openImage(filename);
