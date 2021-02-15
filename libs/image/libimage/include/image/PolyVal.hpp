@@ -13,19 +13,21 @@ namespace image {
         template <class Implementation>
         requires std::derived_from<Implementation, Interface>
         constexpr PolyVal(Implementation &&impl)
-            : storage(std::forward<Implementation>(impl))
-            , getter([](std::any &stor) -> Interface& { return std::any_cast<Implementation&>(stor); }) {}
+          : storage(std::forward<Implementation>(impl))
+          , getter([](std::any &stor) -> Interface & { return std::any_cast<Implementation &>(stor); }) {}
 
         Interface *operator->() { return &getter(storage); }
 
+        Interface *ptr() noexcept { return &getter(storage); }
+
         template <class Implementation>
         Implementation *as() noexcept {
-            return static_cast<Implementation*>(&getter(storage));
+            return static_cast<Implementation *>(&getter(storage));
         }
 
     private:
         std::any storage;
-        Interface &(*getter)(std::any&);
+        Interface &(*getter)(std::any &);
     };
 
 }
