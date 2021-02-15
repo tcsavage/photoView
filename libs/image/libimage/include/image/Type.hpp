@@ -3,7 +3,6 @@
 #include <type_traits>
 
 #include <image/CoreTypes.hpp>
-#include <image/Exception.hpp>
 #include <image/TypeName.hpp>
 
 namespace image {
@@ -56,7 +55,7 @@ namespace image {
     class RepresentType {
     public:
         static TypeRef get() {
-            throw Exception("Cannot represent type");
+            std::terminate();
         }
     };
 

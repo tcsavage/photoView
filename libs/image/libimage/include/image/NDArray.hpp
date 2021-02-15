@@ -13,7 +13,6 @@
 #include <numeric>
 
 #include <image/CoreTypes.hpp>
-#include <image/Exception.hpp>
 #include <image/SmallVector.hpp>
 #include <image/Type.hpp>
 #include <image/memory/Buffer.hpp>
