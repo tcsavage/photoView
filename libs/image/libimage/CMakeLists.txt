@@ -16,9 +16,7 @@ cmrc_add_resource_library(
 # libimage
 add_library(libimage
     src/image/Composition.cpp
-    src/image/Exception.cpp
     src/image/Filters.cpp
-    src/image/ImageProcessor.cpp
     src/image/Look.cpp
     src/image/Resource.cpp
     src/image/Type.cpp
