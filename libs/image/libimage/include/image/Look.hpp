@@ -33,6 +33,7 @@ namespace image {
         void syncLattice() noexcept;
         void process(ImageBuf<F32> &in, ImageBuf<U8> &out) noexcept;
 
+        explicit Processor() noexcept : look(nullptr) {}
         explicit Processor(std::shared_ptr<Look> look) noexcept : look(look) {}
     };
 
