@@ -1,5 +1,6 @@
 #include <image/Look.hpp>
 
+#include <algorithm>
 #include <cassert>
 #include <iostream>
 
@@ -16,6 +17,12 @@ namespace image {
     void Look::removeFilters(int start, int numFilters) noexcept {
         auto it = filterSpecs.begin() + start;
         filterSpecs.erase(it, it + numFilters);
+    }
+
+    void Look::rotateFilters(int src, int count, int dest) noexcept {
+        auto srcIt = filterSpecs.begin() + src;
+        auto destIt = filterSpecs.begin() + dest;
+        std::rotate(srcIt, srcIt + count, destIt);
     }
 
     void Processor::init() noexcept {

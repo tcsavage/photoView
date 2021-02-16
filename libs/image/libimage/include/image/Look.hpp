@@ -18,6 +18,7 @@ namespace image {
         FilterSpec &addFilter(FilterSpec &&filter) noexcept;
 
         void removeFilters(int start, int numFilters) noexcept;
+        void rotateFilters(int src, int count, int dest) noexcept;
     };
 
     struct Processor {

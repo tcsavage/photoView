@@ -63,6 +63,20 @@ bool LookFiltersModel::removeRows(int row, int count, const QModelIndex &parent)
     return true;
 }
 
+bool LookFiltersModel::moveRows(const QModelIndex &srcParent,
+                                int srcRow,
+                                int count,
+                                const QModelIndex &destParent,
+                                int destRow) {
+    assert(srcParent == destParent);
+    assert(!srcParent.isValid());
+    beginMoveRows(srcParent, srcRow, srcRow + count, destParent, destRow);
+    look_->rotateFilters(srcRow, count, destRow);
+    endMoveRows();
+    emit lookUpdated();
+    return true;
+}
+
 Qt::ItemFlags LookFiltersModel::flags(const QModelIndex &index) const {
     if (!index.isValid() || !look_) { return Qt::NoItemFlags; }
 
