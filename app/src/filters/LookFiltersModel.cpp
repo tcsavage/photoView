@@ -49,8 +49,26 @@ QVariant LookFiltersModel::data(const QModelIndex &idx, int role) const {
     case Qt::DisplayRole:
     case Roles::NameRole:
         return QString::fromStdString(filterSpec->getMeta().name);
+    case Qt::CheckStateRole:
+        return filterSpec->isEnabled ? Qt::Checked : Qt::Unchecked;
     default:
         return QVariant();
+    }
+}
+
+bool LookFiltersModel::setData(const QModelIndex &idx, const QVariant &value, int role) {
+    (void)value;
+    if (!idx.isValid() || !look_) { return false; }
+
+    auto &filterSpec = filterAtIndex(idx);
+    (void)filterSpec;
+    switch (role) {
+    case Qt::CheckStateRole:
+        filterSpec->isEnabled = value.value<Qt::CheckState>() == Qt::Checked;
+        emit lookUpdated();
+        return true;
+    default:
+        return false;
     }
 }
 
@@ -80,7 +98,7 @@ bool LookFiltersModel::moveRows(const QModelIndex &srcParent,
 Qt::ItemFlags LookFiltersModel::flags(const QModelIndex &index) const {
     if (!index.isValid() || !look_) { return Qt::NoItemFlags; }
 
-    return Qt::ItemFlag::ItemIsEnabled;
+    return Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsUserCheckable;
 }
 
 QHash<int, QByteArray> LookFiltersModel::roleNames() const {

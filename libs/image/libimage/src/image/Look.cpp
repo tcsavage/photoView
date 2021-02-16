@@ -72,6 +72,7 @@ namespace image {
         lattice.loadIdentity();
         if (look) {
             for (auto &fs : look->filterSpecs) {
+                if (!fs->isEnabled) { continue; }
                 fs->apply(lattice);
             }
         }

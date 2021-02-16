@@ -27,6 +27,7 @@ public:
 
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     virtual QVariant data(const QModelIndex &idx, int role = Qt::DisplayRole) const override;
+    virtual bool setData(const QModelIndex &idx, const QVariant &value, int role = Qt::EditRole) override;
     virtual bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
     virtual bool
     moveRows(const QModelIndex &srcParent, int srcRow, int count, const QModelIndex &destParent, int destRow) override;

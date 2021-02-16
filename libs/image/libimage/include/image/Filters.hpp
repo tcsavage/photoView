@@ -15,6 +15,8 @@ namespace image {
     };
 
     struct AbstractFilterSpec {
+        bool isEnabled { true };
+        
         virtual const FilterMeta &getMeta() const noexcept = 0;
 
         virtual bool isSeparable() const noexcept { return false; }
