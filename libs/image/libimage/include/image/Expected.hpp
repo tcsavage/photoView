@@ -83,6 +83,7 @@ namespace image {
 
         constexpr Expected() noexcept { new (&value_) T(); }
         constexpr Expected(const T& rhs) noexcept { new (&value_) T(rhs); }
+        constexpr Expected(T&& rhs) noexcept { new (&value_) T(std::move(rhs)); }
         constexpr Expected(const Unexpected<E>& rhs) noexcept : isValue_(false) { new (&error_) E(rhs.value()); }
         template <class U = T>
         constexpr explicit Expected(U&& rhs) noexcept { new (&value_) T(std::forward<U>(rhs)); }

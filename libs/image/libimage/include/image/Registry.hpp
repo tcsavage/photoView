@@ -7,7 +7,6 @@
 
 #include <image/CoreTypes.hpp>
 #include <image/Expected.hpp>
-#include <image/PolyVal.hpp>
 
 namespace image {
 
@@ -19,7 +18,7 @@ namespace image {
     class Registry {
     public:
         using Id = String;
-        using FactoryFn = std::function<PolyVal<Base>()>;
+        using FactoryFn = std::function<std::unique_ptr<Base>()>;
         using IdCollection = std::vector<Id>;
 
         constexpr Registry() = default;
@@ -32,12 +31,12 @@ namespace image {
 
         template <typename Sub, typename... Args>
         constexpr void registerType(Id id, Meta &&meta, Args &&... args) noexcept {
-            FactoryFn factory = [... args = std::forward<Args>(args)]() { return PolyVal<Base> { Sub { args... } }; };
+            FactoryFn factory = [... args = std::forward<Args>(args)]() { return std::make_unique<Sub>(args...); };
             _factories[id] = std::move(factory);
             _metas[id] = std::move(meta);
         }
 
-        constexpr Expected<PolyVal<Base>, NotFoundInRegistry> create(Id id) noexcept {
+        constexpr Expected<std::unique_ptr<Base>, NotFoundInRegistry> create(Id id) noexcept {
             auto iter = _factories.find(id);
             if (iter != _factories.end()) { return iter->second(); }
 

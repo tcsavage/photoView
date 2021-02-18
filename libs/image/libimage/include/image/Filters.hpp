@@ -1,7 +1,10 @@
 #pragma once
 
+#include <optional>
+
 #include <image/Color.hpp>
 #include <image/CoreTypes.hpp>
+#include <image/Mask.hpp>
 #include <image/PolyVal.hpp>
 #include <image/Resource.hpp>
 #include <image/luts/Lattice3D.hpp>
@@ -15,6 +18,7 @@ namespace image {
     };
 
     struct AbstractFilterSpec {
+        std::optional<Mask> mask;
         bool isEnabled { true };
         
         virtual const FilterMeta &getMeta() const noexcept = 0;

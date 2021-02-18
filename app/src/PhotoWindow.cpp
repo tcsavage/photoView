@@ -103,15 +103,15 @@ void PhotoWindow::setupToolBars() {
 }
 
 void PhotoWindow::setupDockWidgets() {
-    auto dock = new QDockWidget(tr("Look"), this);
+    auto dock = new QDockWidget(tr("Composition"), this);
     dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    lookFilters = new LookFilters();
-    lookFilters->setLookFiltersModel(compositionManager->lookFiltersModel());
-    dock->setWidget(lookFilters);
+    compositionOutline = new CompositionOutline();
+    compositionOutline->setCompositionModel(compositionManager->compositionModel());
+    dock->setWidget(compositionOutline);
     addDockWidget(Qt::RightDockWidgetArea, dock);
     viewMenu->addAction(dock->toggleViewAction());
 
-    connect(lookFilters, &LookFilters::lookEnabledChanged, compositionManager, &CompositionManager::setLookEnabled);
+    connect(compositionOutline, &CompositionOutline::filtersEnabledChanged, compositionManager, &CompositionManager::setFiltersEnabled);
 }
 
 void PhotoWindow::setupProcessor() {

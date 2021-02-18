@@ -6,9 +6,9 @@
 
 #include <image/Composition.hpp>
 #include <image/ImageBuf.hpp>
-#include <image/Look.hpp>
+#include <image/Processor.hpp>
 
-#include "filters/LookFiltersModel.hpp"
+#include "CompositionModel.hpp"
 
 class CompositionManager final : public QObject {
     Q_OBJECT
@@ -36,9 +36,9 @@ public:
     inline std::shared_ptr<image::Composition> composition() noexcept { return composition_; }
     inline std::shared_ptr<image::Processor> processor() noexcept { return processor_; }
     inline image::ImageBuf<image::U8> &output() noexcept { return output_; }
-    inline LookFiltersModel *lookFiltersModel() noexcept { return lookFiltersModel_; }
+    inline CompositionModel *compositionModel() noexcept { return compositionModel_; }
 
-    void setLookEnabled(bool isEnabled) noexcept;
+    void setFiltersEnabled(bool isEnabled) noexcept;
 
 signals:
     /**
@@ -57,14 +57,13 @@ signals:
     void imageChanged();
 
     /**
-     * @brief Emitted whenever the look changes.
+     * @brief Emitted whenever the composition changes.
      */
-    void lookChanged();
+    void compositionChanged();
 
 private:
     std::shared_ptr<image::Composition> composition_;
     std::shared_ptr<image::Processor> processor_;
     image::ImageBuf<image::U8> output_;
-    LookFiltersModel *lookFiltersModel_ { nullptr };
-    bool isLookEnabled { true };
+    CompositionModel *compositionModel_ { nullptr };
 };

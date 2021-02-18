@@ -24,5 +24,6 @@ int main(int argc, char* argv[]) {
         wnd.openImage(filename);
     }
     wnd.show();
+
     return app.exec();
 }

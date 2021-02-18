@@ -4,7 +4,8 @@
 
 #include <image/CoreTypes.hpp>
 #include <image/Expected.hpp>
-#include <image/Look.hpp>
+#include <image/Filters.hpp>
+#include <image/Mask.hpp>
 #include <image/Resource.hpp>
 
 namespace image {
@@ -13,11 +14,29 @@ namespace image {
         Path path;
     };
 
+    struct Filters {
+        std::vector<std::unique_ptr<AbstractFilterSpec>> filterSpecs;
+
+        std::unique_ptr<AbstractFilterSpec> &addFilter(std::unique_ptr<AbstractFilterSpec> &&filter) noexcept;
+
+        void removeFilters(int start, int numFilters) noexcept;
+        void rotateFilters(int src, int count, int dest) noexcept;
+    };
+
+    struct Layer {
+        std::shared_ptr<Filters> filters;
+        std::shared_ptr<Mask> mask;
+
+        Layer() : filters(std::make_shared<Filters>()) {}
+    };
+
     struct Composition {
+        std::vector<std::shared_ptr<Layer>> layers;
         ImageResource inputImage;
-        std::shared_ptr<Look> look;
 
         static Expected<Composition, CompositionLoadError> newFromPath(const Path &path) noexcept;
     };
+
+    void dumpComp(Composition &comp);
 
 }

@@ -1,0 +1,110 @@
+#pragma once
+
+#include <memory>
+#include <vector>
+
+#include <image/Composition.hpp>
+#include <image/CoreTypes.hpp>
+#include <image/ImageBuf.hpp>
+#include <image/NDArray.hpp>
+#include <image/Pool.hpp>
+#include <image/luts/Lattice3D.hpp>
+#include <image/opencl/Program.hpp>
+
+namespace image {
+
+    /**
+     * @brief Helper class wrapping a 3D LUT.
+     * 
+     * This is currently required to use the lattice with an OpenCL sampler.
+     */
+    struct Lut {
+        luts::Lattice3D lattice { 32 };
+        NDArray<F32> latticeImage;
+
+        void sync() noexcept;
+        void reset() noexcept;
+
+        Lut() noexcept;
+    };
+
+    template <>
+    struct PoolTraits<Lut> {
+        static inline Lut construct() noexcept { return Lut {}; }
+        static inline void recycle(Lut &lut) noexcept { lut.reset(); }
+    };
+
+    /**
+     * @brief Represents the application of a LUT to an image with an optional mask.
+     * 
+     * Holds a reference to a LUT object from the pool.
+     */
+    struct Op {
+        PoolLease<Lut> lut;
+        std::shared_ptr<Mask> mask;
+
+        explicit Op(PoolLease<Lut> &&lut) : lut(std::move(lut)) {}
+    };
+
+    /**
+     * @brief Holds a sequence of operations to apply to an image.
+     */
+    struct OpSequence {
+        std::vector<Op> ops;
+    };
+
+    /**
+     * @brief Builds a sequence of operations to apply to an image from a number of Layers.
+     * 
+     * The generated OpSequence is only valid for the lifetime of the builder that made it.
+     */
+    struct OpSequenceBuilder {
+        Pool<Lut, 10> lutPool;
+        OpSequence seq;
+        Op currentOp;
+        bool currentIsNew { true };
+
+        void finaliseOp() noexcept;
+        void newOp() noexcept;
+        void accumulate(AbstractFilterSpec &filter) noexcept;
+        void accumulate(Layer &filter) noexcept;
+        void setMask(const std::shared_ptr<Mask> &mask) noexcept;
+
+        OpSequence build() noexcept;
+
+        OpSequenceBuilder() noexcept;
+    };
+
+    /**
+     * @brief Responsible for generating an output image from a Composition.
+     * 
+     * This class maintains a fair amount of state and must be explicitly initialized by calling init().
+     */
+    struct Processor {
+        // TODO: This class can probably be broken-up.
+
+        std::shared_ptr<Composition> composition;
+
+        opencl::Program oclProgram;
+        opencl::Kernel oclKernelApplyLut;
+        opencl::Kernel oclKernelApplyLutMasked;
+        opencl::Kernel oclKernelFinalize;
+        opencl::SamplerHandle oclSampler;
+
+        OpSequenceBuilder opSeqBuilder;
+        OpSequence opSeq;
+
+        std::unique_ptr<AbstractPool<ImageBuf<F32>>> intermediateImagePool;
+
+        bool areFiltersEnabled { true };
+
+        void init() noexcept;
+        void setComposition(std::shared_ptr<Composition> comp) noexcept;
+        void update() noexcept;
+        void process(ImageBuf<U8> &out) noexcept;
+
+        explicit Processor() noexcept : composition(nullptr) {}
+        explicit Processor(std::shared_ptr<Composition> composition) noexcept { setComposition(composition); }
+    };
+
+}

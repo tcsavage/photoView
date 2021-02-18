@@ -10,14 +10,15 @@ cmrc_add_resource_library(
     libimage-resources
     ALIAS image::rc
     NAMESPACE image::rc
-    kernels/apply3DLut_F32_U8.cl
+    kernels/kernels.cl
 )
 
 # libimage
 add_library(libimage
     src/image/Composition.cpp
     src/image/Filters.cpp
-    src/image/Look.cpp
+    src/image/Mask.cpp
+    src/image/Processor.cpp
     src/image/Resource.cpp
     src/image/Type.cpp
     src/image/luts/Barycentric.cpp
@@ -49,10 +50,10 @@ if(MSVC)
     target_compile_options(libimage PRIVATE /W4 /WX)
 else()
     target_compile_options(libimage PRIVATE -Wall -Wextra -pedantic -Werror -march=native)
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT IMAGE_DISABLE_ASAN)
-        target_compile_options(libimage PRIVATE -fsanitize=address)
-        target_link_libraries(libimage PRIVATE -fsanitize=address)
-    endif()
+    # if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT IMAGE_DISABLE_ASAN)
+    #     target_compile_options(libimage PRIVATE -fsanitize=address)
+    #     target_link_libraries(libimage PRIVATE -fsanitize=address)
+    # endif()
     if(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
         target_compile_options(libimage PRIVATE -fno-omit-frame-pointer)
     endif()

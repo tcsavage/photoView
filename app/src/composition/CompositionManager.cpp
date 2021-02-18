@@ -30,8 +30,8 @@ namespace {
 
 CompositionManager::CompositionManager(QObject *parent) noexcept
   : QObject(parent)
-  , lookFiltersModel_(new LookFiltersModel()) {
-    connect(lookFiltersModel_, &LookFiltersModel::lookUpdated, this, [this] { process(); });
+  , compositionModel_(new CompositionModel()) {
+    connect(compositionModel_, &CompositionModel::compositionUpdated, this, [this] { process(); });
 }
 
 void CompositionManager::openImage(const QString &qPath) noexcept {
@@ -48,8 +48,8 @@ void CompositionManager::openImage(const QString &qPath) noexcept {
     resetProcessor();
     process();
 
-    lookFiltersModel_->setLook(composition_->look);
-    emit lookChanged();
+    compositionModel_->setComposition(composition_);
+    emit compositionChanged();
 }
 
 void CompositionManager::exportImage(const QString &qPath) noexcept {
@@ -70,10 +70,10 @@ void CompositionManager::ensureOutput() noexcept {
 
 void CompositionManager::resetProcessor() noexcept {
     if (!processor_) {
-        processor_ = std::make_shared<Processor>(composition_ && isLookEnabled ? composition_->look : nullptr);
+        processor_ = std::make_shared<Processor>(composition_);
         processor_->init();
     } else {
-        processor_->look = composition_ && isLookEnabled ? composition_->look : nullptr;
+        processor_->composition = composition_;
     }
 }
 
@@ -81,15 +81,14 @@ void CompositionManager::process() noexcept {
     assert(composition_);
     assert(processor_);
     processor_->update();
-    processor_->process(*composition_->inputImage.data, output_);
+    processor_->process(output_);
     // TODO: Read back from OpenCL here? Currently process() handles that for us.
     emit imageChanged();
 }
 
-void CompositionManager::setLookEnabled(bool isEnabled) noexcept {
-    isLookEnabled = isEnabled;
+void CompositionManager::setFiltersEnabled(bool isEnabled) noexcept {
     if (composition_ && processor_) {
-        processor_->look = isEnabled ? composition_->look : nullptr;
+        processor_->areFiltersEnabled = isEnabled;
         process();
     }
 }

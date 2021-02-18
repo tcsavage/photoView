@@ -10,6 +10,7 @@
 #include <image/CoreTypes.hpp>
 #include <image/Expected.hpp>
 #include <image/ImageBuf.hpp>
+#include <image/Mask.hpp>
 
 namespace image {
 
@@ -47,6 +48,19 @@ namespace image {
             return Unexpected(ImageIOError(path, OIIO::geterror()));
         }
         if (!iout->write_image(OIIO::TypeDescFromC<T>::value(), imageBuf.data())) {
+            return Unexpected(ImageIOError(path, OIIO::geterror()));
+        }
+        iout->close();
+        return success;
+    }
+
+    inline Expected<void, ImageIOError> writeMaskToFile(const Path &path, const Mask &mask) {
+        auto iout = OIIO::ImageOutput::create(path.string());
+        OIIO::ImageSpec spec(mask.width(), mask.height(), 1, OIIO::TypeDescFromC<F32>::value());
+        if (!iout->open(path.string(), spec)) {
+            return Unexpected(ImageIOError(path, OIIO::geterror()));
+        }
+        if (!iout->write_image(OIIO::TypeDescFromC<F32>::value(), mask.data())) {
             return Unexpected(ImageIOError(path, OIIO::geterror()));
         }
         iout->close();

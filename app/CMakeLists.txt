@@ -7,17 +7,17 @@ find_package(Qt5Widgets CONFIG REQUIRED)
 set(photoView_sources
     resources.qrc
     src/main.cpp
-    src/CompositionManager.cpp
     src/HaldImageDialog.cpp
     src/ImageView.cpp
     src/OpenFileState.cpp
     src/PhotoWindow.cpp
     src/ProcessingIndicator.cpp
+    src/composition/CompositionManager.cpp
+    src/composition/CompositionModel.cpp
+    src/composition/CompositionOutline.cpp
     src/filters/FilterDialog.cpp
     src/filters/FilterManager.cpp
     src/filters/FilterWidget.cpp
-    src/filters/LookFilters.cpp
-    src/filters/LookFiltersModel.cpp
     src/widgets/FileChooser.cpp
 )
 
