@@ -23,6 +23,7 @@ in pkgs.stdenvNoCC.mkDerivation {
     alias clean="rm -rf build"
     alias config="cmake -Bbuild -S. -DCMAKE_BUILD_TYPE=RelWithDebInfo"
     alias configDebug="cmake -Bbuild -S. -DCMAKE_BUILD_TYPE=Debug"
+    alias configRelease="cmake -Bbuild -S. -DCMAKE_BUILD_TYPE=Release"
     alias build="cmake --build build"
   '';
 }
