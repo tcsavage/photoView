@@ -3,6 +3,7 @@
 #include <cassert>
 
 #include <image/IO.hpp>
+#include <image/Stopwatch.hpp>
 
 namespace image {
 
@@ -37,6 +38,7 @@ namespace image {
     };
 
     void LinearGradientMaskSpec::generate(Mask &mask) const noexcept {
+        STOPWATCH("Generating linear gradient mask");
         LinearGradientProjection proj { from, to };
         glm::vec2 size { static_cast<F32>(mask.width()), static_cast<F32>(mask.height()) };
         for (memory::Size y = 0; y < mask.height(); ++y) {

@@ -52,3 +52,12 @@ namespace image {
 #warning "NO_COPY_MOVE already defined. May result in unexpected behaviour"
 #endif
 #endif
+
+#define CONCAT_(x,y) x##y
+#define CONCAT(x,y) CONCAT_(x,y)
+/**
+ * @brief A macro for constructing nameless RAII types.
+ *
+ * Example usage: RAII(Stopwatch, "My stopwatch");
+ */
+#define RAII(t, ...) t CONCAT(raii_, __COUNTER__) { __VA_ARGS__ }

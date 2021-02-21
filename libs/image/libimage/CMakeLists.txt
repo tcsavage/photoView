@@ -20,6 +20,7 @@ add_library(libimage
     src/image/Mask.cpp
     src/image/Processor.cpp
     src/image/Resource.cpp
+    src/image/Stopwatch.cpp
     src/image/Type.cpp
     src/image/luts/Barycentric.cpp
     src/image/luts/CubeFile.cpp
