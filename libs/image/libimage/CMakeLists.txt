@@ -4,6 +4,9 @@ find_package(OpenImageIO REQUIRED)
 # OpenCL
 find_package(OpenCL REQUIRED)
 
+# OpenMP
+find_package(OpenMP)
+
 # resources
 include(../../../external/cmrc/CMakeRC)
 cmrc_add_resource_library(
@@ -45,6 +48,10 @@ target_link_libraries(libimage
     PRIVATE
     image::rc
 )
+
+if(OPENMP_FOUND)
+    target_link_libraries(libimage PUBLIC OpenMP::OpenMP_CXX)
+endif()
 
 target_compile_features(libimage PUBLIC cxx_std_20)
 if(MSVC)
