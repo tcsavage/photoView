@@ -21,7 +21,7 @@ namespace image {
             img.pixelArray.buffer()->deviceMalloc();
             return img;
         }
-        static inline void recycle(ImageBuf<T> &) noexcept { }
+        static inline void recycle(ImageBuf<T> &) noexcept {}
     };
 
     template <>
@@ -32,7 +32,7 @@ namespace image {
             mask.pixelArray.buffer()->deviceMalloc();
             return mask;
         }
-        static inline void recycle(Mask &) noexcept { }
+        static inline void recycle(Mask &) noexcept {}
     };
 
     void Lut::sync() noexcept {
@@ -51,27 +51,21 @@ namespace image {
         latticeImage.buffer()->copyHostToDevice();
     }
 
-    void Lut::reset() noexcept {
-        lattice.loadIdentity();
-    }
+    void Lut::reset() noexcept { lattice.loadIdentity(); }
 
     Lut::Lut() noexcept {
         lattice.loadIdentity();
         auto latticeSize = lattice.size;
         Shape shape { 4, latticeSize, latticeSize, latticeSize };
         Shape imageShape { latticeSize, latticeSize, latticeSize };
-        auto latticeImageDevice =
-            std::make_shared<memory::OpenCLImageDevice>(opencl::Manager::the()->context.getHandle(),
-                                                        opencl::Manager::the()->queue.getHandle(),
-                                                        imageShape.dims());
+        auto latticeImageDevice = std::make_shared<memory::OpenCLImageDevice>(
+            opencl::Manager::the()->context.getHandle(), opencl::Manager::the()->queue.getHandle(), imageShape.dims());
         latticeImage = NDArray<F32>(shape);
         latticeImage.buffer()->device = latticeImageDevice;
         latticeImage.buffer()->deviceMalloc();
     }
 
-    void OpSequenceBuilder::finaliseOp() noexcept {
-        currentOp.lut->sync();
-    }
+    void OpSequenceBuilder::finaliseOp() noexcept { currentOp.lut->sync(); }
 
     void OpSequenceBuilder::newOp() noexcept {
         // Optimisation: if the current op is new (i.e. effectively a no-op) any mask can be discarded and we can just
@@ -98,19 +92,13 @@ namespace image {
             // - or the layer has a mask (regardless of whether the current op has one or not)
             newOp();
         }
-        if (layer.mask) {
-            setMask(layer.mask);
-        }
+        if (layer.mask) { setMask(layer.mask); }
         for (auto &&filter : layer.filters->filterSpecs) {
-            if (filter->isEnabled) {
-                accumulate(*filter);
-            }
+            if (filter->isEnabled) { accumulate(*filter); }
         }
     }
 
-    void OpSequenceBuilder::setMask(const std::shared_ptr<AbstractMaskSpec> &mask) noexcept {
-        currentOp.mask = mask;
-    }
+    void OpSequenceBuilder::setMask(const std::shared_ptr<AbstractMaskSpec> &mask) noexcept { currentOp.mask = mask; }
 
     OpSequence OpSequenceBuilder::build() noexcept {
         if (currentIsNew) {
@@ -124,7 +112,9 @@ namespace image {
         return std::exchange(seq, OpSequence {});
     }
 
-    OpSequenceBuilder::OpSequenceBuilder(AbstractPool<Lut> &lutPool) noexcept : lutPool(lutPool), currentOp(lutPool.acquire()) {}
+    OpSequenceBuilder::OpSequenceBuilder(AbstractPool<Lut> &lutPool) noexcept
+      : lutPool(lutPool)
+      , currentOp(lutPool.acquire()) {}
 
     void Processor::init() noexcept {
         {
@@ -239,10 +229,11 @@ namespace image {
                 (*mask)->pixelArray.buffer()->copyHostToDevice();
                 // Set-up masking kernel to apply LUT.
                 kernel = &oclKernelApplyLutMasked;
-                auto saResult = kernel->setArgs(latticeImage, oclSampler, currentIn->pixelArray, (*mask)->pixelArray, out.pixelArray);
+                auto saResult = kernel->setArgs(
+                    latticeImage, oclSampler, currentIn->pixelArray, (*mask)->pixelArray, out.pixelArray);
                 if (saResult.hasError()) {
-                    std::cerr << "Error setting kernel args: " << saResult.error().error << " (arg #" << saResult.error().argIdx
-                            << ")\n";
+                    std::cerr << "Error setting kernel args: " << saResult.error().error << " (arg #"
+                              << saResult.error().argIdx << ")\n";
                     std::terminate();
                 }
             } else {
@@ -250,13 +241,14 @@ namespace image {
                 kernel = &oclKernelApplyLut;
                 auto saResult = kernel->setArgs(latticeImage, oclSampler, currentIn->pixelArray, out.pixelArray);
                 if (saResult.hasError()) {
-                    std::cerr << "Error setting kernel args: " << saResult.error().error << " (arg #" << saResult.error().argIdx
-                            << ")\n";
+                    std::cerr << "Error setting kernel args: " << saResult.error().error << " (arg #"
+                              << saResult.error().argIdx << ")\n";
                     std::terminate();
                 }
             }
             // Run the kernel.
-            auto runResult = kernel->run(opencl::Manager::the()->queue.getHandle(), Shape { out.width() * out.height() });
+            auto runResult =
+                kernel->run(opencl::Manager::the()->queue.getHandle(), Shape { out.width() * out.height() });
             if (runResult.hasError()) {
                 std::cerr << "Error running kernel: " << runResult.error() << "\n";
                 std::terminate();
@@ -271,10 +263,11 @@ namespace image {
         auto saResult = oclKernelFinalize.setArgs(currentIn->pixelArray, outFinal.pixelArray);
         if (saResult.hasError()) {
             std::cerr << "Error setting kernel args: " << saResult.error().error << " (arg #" << saResult.error().argIdx
-                    << ")\n";
+                      << ")\n";
             std::terminate();
         }
-        auto runResult = oclKernelFinalize.run(opencl::Manager::the()->queue.getHandle(), Shape { outFinal.width() * outFinal.height() });
+        auto runResult = oclKernelFinalize.run(opencl::Manager::the()->queue.getHandle(),
+                                               Shape { outFinal.width() * outFinal.height() });
         if (runResult.hasError()) {
             std::cerr << "Error running kernel: " << runResult.error() << "\n";
             std::terminate();

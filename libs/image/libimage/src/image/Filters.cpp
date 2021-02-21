@@ -4,21 +4,17 @@ namespace image {
 
     template <class T>
     constexpr T evToScale(T evs) {
-       return std::exp2(evs);
+        return std::exp2(evs);
     }
 
-    void ExposureFilterSpec::update() noexcept {
-        exposureFactor = evToScale(exposureEvs);
-    }
+    void ExposureFilterSpec::update() noexcept { exposureFactor = evToScale(exposureEvs); }
 
     void ExposureFilterSpec::apply(luts::Lattice3D &lattice) const noexcept {
         lattice.accumulate([this](ColorRGB<F32> &c) { return c * exposureFactor; });
     }
 
     void LutFilterSpec::update() noexcept {
-        if (!lut.data) {
-            lut.load();
-        }
+        if (!lut.data) { lut.load(); }
         interp.load(*lut.data);
     }
 

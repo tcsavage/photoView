@@ -4,7 +4,9 @@
 
 namespace image {
 
-    std::unique_ptr<AbstractFilterSpec> &Filters::addFilter(std::unique_ptr<AbstractFilterSpec> &&filter) noexcept { return filterSpecs.emplace_back(std::move(filter)); }
+    std::unique_ptr<AbstractFilterSpec> &Filters::addFilter(std::unique_ptr<AbstractFilterSpec> &&filter) noexcept {
+        return filterSpecs.emplace_back(std::move(filter));
+    }
 
     void Filters::removeFilters(int start, int numFilters) noexcept {
         auto it = filterSpecs.begin() + start;
@@ -25,12 +27,11 @@ namespace image {
             if (auto filters = layer->filters) {
                 std::cerr << "\t\tFilters\n";
                 for (auto &&filter : filters->filterSpecs) {
-                    std::cerr << "\t\t\tFilter: " << filter->getMeta().name << " (" << (filter->isEnabled ? "enabled" : "disabled") << ")\n";
+                    std::cerr << "\t\t\tFilter: " << filter->getMeta().name << " ("
+                              << (filter->isEnabled ? "enabled" : "disabled") << ")\n";
                 }
             }
-            if (auto mask = layer->mask) {
-                std::cerr << "\t\tMask\n";
-            }
+            if (auto mask = layer->mask) { std::cerr << "\t\tMask\n"; }
         }
         std::cerr << "========================\n";
     }

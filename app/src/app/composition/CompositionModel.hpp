@@ -14,7 +14,7 @@ namespace internal {
 
     enum class NodeType { Invalid, Composition, Layer, Filters, Mask, Filter };
 
-    std::ostream& operator<<(std::ostream& out, const NodeType value) noexcept;
+    std::ostream &operator<<(std::ostream &out, const NodeType value) noexcept;
     QDebug operator<<(QDebug out, NodeType value) noexcept;
 
     template <class T>
@@ -47,14 +47,16 @@ namespace internal {
 
     /**
      * @brief Maintains a tree structure of the composition.
-     * 
-     * This acts as an interface for CompositionModel to manipulate the composition. The reason is two-fold: a) it helps simplify
-     * the CompositionModel implementation, and b) it helps prevent the Qt-specific implementation from polluting libimage.
-     * 
-     * CompositionModel (and Qt code in general) should interact with this instead of image::Composition et.al. directly.
-     * 
+     *
+     * This acts as an interface for CompositionModel to manipulate the composition. The reason is two-fold: a) it helps
+     * simplify the CompositionModel implementation, and b) it helps prevent the Qt-specific implementation from
+     * polluting libimage.
+     *
+     * CompositionModel (and Qt code in general) should interact with this instead of image::Composition et.al.
+     * directly.
+     *
      * Any Node* values should be considered ephemeral and should not be stored. See also QModelIndex.
-     * 
+     *
      * NB: The tree structure makes certain assumptions:
      *   - The root of the tree is a Composition
      *   - The children directly under the root are Layers
@@ -72,18 +74,18 @@ namespace internal {
 
         /**
          * @brief Returns a reference to the data pointed to by this Node.
-         * 
+         *
          * @tparam T Must be the type of data this node points to
          */
         template <class T>
         T &get() noexcept {
             assert(type == NodeTraits<T>::type);
-            return *static_cast<T*>(ptr);
+            return *static_cast<T *>(ptr);
         }
 
         /**
          * @brief Add a child node for some data.
-         * 
+         *
          * @tparam T Must have a NodeTraits implementation
          * @param value A pointer to the data to reference
          * @return Node* A pointer to the newly created node
@@ -103,9 +105,7 @@ namespace internal {
          * @brief Returns child at idx or nullptr if out of range.
          */
         inline Node *child(int idx) noexcept {
-            if (idx >= static_cast<int>(children.size())) {
-                return nullptr;
-            }
+            if (idx >= static_cast<int>(children.size())) { return nullptr; }
             return children.at(idx);
         }
 

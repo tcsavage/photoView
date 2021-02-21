@@ -15,7 +15,7 @@ namespace image {
 
     /**
      * @brief Helper class wrapping a 3D LUT.
-     * 
+     *
      * This is currently required to use the lattice with an OpenCL sampler.
      */
     struct Lut {
@@ -36,7 +36,7 @@ namespace image {
 
     /**
      * @brief Represents the application of a LUT to an image with an optional mask.
-     * 
+     *
      * Holds a reference to a LUT object from the pool.
      */
     struct Op {
@@ -55,7 +55,7 @@ namespace image {
 
     /**
      * @brief Builds a sequence of operations to apply to an image from a number of Layers.
-     * 
+     *
      * The generated OpSequence is only valid for the lifetime of the builder that made it.
      */
     struct OpSequenceBuilder {
@@ -77,7 +77,7 @@ namespace image {
 
     /**
      * @brief Responsible for generating an output image from a Composition.
-     * 
+     *
      * This class maintains a fair amount of state and must be explicitly initialized by calling init().
      */
     struct Processor {

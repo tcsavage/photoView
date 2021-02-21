@@ -64,16 +64,14 @@ CompositionOutline::CompositionOutline(QWidget *parent) noexcept : QWidget(paren
     // Set-up connections.
 
     connect(newLayerAction, &QAction::triggered, this, [this]() {
-        if (model_) {
-            model_->addLayer();
-        }
+        if (model_) { model_->addLayer(); }
     });
 
     connect(addFilterBtn, &QToolButton::triggered, this, [this](QAction *action) {
         if (model_) {
             image::String id = action->data().toString().toStdString();
-            auto filterResult = filterRegistry.create(id); // TODO: Could this result in an error?
-            
+            auto filterResult = filterRegistry.create(id);  // TODO: Could this result in an error?
+
             auto idx = treeView->currentIndex();
             model_->addFilter(idx, std::move(*filterResult));
         }
@@ -82,9 +80,7 @@ CompositionOutline::CompositionOutline(QWidget *parent) noexcept : QWidget(paren
     connect(treeView, &QAbstractItemView::doubleClicked, this, [this](const QModelIndex &idx) {
         if (model_) {
             // filterManagerAtIndex will return nullptr if idx doesn't point to a filter.
-            if (auto filterManager = model_->filterManagerAtIndex(idx)) {
-                filterManager->showDialog(this);
-            }
+            if (auto filterManager = model_->filterManagerAtIndex(idx)) { filterManager->showDialog(this); }
         }
     });
 
@@ -134,14 +130,10 @@ void CompositionOutline::setupContextMenu() noexcept {
             auto &layer = node->get<Layer>();
             auto addMaskAction = menu.addAction("Add &Mask");
             auto deleteAction = menu.addAction("&Delete");
-            if (layer.mask) {
-                addMaskAction->setEnabled(false);
-            }
+            if (layer.mask) { addMaskAction->setEnabled(false); }
             auto selectedAction = menu.exec(treeView->mapToGlobal(pos));
             if (!selectedAction) { return; }
-            if (selectedAction == addMaskAction) {
-                model_->addLayerMask(idx);
-            }
+            if (selectedAction == addMaskAction) { model_->addLayerMask(idx); }
             if (selectedAction == deleteAction) {
                 model_->removeRow(idx.row(), idx.parent());
                 // BUG: If we don't reset the current index, adding a new filter immediately after deleting one doesn't

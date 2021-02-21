@@ -36,7 +36,7 @@ namespace image {
 
     /**
      * @brief Carries a pointer to a pooled resource as well as a reference count.
-     * 
+     *
      * When all leases for a pooled resource are destroyed, it becomes available for re-use.
      */
     template <class T>
@@ -52,9 +52,7 @@ namespace image {
           : ptr(std::exchange(other.ptr, nullptr))
           , ctrl(std::exchange(other.ctrl, nullptr)) {}
 
-        PoolLease &operator=(const PoolLease &other) noexcept {
-            return *this = PoolLease(other);
-        }
+        PoolLease &operator=(const PoolLease &other) noexcept { return *this = PoolLease(other); }
 
         PoolLease &operator=(PoolLease &&other) noexcept {
             std::swap(ptr, other.ptr);
@@ -62,7 +60,9 @@ namespace image {
             return *this;
         }
 
-        ~PoolLease() noexcept { if (ctrl) { ctrl->release(); } }
+        ~PoolLease() noexcept {
+            if (ctrl) { ctrl->release(); }
+        }
 
     private:
         T *ptr { nullptr };
@@ -72,7 +72,7 @@ namespace image {
     template <class T>
     class PoolTraits {
         static T construct() noexcept { return T {}; }
-        static void recycle(T &) noexcept { }
+        static void recycle(T &) noexcept {}
     };
 
     template <class T>
@@ -85,9 +85,9 @@ namespace image {
 
     /**
      * @brief Maintains a pool of up-to N resources of type T.
-     * 
+     *
      * Resources are constructed lazily using PoolTraits<T>::construct, and recycled using PoolTraits<T>::recycle.
-     * 
+     *
      * Calling acquire() provides access to the first available resource through a PoolLease<T> object. An acquired
      * resource is returned to the pool to be re-used once all outstanding PoolLease<T> objects are destroyed.
      */
@@ -118,8 +118,8 @@ namespace image {
         /**
          * @brief Creates a new Pool. Any specified arguments will be forwarded to PoolTraits<T>::construct().
          */
-        template <class ... Args>
-        Pool(Args&&... args) noexcept
+        template <class... Args>
+        Pool(Args &&... args) noexcept
           : factory([... args = std::forward<Args>(args)] { return PoolTraits<T>::construct(args...); }) {}
 
         virtual ~Pool() noexcept {}

@@ -11,10 +11,15 @@ using namespace image;
 
 namespace internal {
 
-    std::ostream& operator<<(std::ostream& out, const NodeType value) noexcept {
-        const char* s = 0;
-    #define PROCESS_VAL(p) case(p): s = #p; break;
-        switch(value){
+    std::ostream &operator<<(std::ostream &out, const NodeType value) noexcept {
+        const char *s = 0;
+
+#define PROCESS_VAL(p) \
+    case (p):          \
+        s = #p;        \
+        break;
+
+        switch (value) {
             PROCESS_VAL(NodeType::Invalid);
             PROCESS_VAL(NodeType::Composition);
             PROCESS_VAL(NodeType::Layer);
@@ -22,14 +27,21 @@ namespace internal {
             PROCESS_VAL(NodeType::Mask);
             PROCESS_VAL(NodeType::Filter);
         }
-    #undef PROCESS_VAL
+
+#undef PROCESS_VAL
+
         return out << s;
     }
 
     QDebug operator<<(QDebug out, NodeType value) noexcept {
         QString s;
-    #define PROCESS_VAL(p) case(p): s = #p; break;
-        switch(value){
+
+#define PROCESS_VAL(p) \
+    case (p):          \
+        s = #p;        \
+        break;
+
+        switch (value) {
             PROCESS_VAL(NodeType::Invalid);
             PROCESS_VAL(NodeType::Composition);
             PROCESS_VAL(NodeType::Layer);
@@ -37,7 +49,9 @@ namespace internal {
             PROCESS_VAL(NodeType::Mask);
             PROCESS_VAL(NodeType::Filter);
         }
-    #undef PROCESS_VAL
+
+#undef PROCESS_VAL
+
         return out << s;
     }
 
@@ -89,7 +103,7 @@ namespace internal {
         assert(type == NodeType::Layer);
         auto &layer = get<Layer>();
         assert(layer.mask);
-        children.pop_back(); // Mask should be last child.
+        children.pop_back();  // Mask should be last child.
         layer.mask = nullptr;
     }
 
@@ -153,7 +167,7 @@ void CompositionModel::addLayerMask(const QModelIndex &idx) noexcept {
     // This should only ever be called on an index pointing to a layer.
     assert(node->type == NodeType::Layer);
     assert(!node->get<Layer>().mask);
-    beginInsertRows(idx, 1, 1); // Mask should always live at row 1 under a Layer.
+    beginInsertRows(idx, 1, 1);  // Mask should always live at row 1 under a Layer.
     node->addMask();
     endInsertRows();
     emit compositionUpdated();
@@ -161,7 +175,7 @@ void CompositionModel::addLayerMask(const QModelIndex &idx) noexcept {
 
 Node *CompositionModel::nodeAtIndex(const QModelIndex &idx) const noexcept {
     if (idx.isValid()) {
-        return static_cast<Node*>(idx.internalPointer());
+        return static_cast<Node *>(idx.internalPointer());
     } else {
         return root_.get();
     }
@@ -182,11 +196,9 @@ FilterManager *CompositionModel::filterManagerAtIndex(const QModelIndex &idx) no
 }
 
 QModelIndex CompositionModel::index(int row, int column, const QModelIndex &parent) const {
-    if (!composition_ || !root_) {
-        return QModelIndex();
-    }
-    Node* childNode = nullptr;
-    Node* parentNode = nodeAtIndex(parent);
+    if (!composition_ || !root_) { return QModelIndex(); }
+    Node *childNode = nullptr;
+    Node *parentNode = nodeAtIndex(parent);
     if (parentNode) {
         childNode = parentNode->child(row);
     } else {
@@ -203,21 +215,17 @@ namespace {
 }
 
 QModelIndex CompositionModel::parent(const QModelIndex &child) const {
-    Node* node = nodeAtIndex(child);
-    if (!node) {
-        return QModelIndex();
-    }
+    Node *node = nodeAtIndex(child);
+    if (!node) { return QModelIndex(); }
     if (auto parent = node->parent) {
         std::size_t row;
         if (auto grandparent = parent->parent) {
             row = indexOf(grandparent->children, parent);
-        }
-        else {
+        } else {
             row = indexOf(root_->children, parent);
         }
         return createIndex(row, 0, parent);
-    }
-    else {
+    } else {
         return QModelIndex();
     }
 }
@@ -296,7 +304,7 @@ QVariant CompositionModel::data(const QModelIndex &idx, int role) const {
         }
     }
 
-    return QVariant(); // __builtin_unreachable()?
+    return QVariant();  // __builtin_unreachable()?
 }
 
 bool CompositionModel::setData(const QModelIndex &idx, const QVariant &value, int role) {
@@ -315,7 +323,7 @@ bool CompositionModel::setData(const QModelIndex &idx, const QVariant &value, in
             return false;
         }
     }
-    
+
     return true;
 }
 
@@ -337,7 +345,7 @@ bool CompositionModel::removeRows(int row, int count, const QModelIndex &parent)
         return true;
     }
     if (node->type == NodeType::Layer) {
-        assert(row == 1); // Only the mask is deleteable, and always at row 1.
+        assert(row == 1);  // Only the mask is deleteable, and always at row 1.
         assert(count == 1);
         beginRemoveRows(parent, 1, 1);
         node->removeMask();
