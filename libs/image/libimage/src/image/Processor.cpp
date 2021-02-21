@@ -6,6 +6,7 @@
 
 #include <cmrc/cmrc.hpp>
 
+#include <image/Mask.hpp>
 #include <image/opencl/Manager.hpp>
 
 CMRC_DECLARE(image::rc);
@@ -21,6 +22,17 @@ namespace image {
             return img;
         }
         static inline void recycle(ImageBuf<T> &) noexcept { }
+    };
+
+    template <>
+    struct PoolTraits<Mask> {
+        static inline Mask construct(memory::Size width, memory::Size height) noexcept {
+            auto mask = Mask { width, height };
+            mask.pixelArray.buffer()->device = opencl::Manager::the()->bufferDevice;
+            mask.pixelArray.buffer()->deviceMalloc();
+            return mask;
+        }
+        static inline void recycle(Mask &) noexcept { }
     };
 
     void Lut::sync() noexcept {
@@ -59,13 +71,6 @@ namespace image {
 
     void OpSequenceBuilder::finaliseOp() noexcept {
         currentOp.lut->sync();
-        if (currentOp.mask) {
-            if (!currentOp.mask->pixelArray.buffer()->device) {
-                currentOp.mask->pixelArray.buffer()->device = opencl::Manager::the()->bufferDevice;
-                currentOp.mask->pixelArray.buffer()->deviceMalloc();
-            }
-            currentOp.mask->pixelArray.buffer()->copyHostToDevice();
-        }
     }
 
     void OpSequenceBuilder::newOp() noexcept {
@@ -103,7 +108,7 @@ namespace image {
         }
     }
 
-    void OpSequenceBuilder::setMask(const std::shared_ptr<Mask> &mask) noexcept {
+    void OpSequenceBuilder::setMask(const std::shared_ptr<AbstractMaskSpec> &mask) noexcept {
         currentOp.mask = mask;
     }
 
@@ -119,7 +124,7 @@ namespace image {
         return std::exchange(seq, OpSequence {});
     }
 
-    OpSequenceBuilder::OpSequenceBuilder() noexcept : currentOp(lutPool.acquire()) {}
+    OpSequenceBuilder::OpSequenceBuilder(AbstractPool<Lut> &lutPool) noexcept : lutPool(lutPool), currentOp(lutPool.acquire()) {}
 
     void Processor::init() noexcept {
         {
@@ -189,6 +194,7 @@ namespace image {
             img.pixelArray.buffer()->copyHostToDevice();
         }
         intermediateImagePool = std::make_unique<Pool<ImageBuf<F32>, 3>>(img.width(), img.height());
+        maskPool = std::make_unique<Pool<Mask, 3>>(img.width(), img.height());
     }
 
     void Processor::update() noexcept {
@@ -224,11 +230,16 @@ namespace image {
             auto &latticeImage = op.lut->latticeImage;
             auto &out = **intermediateOut;
             opencl::Kernel *kernel;
+            std::optional<PoolLease<Mask>> mask;
 
             if (op.mask) {
+                // Generate the mask.
+                mask = maskPool->acquire();
+                op.mask->generate(**mask);
+                (*mask)->pixelArray.buffer()->copyHostToDevice();
                 // Set-up masking kernel to apply LUT.
                 kernel = &oclKernelApplyLutMasked;
-                auto saResult = kernel->setArgs(latticeImage, oclSampler, currentIn->pixelArray, op.mask->pixelArray, out.pixelArray);
+                auto saResult = kernel->setArgs(latticeImage, oclSampler, currentIn->pixelArray, (*mask)->pixelArray, out.pixelArray);
                 if (saResult.hasError()) {
                     std::cerr << "Error setting kernel args: " << saResult.error().error << " (arg #" << saResult.error().argIdx
                             << ")\n";

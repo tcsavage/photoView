@@ -41,7 +41,7 @@ namespace image {
      */
     struct Op {
         PoolLease<Lut> lut;
-        std::shared_ptr<Mask> mask;
+        std::shared_ptr<AbstractMaskSpec> mask;
 
         explicit Op(PoolLease<Lut> &&lut) : lut(std::move(lut)) {}
     };
@@ -59,7 +59,7 @@ namespace image {
      * The generated OpSequence is only valid for the lifetime of the builder that made it.
      */
     struct OpSequenceBuilder {
-        Pool<Lut, 10> lutPool;
+        AbstractPool<Lut> &lutPool;
         OpSequence seq;
         Op currentOp;
         bool currentIsNew { true };
@@ -68,11 +68,11 @@ namespace image {
         void newOp() noexcept;
         void accumulate(AbstractFilterSpec &filter) noexcept;
         void accumulate(Layer &filter) noexcept;
-        void setMask(const std::shared_ptr<Mask> &mask) noexcept;
+        void setMask(const std::shared_ptr<AbstractMaskSpec> &mask) noexcept;
 
         OpSequence build() noexcept;
 
-        OpSequenceBuilder() noexcept;
+        explicit OpSequenceBuilder(AbstractPool<Lut> &lutPool) noexcept;
     };
 
     /**
@@ -91,10 +91,12 @@ namespace image {
         opencl::Kernel oclKernelFinalize;
         opencl::SamplerHandle oclSampler;
 
+        Pool<Lut, 10> lutPool;
+        std::unique_ptr<AbstractPool<ImageBuf<F32>>> intermediateImagePool;
+        std::unique_ptr<AbstractPool<Mask>> maskPool;
+
         OpSequenceBuilder opSeqBuilder;
         OpSequence opSeq;
-
-        std::unique_ptr<AbstractPool<ImageBuf<F32>>> intermediateImagePool;
 
         bool areFiltersEnabled { true };
 
@@ -103,8 +105,7 @@ namespace image {
         void update() noexcept;
         void process(ImageBuf<U8> &out) noexcept;
 
-        explicit Processor() noexcept : composition(nullptr) {}
-        explicit Processor(std::shared_ptr<Composition> composition) noexcept { setComposition(composition); }
+        explicit Processor() noexcept : opSeqBuilder(lutPool) {}
     };
 
 }

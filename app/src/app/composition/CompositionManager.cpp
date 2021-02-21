@@ -70,11 +70,10 @@ void CompositionManager::ensureOutput() noexcept {
 
 void CompositionManager::resetProcessor() noexcept {
     if (!processor_) {
-        processor_ = std::make_shared<Processor>(composition_);
+        processor_ = std::make_shared<Processor>();
         processor_->init();
-    } else {
-        processor_->composition = composition_;
     }
+    processor_->setComposition(composition_);
 }
 
 void CompositionManager::process() noexcept {
