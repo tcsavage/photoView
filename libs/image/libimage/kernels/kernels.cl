@@ -25,7 +25,7 @@ __kernel void apply3DLut_masked_F32_F32(
     float3 colorIn = vload3(globalId, inputImage);
     float4 lutCoord = (float4)(colorIn, 0);
     float4 lutValue = read_imagef(lutImage, lutSampler, lutCoord);
-    float maskFactor = inputMask[globalId];
+    float maskFactor = pow(inputMask[globalId], 2.2f); // Gamma uncorrect mask.
     float3 colorOut = (lutValue.xyz * maskFactor) + (colorIn * (1 - maskFactor));
     vstore3(colorOut, globalId, outputImage);
 }
