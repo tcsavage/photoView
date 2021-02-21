@@ -1,4 +1,4 @@
-#include "FilterManager.hpp"
+#include <app/filters/FilterManager.hpp>
 
 void FilterManager::showDialog(QWidget *parent) noexcept {
     if (dialog == nullptr) {

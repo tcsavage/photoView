@@ -1,4 +1,4 @@
-#include "FilterDialog.hpp"
+#include <app/filters/FilterDialog.hpp>
 
 #include <cassert>
 

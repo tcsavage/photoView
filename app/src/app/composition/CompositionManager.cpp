@@ -1,4 +1,4 @@
-#include "CompositionManager.hpp"
+#include <app/composition/CompositionManager.hpp>
 
 #include <cassert>
 #include <iostream>

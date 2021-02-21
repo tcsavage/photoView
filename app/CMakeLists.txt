@@ -6,22 +6,24 @@ find_package(Qt5Widgets CONFIG REQUIRED)
 
 set(photoView_sources
     resources.qrc
-    src/main.cpp
-    src/HaldImageDialog.cpp
-    src/ImageView.cpp
-    src/OpenFileState.cpp
-    src/PhotoWindow.cpp
-    src/ProcessingIndicator.cpp
-    src/composition/CompositionManager.cpp
-    src/composition/CompositionModel.cpp
-    src/composition/CompositionOutline.cpp
-    src/filters/FilterDialog.cpp
-    src/filters/FilterManager.cpp
-    src/filters/FilterWidget.cpp
-    src/widgets/FileChooser.cpp
+    src/app/main.cpp
+    src/app/OpenFileState.cpp
+    src/app/PhotoWindow.cpp
+    src/app/composition/CompositionManager.cpp
+    src/app/composition/CompositionModel.cpp
+    src/app/composition/CompositionOutline.cpp
+    src/app/dialogs/HaldImageDialog.cpp
+    src/app/filters/FilterDialog.cpp
+    src/app/filters/FilterManager.cpp
+    src/app/filters/FilterWidget.cpp
+    src/app/widgets/FileChooser.cpp
+    src/app/widgets/ImageView.cpp
+    src/app/widgets/ProcessingIndicator.cpp
 )
 
 add_executable(photoView ${photoView_sources})
+
+target_include_directories(photoView PUBLIC src)
 
 target_link_libraries(
     photoView

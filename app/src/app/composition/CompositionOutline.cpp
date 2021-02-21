@@ -1,4 +1,4 @@
-#include "CompositionOutline.hpp"
+#include <app/composition/CompositionOutline.hpp>
 
 #include <cassert>
 
@@ -14,7 +14,7 @@
 
 #include <image/Filters.hpp>
 
-#include "../filters/Filters.hpp"
+#include <app/filters/Filters.hpp>
 
 using namespace image;
 

@@ -1,11 +1,11 @@
-#include "FilterWidget.hpp"
+#include <app/filters/FilterWidget.hpp>
 
 #include <QDebug>
 #include <QFormLayout>
 #include <QSlider>
 #include <QStandardPaths>
 
-#include "../widgets/FileChooser.hpp"
+#include <app/widgets/FileChooser.hpp>
 
 using namespace image;
 

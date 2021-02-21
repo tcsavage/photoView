@@ -1,4 +1,4 @@
-#include "FileChooser.hpp"
+#include <app/widgets/FileChooser.hpp>
 
 #include <QHBoxLayout>
 

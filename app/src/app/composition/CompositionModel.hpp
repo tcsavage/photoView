@@ -8,7 +8,7 @@
 
 #include <image/Composition.hpp>
 
-#include "../filters/FilterManager.hpp"
+#include <app/filters/FilterManager.hpp>
 
 namespace internal {
 

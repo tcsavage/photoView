@@ -1,4 +1,4 @@
-#include "ProcessingIndicator.hpp"
+#include <app/widgets/ProcessingIndicator.hpp>
 
 #include <QMargins>
 #include <QVBoxLayout>

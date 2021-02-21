@@ -4,7 +4,7 @@
 #include <QTreeView>
 #include <QWidget>
 
-#include "CompositionModel.hpp"
+#include <app/composition/CompositionModel.hpp>
 
 class CompositionOutline final : public QWidget {
     Q_OBJECT

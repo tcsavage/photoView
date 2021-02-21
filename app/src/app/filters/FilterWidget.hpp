@@ -2,7 +2,7 @@
 
 #include <QWidget>
 
-#include <image/Filters.hpp>
+#include <app/filters/Filters.hpp>
 
 class FilterWidget : public QWidget {
     Q_OBJECT

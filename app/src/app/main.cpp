@@ -6,7 +6,7 @@
 
 #include <image/opencl/Manager.hpp>
 
-#include "PhotoWindow.hpp"
+#include <app/PhotoWindow.hpp>
 
 int main(int argc, char* argv[]) {
     // Initialise OpenCL.

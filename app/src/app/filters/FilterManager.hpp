@@ -4,7 +4,7 @@
 
 #include <image/Filters.hpp>
 
-#include "FilterDialog.hpp"
+#include <app/filters/FilterDialog.hpp>
 
 class FilterManager : public QObject {
     Q_OBJECT

@@ -4,10 +4,10 @@
 #include <QMainWindow>
 #include <QThread>
 
-#include "ImageView.hpp"
-#include "ProcessingIndicator.hpp"
-#include "composition/CompositionManager.hpp"
-#include "composition/CompositionOutline.hpp"
+#include <app/composition/CompositionManager.hpp>
+#include <app/composition/CompositionOutline.hpp>
+#include <app/widgets/ImageView.hpp>
+#include <app/widgets/ProcessingIndicator.hpp>
 
 class PhotoWindow : public QMainWindow {
     Q_OBJECT

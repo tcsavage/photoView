@@ -1,4 +1,4 @@
-#include "PhotoWindow.hpp"
+#include <app/PhotoWindow.hpp>
 
 #include <QAction>
 #include <QApplication>

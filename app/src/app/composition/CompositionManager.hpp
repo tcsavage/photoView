@@ -8,7 +8,7 @@
 #include <image/ImageBuf.hpp>
 #include <image/Processor.hpp>
 
-#include "CompositionModel.hpp"
+#include <app/composition/CompositionModel.hpp>
 
 class CompositionManager final : public QObject {
     Q_OBJECT

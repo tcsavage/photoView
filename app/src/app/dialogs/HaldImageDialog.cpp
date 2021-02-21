@@ -1,4 +1,4 @@
-#include "HaldImageDialog.hpp"
+#include <app/dialogs/HaldImageDialog.hpp>
 
 #include <cmath>
 

@@ -1,4 +1,4 @@
-#include "ImageView.hpp"
+#include <app/widgets/ImageView.hpp>
 
 #include <QColor>
 #include <QDebug>
