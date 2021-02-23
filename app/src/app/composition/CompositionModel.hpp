@@ -36,7 +36,7 @@ namespace internal {
     };
 
     template <>
-    struct NodeTraits<image::AbstractMaskSpec> {
+    struct NodeTraits<image::GeneratedMask> {
         inline static const NodeType type = NodeType::Mask;
     };
 

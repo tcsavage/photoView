@@ -95,7 +95,10 @@ namespace internal {
     Node *Node::addMask() noexcept {
         assert(type == NodeType::Layer);
         auto &layer = get<Layer>();
-        layer.mask = std::make_shared<LinearGradientMaskSpec>(glm::vec2 { 0.5, 0.3 }, glm::vec2 { 0.5, 0.7 });
+        auto spec = std::make_shared<LinearGradientMaskSpec>(glm::vec2 { 0.5, 0.3 }, glm::vec2 { 0.5, 0.7 });
+        layer.mask = std::make_shared<GeneratedMask>(spec);
+        auto &comp = root->get<Composition>();
+        layer.mask->update(*comp.inputImage.data);
         return addChild(layer.mask.get());
     }
 

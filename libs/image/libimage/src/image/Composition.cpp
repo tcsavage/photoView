@@ -31,7 +31,7 @@ namespace image {
                               << (filter->isEnabled ? "enabled" : "disabled") << ")\n";
                 }
             }
-            if (auto mask = layer->mask) { std::cerr << "\t\tMask\n"; }
+            if (layer->mask) { std::cerr << "\t\tMask\n"; }
         }
         std::cerr << "========================\n";
     }

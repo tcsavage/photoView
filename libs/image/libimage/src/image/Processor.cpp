@@ -92,13 +92,13 @@ namespace image {
             // - or the layer has a mask (regardless of whether the current op has one or not)
             newOp();
         }
-        if (layer.mask) { setMask(layer.mask); }
+        if (layer.mask) { setMask(layer.mask->mask()); }
         for (auto &&filter : layer.filters->filterSpecs) {
             if (filter->isEnabled) { accumulate(*filter); }
         }
     }
 
-    void OpSequenceBuilder::setMask(const std::shared_ptr<AbstractMaskSpec> &mask) noexcept { currentOp.mask = mask; }
+    void OpSequenceBuilder::setMask(const std::shared_ptr<Mask> &mask) noexcept { currentOp.mask = mask; }
 
     OpSequence OpSequenceBuilder::build() noexcept {
         if (currentIsNew) {
@@ -184,7 +184,6 @@ namespace image {
             img.pixelArray.buffer()->copyHostToDevice();
         }
         intermediateImagePool = std::make_unique<Pool<ImageBuf<F32>, 3>>(img.width(), img.height());
-        maskPool = std::make_unique<Pool<Mask, 3>>(img.width(), img.height());
     }
 
     void Processor::update() noexcept {
@@ -220,17 +219,12 @@ namespace image {
             auto &latticeImage = op.lut->latticeImage;
             auto &out = **intermediateOut;
             opencl::Kernel *kernel;
-            std::optional<PoolLease<Mask>> mask;
 
             if (op.mask) {
-                // Generate the mask.
-                mask = maskPool->acquire();
-                op.mask->generate(**mask);
-                (*mask)->pixelArray.buffer()->copyHostToDevice();
                 // Set-up masking kernel to apply LUT.
                 kernel = &oclKernelApplyLutMasked;
                 auto saResult = kernel->setArgs(
-                    latticeImage, oclSampler, currentIn->pixelArray, (*mask)->pixelArray, out.pixelArray);
+                    latticeImage, oclSampler, currentIn->pixelArray, op.mask->pixelArray, out.pixelArray);
                 if (saResult.hasError()) {
                     std::cerr << "Error setting kernel args: " << saResult.error().error << " (arg #"
                               << saResult.error().argIdx << ")\n";

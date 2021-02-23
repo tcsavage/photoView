@@ -41,7 +41,7 @@ namespace image {
      */
     struct Op {
         PoolLease<Lut> lut;
-        std::shared_ptr<AbstractMaskSpec> mask;
+        std::shared_ptr<Mask> mask;
 
         explicit Op(PoolLease<Lut> &&lut) : lut(std::move(lut)) {}
     };
@@ -68,7 +68,7 @@ namespace image {
         void newOp() noexcept;
         void accumulate(AbstractFilterSpec &filter) noexcept;
         void accumulate(Layer &filter) noexcept;
-        void setMask(const std::shared_ptr<AbstractMaskSpec> &mask) noexcept;
+        void setMask(const std::shared_ptr<Mask> &mask) noexcept;
 
         OpSequence build() noexcept;
 
@@ -93,7 +93,6 @@ namespace image {
 
         Pool<Lut, 10> lutPool;
         std::unique_ptr<AbstractPool<ImageBuf<F32>>> intermediateImagePool;
-        std::unique_ptr<AbstractPool<Mask>> maskPool;
 
         OpSequenceBuilder opSeqBuilder;
         OpSequence opSeq;

@@ -25,7 +25,7 @@ namespace image {
 
     struct Layer {
         std::shared_ptr<Filters> filters;
-        std::shared_ptr<AbstractMaskSpec> mask;
+        std::shared_ptr<GeneratedMask> mask;
 
         Layer() : filters(std::make_shared<Filters>()) {}
     };

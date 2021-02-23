@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 
 #include <image/CoreTypes.hpp>
+#include <image/ImageBuf.hpp>
 #include <image/NDArray.hpp>
 
 namespace image {
@@ -19,13 +20,26 @@ namespace image {
         explicit Mask(memory::Size width, memory::Size height) noexcept : pixelArray(Shape { width, height }) {}
     };
 
+    struct AbstractMaskGenerator {
+        virtual void generate(const ImageBuf<F32> &img, Mask &mask) const noexcept = 0;
+
+        virtual ~AbstractMaskGenerator() noexcept {}
+    };
+
+    struct LumaMaskGenerator : public AbstractMaskGenerator {
+        virtual void generate(const ImageBuf<F32> &img, Mask &mask) const noexcept override;
+
+        virtual ~LumaMaskGenerator() noexcept {}
+    };
+
     /**
-     * @brief An interface for generating gradients.
+     * @brief An interface for generating gradient masks.
      *
      * Implementations of this interface define masks in an abstract way, and know how to create concrete masks of any
      * size.
      */
-    struct AbstractMaskSpec {
+    struct AbstractMaskSpec : public AbstractMaskGenerator {
+        virtual void generate(const ImageBuf<F32> &, Mask &mask) const noexcept override { generate(mask); }
         virtual void generate(Mask &mask) const noexcept = 0;
 
         virtual ~AbstractMaskSpec() noexcept {}
@@ -43,6 +57,24 @@ namespace image {
         constexpr LinearGradientMaskSpec(const glm::vec2 &from, const glm::vec2 &to) noexcept : from(from), to(to) {}
 
         virtual ~LinearGradientMaskSpec() noexcept {}
+    };
+
+    class GeneratedMask {
+    public:
+        inline std::shared_ptr<Mask> mask() const noexcept { return mask_; }
+
+        inline void setGenerator(std::shared_ptr<AbstractMaskGenerator> gen) noexcept { gen_ = gen; }
+
+        void update(const ImageBuf<F32> &img) const noexcept;
+
+        GeneratedMask(std::shared_ptr<AbstractMaskGenerator> gen) noexcept : gen_(gen) {}
+
+    protected:
+        void ensureMask(memory::Size width, memory::Size height) const noexcept;
+
+    private:
+        mutable std::shared_ptr<Mask> mask_;
+        std::shared_ptr<AbstractMaskGenerator> gen_;
     };
 
 }
