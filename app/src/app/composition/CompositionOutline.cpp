@@ -113,34 +113,15 @@ void CompositionOutline::setupContextMenu() noexcept {
         auto idx = treeView->indexAt(pos);
         auto node = model_->nodeAtIndex(idx);
         if (!idx.isValid()) { return; }
-        if (node->type == internal::NodeType::Filter || node->type == internal::NodeType::Mask) {
-            QMenu menu;
-            auto deleteAction = menu.addAction("&Delete");
-            auto selectedAction = menu.exec(treeView->mapToGlobal(pos));
-            if (!selectedAction) { return; }
-            if (selectedAction == deleteAction) {
-                model_->removeRow(idx.row(), idx.parent());
-                // BUG: If we don't reset the current index, adding a new filter immediately after deleting one doesn't
-                // update the view correctly.
-                treeView->setCurrentIndex(QModelIndex());
-            }
-        }
+        QMenu menu;
         if (node->type == internal::NodeType::Layer) {
-            QMenu menu;
-            auto &layer = node->get<Layer>();
-            auto addMaskAction = menu.addAction("Add &Mask");
-            auto deleteAction = menu.addAction("&Delete");
-            if (layer.mask) { addMaskAction->setEnabled(false); }
-            auto selectedAction = menu.exec(treeView->mapToGlobal(pos));
-            if (!selectedAction) { return; }
-            if (selectedAction == addMaskAction) { model_->addLayerMask(idx); }
-            if (selectedAction == deleteAction) {
-                model_->removeRow(idx.row(), idx.parent());
-                // BUG: If we don't reset the current index, adding a new filter immediately after deleting one doesn't
-                // update the view correctly.
-                treeView->setCurrentIndex(QModelIndex());
-            }
+            menu.addAction("Add &Mask", [&] { model_->addLayerMask(idx); });
         }
+        if (node->type == internal::NodeType::Filter || node->type == internal::NodeType::Mask ||
+            node->type == internal::NodeType::Layer) {
+            menu.addAction("&Delete", [&] { model_->removeRow(idx.row(), idx.parent()); });
+        }
+        menu.exec(treeView->mapToGlobal(pos));
     });
 }
 
