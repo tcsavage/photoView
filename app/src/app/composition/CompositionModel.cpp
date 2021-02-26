@@ -281,9 +281,11 @@ QVariant CompositionModel::data(const QModelIndex &idx, int role) const {
     }
 
     if (node->type == NodeType::Mask) {
+        auto &mask = node->get<GeneratedMask>();
+        auto gen = mask.generator();
         switch (role) {
         case Qt::DisplayRole:
-            return "Mask";
+            return gen ? QString::fromStdString(gen->getMeta().name) : "Mask";
         default:
             return QVariant();
         }

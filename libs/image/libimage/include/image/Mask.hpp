@@ -20,13 +20,23 @@ namespace image {
         explicit Mask(memory::Size width, memory::Size height) noexcept : pixelArray(Shape { width, height }) {}
     };
 
+    struct MaskGeneratorMeta {
+        String id;
+        String name;
+    };
+
     struct AbstractMaskGenerator {
+        virtual const MaskGeneratorMeta &getMeta() const noexcept = 0;
         virtual void generate(const ImageBuf<F32> &img, Mask &mask) const noexcept = 0;
 
         virtual ~AbstractMaskGenerator() noexcept {}
     };
 
     struct LumaMaskGenerator : public AbstractMaskGenerator {
+        static inline MaskGeneratorMeta meta { "maskGenerators.luma", "Luma Mask" };
+
+        virtual const MaskGeneratorMeta &getMeta() const noexcept override { return meta; }
+
         virtual void generate(const ImageBuf<F32> &img, Mask &mask) const noexcept override;
 
         virtual ~LumaMaskGenerator() noexcept {}
@@ -52,6 +62,10 @@ namespace image {
         glm::vec2 from;
         glm::vec2 to;
 
+        static inline MaskGeneratorMeta meta { "maskGenerators.linearGradient", "Linear Gradient Mask" };
+
+        virtual const MaskGeneratorMeta &getMeta() const noexcept override { return meta; }
+
         virtual void generate(Mask &mask) const noexcept override;
 
         constexpr LinearGradientMaskSpec(const glm::vec2 &from, const glm::vec2 &to) noexcept : from(from), to(to) {}
@@ -62,6 +76,8 @@ namespace image {
     class GeneratedMask {
     public:
         inline std::shared_ptr<Mask> mask() const noexcept { return mask_; }
+
+        inline std::shared_ptr<AbstractMaskGenerator> generator() const noexcept { return gen_; }
 
         inline void setGenerator(std::shared_ptr<AbstractMaskGenerator> gen) noexcept { gen_ = gen; }
 
