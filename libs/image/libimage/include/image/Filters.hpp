@@ -18,7 +18,6 @@ namespace image {
     };
 
     struct AbstractFilterSpec {
-        std::optional<Mask> mask;
         bool isEnabled { true };
 
         virtual const FilterMeta &getMeta() const noexcept = 0;
