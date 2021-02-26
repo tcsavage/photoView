@@ -115,7 +115,8 @@ void CompositionOutline::setupContextMenu() noexcept {
         if (!idx.isValid()) { return; }
         QMenu menu;
         if (node->type == internal::NodeType::Layer) {
-            menu.addAction("Add &Mask", [&] { model_->addLayerMask(idx); });
+            auto addMaskAction = menu.addAction("Add &Mask", [&] { model_->addLayerMask(idx); });
+            if (node->get<Layer>().mask) { addMaskAction->setEnabled(false); }
         }
         if (node->type == internal::NodeType::Filter || node->type == internal::NodeType::Mask ||
             node->type == internal::NodeType::Layer) {
