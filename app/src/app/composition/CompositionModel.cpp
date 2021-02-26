@@ -92,11 +92,10 @@ namespace internal {
         children.erase(it, it + count);
     }
 
-    Node *Node::addMask() noexcept {
+    Node *Node::addMask(std::unique_ptr<AbstractMaskGenerator> &&gen) noexcept {
         assert(type == NodeType::Layer);
         auto &layer = get<Layer>();
-        auto spec = std::make_shared<LinearGradientMaskSpec>(glm::vec2 { 0.5, 0.3 }, glm::vec2 { 0.5, 0.7 });
-        layer.mask = std::make_shared<GeneratedMask>(spec);
+        layer.mask = std::make_shared<GeneratedMask>(std::move(gen));
         auto &comp = root->get<Composition>();
         layer.mask->update(*comp.inputImage.data);
         return addChild(layer.mask.get());
@@ -164,14 +163,14 @@ void CompositionModel::addFilter(const QModelIndex &idx, std::unique_ptr<image::
     emit compositionUpdated();
 }
 
-void CompositionModel::addLayerMask(const QModelIndex &idx) noexcept {
+void CompositionModel::addLayerMask(const QModelIndex &idx, std::unique_ptr<AbstractMaskGenerator> &&gen) noexcept {
     if (!composition_ || !root_) { return; }
     auto node = nodeAtIndex(idx);
     // This should only ever be called on an index pointing to a layer.
     assert(node->type == NodeType::Layer);
     assert(!node->get<Layer>().mask);
     beginInsertRows(idx, 1, 1);  // Mask should always live at row 1 under a Layer.
-    node->addMask();
+    node->addMask(std::move(gen));
     endInsertRows();
     emit compositionUpdated();
 }

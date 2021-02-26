@@ -15,6 +15,7 @@
 #include <image/Filters.hpp>
 
 #include <app/filters/Filters.hpp>
+#include <app/masks/MaskGenerators.hpp>
 
 using namespace image;
 
@@ -115,8 +116,15 @@ void CompositionOutline::setupContextMenu() noexcept {
         if (!idx.isValid()) { return; }
         QMenu menu;
         if (node->type == internal::NodeType::Layer) {
-            auto addMaskAction = menu.addAction("Add &Mask", [&] { model_->addLayerMask(idx); });
-            if (node->get<Layer>().mask) { addMaskAction->setEnabled(false); }
+            auto addMaskGeneratorMenu = makeMaskGeneratorMenu();
+            addMaskGeneratorMenu->setTitle("Add &Mask");
+            menu.addMenu(addMaskGeneratorMenu);
+            if (node->get<Layer>().mask) { addMaskGeneratorMenu->setEnabled(false); }
+            connect(addMaskGeneratorMenu, &QMenu::triggered, this, [&](QAction *action) {
+                auto id = action->data().toString().toStdString();
+                auto maskGeneratorResult = maskGeneratorRegistry.create(id);  // TODO: Could this result in an error?
+                model_->addLayerMask(idx, std::move(*maskGeneratorResult));
+            });
         }
         if (node->type == internal::NodeType::Filter || node->type == internal::NodeType::Mask ||
             node->type == internal::NodeType::Layer) {

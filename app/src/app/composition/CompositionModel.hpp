@@ -115,7 +115,7 @@ namespace internal {
         Node *addFilter(std::unique_ptr<image::AbstractFilterSpec> &&filter) noexcept;
         void removeFilters(int startIdx, int count) noexcept;
 
-        Node *addMask() noexcept;
+        Node *addMask(std::unique_ptr<image::AbstractMaskGenerator> &&gen) noexcept;
         void removeMask() noexcept;
 
         Node() noexcept {}
@@ -140,7 +140,7 @@ public:
 
     void addLayer() noexcept;
     void addFilter(const QModelIndex &idx, std::unique_ptr<image::AbstractFilterSpec> &&filter) noexcept;
-    void addLayerMask(const QModelIndex &idx) noexcept;
+    void addLayerMask(const QModelIndex &idx, std::unique_ptr<image::AbstractMaskGenerator> &&gen) noexcept;
 
     internal::Node *nodeAtIndex(const QModelIndex &idx) const noexcept;
 
