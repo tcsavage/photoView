@@ -4,9 +4,9 @@
 #include <QMainWindow>
 #include <QThread>
 
+#include <app/canvas/Canvas.hpp>
 #include <app/composition/CompositionManager.hpp>
 #include <app/composition/CompositionOutline.hpp>
-#include <app/widgets/ImageView.hpp>
 #include <app/widgets/ProcessingIndicator.hpp>
 
 class PhotoWindow : public QMainWindow {
@@ -36,7 +36,8 @@ private:
     QThread processorThread;
     CompositionManager *compositionManager;
 
-    ImageView *imageView;
+    CanvasScene *canvasScene;
+    CanvasView *canvasView;
     ProcessingIndicator *processingIndicator;
     CompositionOutline *compositionOutline;
 

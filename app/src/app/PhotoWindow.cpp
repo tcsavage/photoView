@@ -34,19 +34,22 @@ PhotoWindow::~PhotoWindow() {
 }
 
 void PhotoWindow::clear() {
-    imageView->clear();
+    canvasScene->clearImage();
     setWindowTitle("Photo View");
 }
 
 void PhotoWindow::setupMainWidget() {
-    imageView = new ImageView();
-    setCentralWidget(imageView);
-    imageView->setLayout(new QVBoxLayout());
+    canvasView = new CanvasView(this);
+    canvasScene = new CanvasScene(this);
+    canvasView->setScene(canvasScene);
+    canvasView->fitInView(canvasScene->itemsBoundingRect(), Qt::AspectRatioMode::KeepAspectRatio);
+    setCentralWidget(canvasView);
 
     processingIndicator = new ProcessingIndicator();
-    imageView->layout()->addWidget(processingIndicator);
-    imageView->layout()->setAlignment(Qt::AlignCenter);
     processingIndicator->setVisible(false);
+    canvasView->setLayout(new QVBoxLayout());
+    canvasView->layout()->addWidget(processingIndicator);
+    canvasView->layout()->setAlignment(Qt::AlignCenter);
 }
 
 void PhotoWindow::setupDialogs() {
@@ -122,7 +125,7 @@ void PhotoWindow::setupProcessor() {
 
     // Connect to composition manager signals.
     connect(compositionManager, &CompositionManager::imageStartedLoading, this, [this](const QString &) {
-        processingIndicator->setVisible(true);
+        // processingIndicator->setVisible(true);
     });
     connect(compositionManager, &CompositionManager::imageLoaded, this, &PhotoWindow::imageOpened);
     connect(compositionManager, &CompositionManager::imageChanged, this, &PhotoWindow::updateImageView);
@@ -146,11 +149,11 @@ void PhotoWindow::failedToOpenImage(const QString &pathStr) {
     image::Path path = pathStr.toStdString();
     setWindowTitle(QString::fromStdString(path.filename()));
     processingIndicator->setVisible(false);
-    imageView->clear();
+    canvasScene->clearImage();
 }
 
 void PhotoWindow::updateImageView() {
     auto &img = compositionManager->output();
     QSize size { static_cast<int>(img.width()), static_cast<int>(img.height()) };
-    imageView->load(size, img.data());
+    canvasScene->setImage(size, img.data());
 }

@@ -9,6 +9,7 @@ set(photoView_sources
     src/app/main.cpp
     src/app/OpenFileState.cpp
     src/app/PhotoWindow.cpp
+    src/app/canvas/Canvas.cpp
     src/app/composition/CompositionManager.cpp
     src/app/composition/CompositionModel.cpp
     src/app/composition/CompositionOutline.cpp
@@ -17,7 +18,6 @@ set(photoView_sources
     src/app/filters/FilterManager.cpp
     src/app/filters/FilterWidget.cpp
     src/app/widgets/FileChooser.cpp
-    src/app/widgets/ImageView.cpp
     src/app/widgets/ProcessingIndicator.cpp
 )
 
