@@ -6,6 +6,20 @@
 
 #include <app/composition/CompositionModel.hpp>
 
+class CompositionTreeView : public QTreeView {
+    Q_OBJECT
+public:
+    explicit CompositionTreeView(QWidget *parent = nullptr) : QTreeView(parent) {}
+
+    virtual ~CompositionTreeView() {}
+
+signals:
+    void currentIndexChanged(const QModelIndex &current);
+
+protected slots:
+    virtual void currentChanged(const QModelIndex &current, const QModelIndex &previous) override;
+};
+
 class CompositionOutline final : public QWidget {
     Q_OBJECT
 public:
@@ -20,11 +34,13 @@ public:
 signals:
     void filtersEnabledChanged(bool isEnabled);
 
+    void activeMaskChanged(image::GeneratedMask *activeMask);
+
 private:
     void syncWidgetEnabled() noexcept;
 
     CompositionModel *model_ { nullptr };
-    QTreeView *treeView { nullptr };
+    CompositionTreeView *treeView { nullptr };
     QAction *addFilterAction { nullptr };
     QMenu *addFilterMenu { nullptr };
 };

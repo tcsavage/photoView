@@ -146,6 +146,9 @@ public:
 
     FilterManager *filterManagerAtIndex(const QModelIndex &idx) noexcept;
 
+    QModelIndex findClosestFiltersNode(const QModelIndex &idx) const noexcept;
+    QModelIndex findClosestLayerNode(const QModelIndex &idx) const noexcept;
+
     virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
     virtual QModelIndex parent(const QModelIndex &index) const override;
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -164,9 +167,6 @@ public:
 
 signals:
     void compositionUpdated();
-
-protected:
-    QModelIndex findClosestFiltersNode(const QModelIndex &idx) const noexcept;
 
 private:
     std::shared_ptr<image::Composition> composition_;

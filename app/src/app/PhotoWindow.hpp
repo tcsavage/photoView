@@ -7,6 +7,7 @@
 #include <app/canvas/Canvas.hpp>
 #include <app/composition/CompositionManager.hpp>
 #include <app/composition/CompositionOutline.hpp>
+#include <app/masks/MaskManager.hpp>
 #include <app/widgets/ProcessingIndicator.hpp>
 
 class PhotoWindow : public QMainWindow {
@@ -49,4 +50,6 @@ private:
 
     QFileDialog *openImageDialog;
     QFileDialog *exportImageDialog;
+
+    std::unique_ptr<MaskManager> activeMaskManager;
 };

@@ -17,6 +17,7 @@ set(photoView_sources
     src/app/filters/FilterDialog.cpp
     src/app/filters/FilterManager.cpp
     src/app/filters/FilterWidget.cpp
+    src/app/masks/MaskManager.cpp
     src/app/widgets/FileChooser.cpp
     src/app/widgets/ProcessingIndicator.cpp
 )

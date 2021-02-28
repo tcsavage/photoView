@@ -114,7 +114,24 @@ void PhotoWindow::setupDockWidgets() {
     addDockWidget(Qt::RightDockWidgetArea, dock);
     viewMenu->addAction(dock->toggleViewAction());
 
-    connect(compositionOutline, &CompositionOutline::filtersEnabledChanged, compositionManager, &CompositionManager::setFiltersEnabled);
+    connect(compositionOutline,
+            &CompositionOutline::filtersEnabledChanged,
+            compositionManager,
+            &CompositionManager::setFiltersEnabled);
+
+    connect(compositionOutline, &CompositionOutline::activeMaskChanged, this, [this](image::GeneratedMask *mask) {
+        if (mask) {
+            qDebug() << "Active mask changed. Creating manager";
+            activeMaskManager = std::make_unique<MaskManager>(mask, nullptr);
+            connect(activeMaskManager.get(), &MaskManager::maskUpdated, this, [this] {
+                activeMaskManager->mask()->update(*compositionManager->composition()->inputImage.data);
+                compositionManager->compositionModel()->compositionUpdated();
+            });
+            activeMaskManager->activateControl(canvasScene);
+        } else {
+            activeMaskManager = nullptr;
+        }
+    });
 }
 
 void PhotoWindow::setupProcessor() {

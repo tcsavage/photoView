@@ -197,6 +197,42 @@ FilterManager *CompositionModel::filterManagerAtIndex(const QModelIndex &idx) no
     }
 }
 
+QModelIndex CompositionModel::findClosestFiltersNode(const QModelIndex &idx) const noexcept {
+    auto node = nodeAtIndex(idx);
+    switch (node->type) {
+    case NodeType::Filters:
+        return idx;
+    case NodeType::Filter:
+        return idx.parent();
+    case NodeType::Mask:
+        return findClosestFiltersNode(idx.parent());
+    case NodeType::Layer:
+        // A layer only has one or two children. The first should always be a filters. (The second is an optional mask.)
+        return index(0, 0, idx);
+    default:
+        // This assumes the composition always has at least one layer.
+        return findClosestFiltersNode(index(0, 0));
+    }
+}
+
+QModelIndex CompositionModel::findClosestLayerNode(const QModelIndex &idx) const noexcept {
+    if (!idx.isValid()) { return QModelIndex(); }
+    auto node = nodeAtIndex(idx);
+    switch (node->type) {
+    case NodeType::Filters:
+        return idx.parent();
+    case NodeType::Filter:
+        return findClosestLayerNode(idx.parent());
+    case NodeType::Mask:
+        return idx.parent();
+    case NodeType::Layer:
+        return idx;
+    default:
+        // This assumes the composition always has at least one layer.
+        return index(0, 0);
+    }
+}
+
 QModelIndex CompositionModel::index(int row, int column, const QModelIndex &parent) const {
     if (!composition_ || !root_) { return QModelIndex(); }
     Node *childNode = nullptr;
@@ -383,21 +419,3 @@ CompositionModel::CompositionModel(const CompositionModel &other) noexcept
   : QAbstractItemModel(other.QObject::parent())
   , composition_(other.composition_)
   , root_(other.root_) {}
-
-QModelIndex CompositionModel::findClosestFiltersNode(const QModelIndex &idx) const noexcept {
-    auto node = nodeAtIndex(idx);
-    switch (node->type) {
-    case NodeType::Filters:
-        return idx;
-    case NodeType::Filter:
-        return idx.parent();
-    case NodeType::Mask:
-        return findClosestFiltersNode(idx.parent());
-    case NodeType::Layer:
-        // A layer only has one or two children. The first should always be a filters. (The second is an optional mask.)
-        return index(0, 0, idx);
-    default:
-        // This assumes the composition always has at least one layer.
-        return findClosestFiltersNode(index(0, 0));
-    }
-}

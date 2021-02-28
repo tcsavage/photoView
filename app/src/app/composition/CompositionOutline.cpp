@@ -19,6 +19,8 @@
 
 using namespace image;
 
+void CompositionTreeView::currentChanged(const QModelIndex &current, const QModelIndex &) { emit currentIndexChanged(current); }
+
 CompositionOutline::CompositionOutline(QWidget *parent) noexcept : QWidget(parent) {
     auto layout = new QVBoxLayout();
     setLayout(layout);
@@ -55,7 +57,7 @@ CompositionOutline::CompositionOutline(QWidget *parent) noexcept : QWidget(paren
     layout->addLayout(topLayout);
 
     // Set-up filter list.
-    treeView = new QTreeView();
+    treeView = new CompositionTreeView();
     treeView->setHeaderHidden(true);
     layout->addWidget(treeView);
 
@@ -82,6 +84,20 @@ CompositionOutline::CompositionOutline(QWidget *parent) noexcept : QWidget(paren
         if (model_) {
             // filterManagerAtIndex will return nullptr if idx doesn't point to a filter.
             if (auto filterManager = model_->filterManagerAtIndex(idx)) { filterManager->showDialog(this); }
+        }
+    });
+
+    connect(treeView, &CompositionTreeView::currentIndexChanged, this, [this](const QModelIndex &idx) {
+        if (model_) {
+            auto layerIdx = model_->findClosestLayerNode(idx);
+            if (!layerIdx.isValid()) { return; }
+            auto layerNode = model_->nodeAtIndex(layerIdx);
+            auto &layer = layerNode->get<Layer>();
+            if (layer.mask) {
+                emit activeMaskChanged(layer.mask.get());
+            } else {
+                emit activeMaskChanged(nullptr);
+            }
         }
     });
 
