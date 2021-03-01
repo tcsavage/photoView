@@ -4,7 +4,8 @@
 #include <QMainWindow>
 #include <QThread>
 
-#include <app/canvas/Canvas.hpp>
+#include <app/canvas/CanvasScene.hpp>
+#include <app/canvas/CanvasView.hpp>
 #include <app/composition/CompositionManager.hpp>
 #include <app/composition/CompositionOutline.hpp>
 #include <app/masks/MaskManager.hpp>

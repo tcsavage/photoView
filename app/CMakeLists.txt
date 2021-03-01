@@ -9,7 +9,10 @@ set(photoView_sources
     src/app/main.cpp
     src/app/OpenFileState.cpp
     src/app/PhotoWindow.cpp
-    src/app/canvas/Canvas.cpp
+    src/app/canvas/CanvasItems.cpp
+    src/app/canvas/CanvasScene.cpp
+    src/app/canvas/CanvasView.cpp
+    src/app/canvas/LinearGradientControl.cpp
     src/app/composition/CompositionManager.cpp
     src/app/composition/CompositionModel.cpp
     src/app/composition/CompositionOutline.cpp

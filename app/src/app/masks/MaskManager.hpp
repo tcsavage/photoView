@@ -6,7 +6,7 @@
 
 #include <image/Mask.hpp>
 
-#include <app/canvas/Canvas.hpp>
+#include <app/canvas/LinearGradientControl.hpp>
 
 class MaskManager : public QObject {
     Q_OBJECT
