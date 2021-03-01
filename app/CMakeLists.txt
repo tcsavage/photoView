@@ -9,6 +9,7 @@ set(photoView_sources
     src/app/main.cpp
     src/app/OpenFileState.cpp
     src/app/PhotoWindow.cpp
+    src/app/canvas/CanvasControl.cpp
     src/app/canvas/CanvasItems.cpp
     src/app/canvas/CanvasScene.cpp
     src/app/canvas/CanvasView.cpp

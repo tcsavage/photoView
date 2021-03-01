@@ -12,7 +12,7 @@ void MaskManager::activateControl(CanvasScene *scene) noexcept {
         auto gen = static_cast<LinearGradientMaskSpec *>(mask_->generator());
         ctrl_ = std::make_unique<LinearGradientControl>(
             scene, QPointF(gen->from.x, gen->from.y), QPointF(gen->to.x, gen->to.y), this);
-        connect(ctrl_.get(), &LinearGradientControl::changed, this, [this, gen] {
+        connect(ctrl_.get(), &CanvasControl::changed, this, [this, gen] {
             gen->from = glm::vec2 { ctrl_->start().x(), ctrl_->start().y() };
             gen->to = glm::vec2 { ctrl_->end().x(), ctrl_->end().y() };
             emit maskUpdated();

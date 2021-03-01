@@ -4,10 +4,9 @@ LinearGradientControl::LinearGradientControl(CanvasScene *scene,
                                              QPointF start,
                                              QPointF end,
                                              QObject *parent) noexcept
-  : QObject(parent)
+  : CanvasControl(scene, parent)
   , startPos(start)
   , endPos(end)
-  , scene(scene)
   , startHandle(projectToScene(start))
   , endHandle(projectToScene(end)) {
     scene->addItem(&startHandle);
@@ -37,8 +36,8 @@ LinearGradientControl::LinearGradientControl(CanvasScene *scene,
 }
 
 LinearGradientControl::~LinearGradientControl() {
-    scene->removeItem(&startHandle);
-    scene->removeItem(&endHandle);
+    scene()->removeItem(&startHandle);
+    scene()->removeItem(&endHandle);
 }
 
 namespace {
@@ -52,10 +51,10 @@ namespace {
 }
 
 QPointF LinearGradientControl::projectToScene(const QPointF &point) const noexcept {
-    return point * scene->sceneRect().size();
+    return point * scene()->sceneRect().size();
 }
 QPointF LinearGradientControl::projectFromScene(const QPointF &point) const noexcept {
-    return point / scene->sceneRect().size();
+    return point / scene()->sceneRect().size();
 }
 
 void LinearGradientControl::reSyncPositions() noexcept {
