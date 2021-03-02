@@ -6,7 +6,7 @@
 
 #include <image/Mask.hpp>
 
-#include <app/canvas/LinearGradientControl.hpp>
+#include <app/canvas/CanvasControl.hpp>
 
 class MaskManager : public QObject {
     Q_OBJECT
@@ -25,5 +25,5 @@ signals:
     
 private:
     image::GeneratedMask *mask_;
-    std::unique_ptr<LinearGradientControl> ctrl_;
+    std::unique_ptr<CanvasControl> ctrl_;
 };

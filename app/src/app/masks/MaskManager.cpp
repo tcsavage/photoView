@@ -2,21 +2,25 @@
 
 #include <QDebug>
 
+#include <app/canvas/LinearGradientControl.hpp>
+
 using namespace image;
 
 MaskManager::MaskManager(GeneratedMask *mask, QObject *parent) noexcept : QObject(parent), mask_(mask) {}
 
 void MaskManager::activateControl(CanvasScene *scene) noexcept {
     if (!mask_->generator()) { return; }
+
     if (mask_->generator()->getMeta().id == "maskGenerators.linearGradient") {
         auto gen = static_cast<LinearGradientMaskSpec *>(mask_->generator());
-        ctrl_ = std::make_unique<LinearGradientControl>(
+        auto ctrl = std::make_unique<LinearGradientControl>(
             scene, QPointF(gen->from.x, gen->from.y), QPointF(gen->to.x, gen->to.y), this);
-        connect(ctrl_.get(), &CanvasControl::changed, this, [this, gen] {
-            gen->from = glm::vec2 { ctrl_->start().x(), ctrl_->start().y() };
-            gen->to = glm::vec2 { ctrl_->end().x(), ctrl_->end().y() };
+        connect(ctrl.get(), &CanvasControl::changed, this, [this, gen, ctrlPtr = ctrl.get()] {
+            gen->from = glm::vec2 { ctrlPtr->start().x(), ctrlPtr->start().y() };
+            gen->to = glm::vec2 { ctrlPtr->end().x(), ctrlPtr->end().y() };
             emit maskUpdated();
         });
+        ctrl_ = std::move(ctrl);
     }
 }
 
