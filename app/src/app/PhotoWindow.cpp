@@ -50,6 +50,12 @@ void PhotoWindow::setupMainWidget() {
     canvasView->setLayout(new QVBoxLayout());
     canvasView->layout()->addWidget(processingIndicator);
     canvasView->layout()->setAlignment(Qt::AlignCenter);
+
+    activeMaskManager = std::make_unique<MaskManager>(canvasScene, nullptr, nullptr);
+    connect(activeMaskManager.get(), &MaskManager::maskUpdated, this, [this] {
+        activeMaskManager->mask()->update(*compositionManager->composition()->inputImage.data);
+        compositionManager->compositionModel()->compositionUpdated();
+    });
 }
 
 void PhotoWindow::setupDialogs() {
@@ -83,6 +89,10 @@ void PhotoWindow::setupActions() {
     quitAction = new QAction("&Quit", this);
     quitAction->setShortcuts(QKeySequence::Quit);
     connect(quitAction, &QAction::triggered, this, &QApplication::quit);
+
+    toggleShowMaskOverlayAction = new QAction("&Show mask overlay", this);
+    toggleShowMaskOverlayAction->setCheckable(true);
+    connect(toggleShowMaskOverlayAction, &QAction::toggled, activeMaskManager.get(), &MaskManager::setOverlayEnabled);
 }
 
 void PhotoWindow::setupMenus() {
@@ -94,6 +104,8 @@ void PhotoWindow::setupMenus() {
 
     // View
     viewMenu = menuBar()->addMenu("&View");
+    viewMenu->addAction(toggleShowMaskOverlayAction);
+    viewMenu->addSeparator();
     // Dock widgets will add themselves here.
 }
 
@@ -119,19 +131,7 @@ void PhotoWindow::setupDockWidgets() {
             compositionManager,
             &CompositionManager::setFiltersEnabled);
 
-    connect(compositionOutline, &CompositionOutline::activeMaskChanged, this, [this](image::GeneratedMask *mask) {
-        if (mask) {
-            qDebug() << "Active mask changed. Creating manager";
-            activeMaskManager = std::make_unique<MaskManager>(mask, nullptr);
-            connect(activeMaskManager.get(), &MaskManager::maskUpdated, this, [this] {
-                activeMaskManager->mask()->update(*compositionManager->composition()->inputImage.data);
-                compositionManager->compositionModel()->compositionUpdated();
-            });
-            activeMaskManager->activateControl(canvasScene);
-        } else {
-            activeMaskManager = nullptr;
-        }
-    });
+    connect(compositionOutline, &CompositionOutline::activeMaskChanged, activeMaskManager.get(), &MaskManager::setMask);
 }
 
 void PhotoWindow::setupProcessor() {

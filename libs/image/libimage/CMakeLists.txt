@@ -14,6 +14,7 @@ cmrc_add_resource_library(
     ALIAS image::rc
     NAMESPACE image::rc
     kernels/kernels.cl
+    kernels/maskKernels.cl
 )
 
 # libimage
@@ -21,6 +22,7 @@ add_library(libimage
     src/image/Composition.cpp
     src/image/Filters.cpp
     src/image/Mask.cpp
+    src/image/MaskProcessor.cpp
     src/image/Processor.cpp
     src/image/Resource.cpp
     src/image/Stopwatch.cpp

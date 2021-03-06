@@ -48,6 +48,7 @@ private:
     QAction *openImageAction;
     QAction *exportImageAction;
     QAction *quitAction;
+    QAction *toggleShowMaskOverlayAction;
 
     QFileDialog *openImageDialog;
     QFileDialog *exportImageDialog;

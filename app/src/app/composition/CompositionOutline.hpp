@@ -43,4 +43,6 @@ private:
     CompositionTreeView *treeView { nullptr };
     QAction *addFilterAction { nullptr };
     QMenu *addFilterMenu { nullptr };
+
+    image::GeneratedMask *lastActiveMask_ { nullptr };
 };

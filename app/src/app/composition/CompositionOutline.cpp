@@ -19,7 +19,9 @@
 
 using namespace image;
 
-void CompositionTreeView::currentChanged(const QModelIndex &current, const QModelIndex &) { emit currentIndexChanged(current); }
+void CompositionTreeView::currentChanged(const QModelIndex &current, const QModelIndex &) {
+    emit currentIndexChanged(current);
+}
 
 CompositionOutline::CompositionOutline(QWidget *parent) noexcept : QWidget(parent) {
     auto layout = new QVBoxLayout();
@@ -93,10 +95,11 @@ CompositionOutline::CompositionOutline(QWidget *parent) noexcept : QWidget(paren
             if (!layerIdx.isValid()) { return; }
             auto layerNode = model_->nodeAtIndex(layerIdx);
             auto &layer = layerNode->get<Layer>();
-            if (layer.mask) {
-                emit activeMaskChanged(layer.mask.get());
-            } else {
-                emit activeMaskChanged(nullptr);
+            image::GeneratedMask *activeMask = nullptr;
+            if (layer.mask) { activeMask = layer.mask.get(); }
+            if (activeMask != lastActiveMask_) {
+                lastActiveMask_ = activeMask;
+                emit activeMaskChanged(lastActiveMask_);
             }
         }
     });
@@ -144,7 +147,15 @@ void CompositionOutline::setupContextMenu() noexcept {
         }
         if (node->type == internal::NodeType::Filter || node->type == internal::NodeType::Mask ||
             node->type == internal::NodeType::Layer) {
-            menu.addAction("&Delete", [&] { model_->removeRow(idx.row(), idx.parent()); });
+            menu.addAction("&Delete", [&] {
+                model_->removeRow(idx.row(), idx.parent());
+
+                // If we are deleting a mask, also notify that new active mask is nullptr.
+                // There must be a better way to handle this.
+                if (node->type == internal::NodeType::Mask) {
+                    emit activeMaskChanged(nullptr);
+                }
+            });
         }
         menu.exec(treeView->mapToGlobal(pos));
     });

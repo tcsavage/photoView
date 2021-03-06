@@ -14,6 +14,7 @@ set(photoView_sources
     src/app/canvas/CanvasScene.cpp
     src/app/canvas/CanvasView.cpp
     src/app/canvas/LinearGradientControl.cpp
+    src/app/canvas/MaskOverlayControl.cpp
     src/app/composition/CompositionManager.cpp
     src/app/composition/CompositionModel.cpp
     src/app/composition/CompositionOutline.cpp
