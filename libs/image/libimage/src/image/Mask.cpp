@@ -60,7 +60,7 @@ namespace image {
         for (memory::Size y = 0; y < mask.height(); ++y) {
             #pragma omp parallel for
             for (memory::Size x = 0; x < mask.width(); ++x) {
-                const auto &color = img.pixelArray.at(x, y);
+                const auto &color = img.at(x, y);
                 auto value = (color.r + color.g + color.b) / 3.0f;
                 mask.pixelArray.at(x, y) = value;
             }
