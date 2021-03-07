@@ -10,7 +10,7 @@ namespace image {
 
     template <ChannelsSpec Channels>
     constexpr Shape dimsForChannels(std::size_t width, std::size_t height) {
-        if constexpr (Channels::numChannels() > 0) {
+        if constexpr (Channels::numChannels() != 0) {
             return Shape { Channels::numChannels(), width, height };
         } else {
             return Shape { width, height };
@@ -42,13 +42,11 @@ namespace image {
         ColorRGB<T> *end() noexcept { return pixelArray.end(); }
         const ColorRGB<T> *end() const noexcept { return pixelArray.end(); }
 
-        template <typename = typename std::enable_if_t<Channels::numChannels() != 0>>
-        T &at(std::size_t c, std::size_t x, std::size_t y) noexcept {
+        T &at(std::size_t c, std::size_t x, std::size_t y) noexcept requires(Channels::numChannels() > 0) {
             return pixelArray.at(c, x, y);
         }
 
-        template <typename = typename std::enable_if_t<Channels::numChannels() != 0>>
-        const T &at(std::size_t c, std::size_t x, std::size_t y) const noexcept {
+        const T &at(std::size_t c, std::size_t x, std::size_t y) const noexcept requires(Channels::numChannels() > 0) {
             return pixelArray.at(c, x, y);
         }
 
@@ -60,11 +58,11 @@ namespace image {
             return *reinterpret_cast<const typename Channels::VectorType<T> *>(&at(0, x, y));
         }
 
-        ImageBuf() noexcept : pixelArray(Shape { Channels::numChannels(), 0, 0 }) {}
+        ImageBuf() noexcept : pixelArray(dimsForChannels<Channels>(0, 0)) {}
         ImageBuf(std::size_t width, std::size_t height) noexcept
-          : pixelArray(Shape { Channels::numChannels(), width, height })
+          : pixelArray(dimsForChannels<Channels>(width, height))
           , size(width, height) {}
-        ImageBuf(const ImageSize &s) noexcept : pixelArray(Shape { Channels::numChannels(), s.x, s.y }), size(s) {}
+        ImageBuf(const ImageSize &s) noexcept : pixelArray(dimsForChannels<Channels>(s.x, s.y)), size(s) {}
         explicit ImageBuf(const NDArray<ColorRGB<T>> &array) noexcept : pixelArray(array), size(array.shape().at(1), array.shape().at(2)) {}
         explicit ImageBuf(NDArray<ColorRGB<T>> &&array) noexcept : pixelArray(std::move(array)), size(pixelArray.shape().at(1), pixelArray.shape().at(2)) {}
     };
