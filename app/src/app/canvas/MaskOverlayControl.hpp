@@ -23,5 +23,5 @@ public:
 private:
     QGraphicsPixmapItem *maskOverlayItem_ { nullptr };
     std::shared_ptr<image::MaskProcessor> maskProcessor_;
-    image::NDArray<image::U8> overlayImageBuf_;
+    image::ImageBuf<image::U8, image::RGBA> overlayImageBuf_;
 };

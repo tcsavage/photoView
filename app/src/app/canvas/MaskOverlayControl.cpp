@@ -21,7 +21,7 @@ void MaskOverlayControl::clearMask() noexcept {
 void MaskOverlayControl::setMask(const Mask &data) noexcept {
     memory::Size w = data.width();
     memory::Size h = data.height();
-    if (overlayImageBuf_.shape() != Shape { w, h, 4 }) { overlayImageBuf_ = maskProcessor_->makeOverlayImageBuf(data); }
+    if (overlayImageBuf_.size != ImageSize { w, h }) { overlayImageBuf_ = maskProcessor_->makeOverlayImageBuf(data); }
     maskProcessor_->generateOverlayImage(data, overlayImageBuf_);
 
     QImage img(overlayImageBuf_.data(), w, h, w * 4, QImage::Format::Format_RGBA8888);

@@ -10,16 +10,16 @@ CMRC_DECLARE(image::rc);
 
 namespace image {
 
-    NDArray<U8> MaskProcessor::makeOverlayImageBuf(const Mask &mask) noexcept {
-        NDArray<U8> arr { mask.width(), mask.height(), 4 };
-        arr.buffer()->setDevice(opencl::Manager::the()->bufferDevice);
-        arr.buffer()->deviceMalloc();
+    ImageBuf<U8, RGBA> MaskProcessor::makeOverlayImageBuf(const Mask &mask) noexcept {
+        ImageBuf<U8, RGBA> arr { mask.width(), mask.height() };
+        arr.pixelArray.buffer()->setDevice(opencl::Manager::the()->bufferDevice);
+        arr.pixelArray.buffer()->deviceMalloc();
         return arr;
     }
 
-    void MaskProcessor::generateOverlayImage(const Mask &mask, NDArray<U8> &out) noexcept {
+    void MaskProcessor::generateOverlayImage(const Mask &mask, ImageBuf<U8, RGBA> &out) noexcept {
         // Set args.
-        auto saResult = oclKernelGenerateOverlayImage.setArgs(mask.pixelArray, out);
+        auto saResult = oclKernelGenerateOverlayImage.setArgs(mask.pixelArray, out.pixelArray);
         if (saResult.hasError()) {
             std::cerr << "Error setting kernel args: " << saResult.error().error << " (arg #" << saResult.error().argIdx
                       << ")\n";
@@ -34,7 +34,7 @@ namespace image {
             std::terminate();
         }
 
-        out.buffer()->copyDeviceToHost();
+        out.pixelArray.buffer()->copyDeviceToHost();
     }
 
     MaskProcessor::MaskProcessor() noexcept {
