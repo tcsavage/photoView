@@ -32,6 +32,9 @@ public:
     void imageOpened(const QString &path);
     void failedToOpenImage(const QString &path);
 
+    void saveComposition();
+    void saveComposition(const QString &path);
+
     void updateImageView();
 
 private:
@@ -43,15 +46,21 @@ private:
     ProcessingIndicator *processingIndicator;
     CompositionOutline *compositionOutline;
 
+    QString compositionPath;
+    bool isCompositionFromFile { false };
+
     QMenu *viewMenu;
 
     QAction *openImageAction;
     QAction *exportImageAction;
+    QAction *saveCompositionAction;
+    QAction *saveCompositionAsAction;
     QAction *quitAction;
     QAction *toggleShowMaskOverlayAction;
 
     QFileDialog *openImageDialog;
     QFileDialog *exportImageDialog;
+    QFileDialog *saveCompositionDialog;
 
     std::unique_ptr<MaskManager> activeMaskManager;
 };

@@ -16,6 +16,8 @@
 #include <QUrl>
 #include <QVBoxLayout>
 
+#include <image/CompositionIO.hpp>
+
 PhotoWindow::PhotoWindow() {
     qDebug() << "Constructing PhotoWindow";
     setupProcessor();
@@ -73,6 +75,13 @@ void PhotoWindow::setupDialogs() {
     exportImageDialog->setNameFilter("Images (*.jpg *.jpeg *.png)");
     exportImageDialog->setDirectory(QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
     connect(exportImageDialog, &QFileDialog::fileSelected, compositionManager, &CompositionManager::exportImage);
+
+    saveCompositionDialog = new QFileDialog(this, "Save composition");
+    saveCompositionDialog->setAcceptMode(QFileDialog::AcceptMode::AcceptSave);
+    saveCompositionDialog->setFileMode(QFileDialog::FileMode::AnyFile);
+    saveCompositionDialog->setNameFilter("Compositions (*.comp)");
+    saveCompositionDialog->setDirectory(QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
+    connect(saveCompositionDialog, &QFileDialog::fileSelected, this, [this](const QString &path) { saveComposition(path); });
 }
 
 void PhotoWindow::setupActions() {
@@ -82,9 +91,22 @@ void PhotoWindow::setupActions() {
     connect(openImageAction, &QAction::triggered, this, [this] { openImageDialog->show(); });
 
     exportImageAction = new QAction("&Export image", this);
-    exportImageAction->setShortcuts(QKeySequence::SaveAs);
-    exportImageAction->setIcon(style()->standardIcon(QStyle::StandardPixmap::SP_DialogSaveButton));
     connect(exportImageAction, &QAction::triggered, this, [this] { exportImageDialog->show(); });
+
+    saveCompositionAction = new QAction("&Save composition", this);
+    saveCompositionAction->setShortcuts(QKeySequence::Save);
+    saveCompositionAction->setIcon(style()->standardIcon(QStyle::StandardPixmap::SP_DialogSaveButton));
+    connect(saveCompositionAction, &QAction::triggered, this, [this] {
+        if (isCompositionFromFile) {
+            saveComposition();
+        } else {
+            saveCompositionDialog->show();
+        }
+    });
+
+    saveCompositionAsAction = new QAction("Save composition &as", this);
+    saveCompositionAsAction->setShortcuts(QKeySequence::SaveAs);
+    connect(saveCompositionAsAction, &QAction::triggered, this, [this] { saveCompositionDialog->show(); });
 
     quitAction = new QAction("&Quit", this);
     quitAction->setShortcuts(QKeySequence::Quit);
@@ -100,6 +122,8 @@ void PhotoWindow::setupMenus() {
     auto fileMenu = menuBar()->addMenu("&File");
     fileMenu->addAction(openImageAction);
     fileMenu->addAction(exportImageAction);
+    fileMenu->addAction(saveCompositionAction);
+    fileMenu->addAction(saveCompositionAsAction);
     fileMenu->addAction(quitAction);
 
     // View
@@ -167,6 +191,20 @@ void PhotoWindow::failedToOpenImage(const QString &pathStr) {
     setWindowTitle(QString::fromStdString(path.filename()));
     processingIndicator->setVisible(false);
     canvasScene->clearImage();
+}
+
+void PhotoWindow::saveComposition() {
+    assert(!compositionPath.isEmpty());
+    saveComposition(compositionPath);
+}
+
+void PhotoWindow::saveComposition(const QString &pathStr) {
+    image::Path path = pathStr.toStdString();
+    image::saveToFile(path, *compositionManager->composition());
+
+    setWindowTitle(QString::fromStdString(path.filename()));
+    isCompositionFromFile = true;
+    compositionPath = pathStr;
 }
 
 void PhotoWindow::updateImageView() {

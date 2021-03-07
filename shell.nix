@@ -15,6 +15,7 @@ in pkgs.stdenvNoCC.mkDerivation {
       pkgs.opencl-headers
       pkgs.ocl-icd
       pkgs.qt5.qtbase
+      pkgs.boost172
       pkgs.flatpak-builder
       pkgs.linuxPackages.perf
   ];

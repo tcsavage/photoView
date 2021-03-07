@@ -7,6 +7,9 @@ find_package(OpenCL REQUIRED)
 # OpenMP
 find_package(OpenMP)
 
+# Boost (for property tree)
+find_package(Boost REQUIRED)
+
 # resources
 include(../../../external/cmrc/CMakeRC)
 cmrc_add_resource_library(
@@ -20,6 +23,7 @@ cmrc_add_resource_library(
 # libimage
 add_library(libimage
     src/image/Composition.cpp
+    src/image/CompositionIO.cpp
     src/image/Filters.cpp
     src/image/Mask.cpp
     src/image/MaskProcessor.cpp
@@ -49,6 +53,7 @@ target_link_libraries(libimage
     OpenCL::OpenCL
     PRIVATE
     image::rc
+    Boost::boost
 )
 
 if(OPENMP_FOUND)
