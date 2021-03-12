@@ -11,8 +11,6 @@ project(
 
 set(CMAKE_FOLDER "photoView/image")
 
-option(IMAGE_BUILD_TESTS "Build tests targets for Image" BUILD_TESTING)
-option(IMAGE_DISABLE_ASAN "Disable ASAN even in debug" OFF)
 option(IMAGE_BUILD_EXAMPLES "Build example targets for image" YES)
 option(IMAGE_BUILD_BENCHMARKS "Build benchmark targets for image" YES)
 
@@ -22,4 +20,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 
 add_subdirectory(libimage)
 
-add_subdirectory(examples)
+if(IMAGE_BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
+
+if(IMAGE_BUILD_BENCHMARKS)
+    add_subdirectory(benchmarks)
+endif()
