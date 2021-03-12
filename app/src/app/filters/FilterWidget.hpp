@@ -31,6 +31,8 @@ public:
 
 private:
     image::ExposureFilterSpec *filter_;
+    int rangeEvs { 5 };
+    int nDivisions { 9 };
 };
 
 class LutFilterWidget : public FilterWidget {

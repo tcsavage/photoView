@@ -2,27 +2,58 @@
 
 #include <QDebug>
 #include <QFormLayout>
+#include <QHBoxLayout>
+#include <QLabel>
 #include <QSlider>
 #include <QStandardPaths>
+#include <QString>
+#include <QTextStream>
+#include <QVBoxLayout>
 
 #include <app/widgets/FileChooser.hpp>
 
 using namespace image;
 
+namespace {
+
+    QString formatEvsLabel(F32 evs) noexcept {
+        QString out;
+        QTextStream ts(&out);
+        ts.setRealNumberPrecision(2);
+        ts << Qt::forcesign << Qt::forcepoint << evs << " evs";
+        return out;
+    }
+
+}
+
 ExposureFilterWidget::ExposureFilterWidget(image::AbstractFilterSpec *filter, QWidget *parent) noexcept
   : FilterWidget(filter, parent)
   , filter_(reinterpret_cast<ExposureFilterSpec *>(filter)) {
-    auto layout = new QFormLayout();
+    auto layout = new QVBoxLayout();
     setLayout(layout);
 
-    auto slider = new QSlider(Qt::Horizontal);
-    slider->setRange(-50, 50);
-    slider->setTickInterval(1);
-    slider->setValue(static_cast<int>(filter_->exposureEvs * 10.0f));
-    layout->addRow("Exposure", slider);
+    auto topLayout = new QHBoxLayout();
+    layout->addLayout(topLayout);
 
-    connect(slider, &QSlider::valueChanged, this, [this](int value) {
-        auto exposureEvs = static_cast<F32>(value) / 10.0f;
+    auto textLabel = new QLabel(tr("Exposure"));
+    topLayout->addWidget(textLabel);
+
+    topLayout->addStretch();
+
+    auto valueLabel = new QLabel(formatEvsLabel(filter_->exposureEvs));
+    topLayout->addWidget(valueLabel);
+
+    auto slider = new QSlider(Qt::Horizontal);
+    slider->setRange(-(rangeEvs * nDivisions), rangeEvs * nDivisions);
+    slider->setTickInterval(nDivisions);
+    slider->setTickPosition(QSlider::TickPosition::TicksBelow);
+    slider->setValue(static_cast<int>(filter_->exposureEvs * static_cast<F32>(nDivisions)));
+    slider->setFixedWidth(300);
+    layout->addWidget(slider);
+
+    connect(slider, &QSlider::valueChanged, this, [this, valueLabel](int value) {
+        auto exposureEvs = static_cast<F32>(value) / static_cast<F32>(nDivisions);
+        valueLabel->setText(formatEvsLabel(exposureEvs));
         filter_->exposureEvs = exposureEvs;
         filter_->update();
         emit filterUpdated();
