@@ -51,6 +51,7 @@ private:
 
     QMenu *viewMenu;
 
+    QAction *newWindowAction;
     QAction *openImageAction;
     QAction *exportImageAction;
     QAction *saveCompositionAction;

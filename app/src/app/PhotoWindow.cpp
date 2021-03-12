@@ -85,6 +85,12 @@ void PhotoWindow::setupDialogs() {
 }
 
 void PhotoWindow::setupActions() {
+    newWindowAction = new QAction("&New window", this);
+    connect(newWindowAction, &QAction::triggered, this, [] {
+        auto wnd = new PhotoWindow();
+        wnd->show();
+    });
+
     openImageAction = new QAction("&Open image", this);
     openImageAction->setShortcuts(QKeySequence::Open);
     openImageAction->setIcon(style()->standardIcon(QStyle::StandardPixmap::SP_DialogOpenButton));
@@ -120,6 +126,7 @@ void PhotoWindow::setupActions() {
 void PhotoWindow::setupMenus() {
     // File
     auto fileMenu = menuBar()->addMenu("&File");
+    fileMenu->addAction(newWindowAction);
     fileMenu->addAction(openImageAction);
     fileMenu->addAction(exportImageAction);
     fileMenu->addAction(saveCompositionAction);
