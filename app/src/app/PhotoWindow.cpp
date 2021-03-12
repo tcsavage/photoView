@@ -81,7 +81,9 @@ void PhotoWindow::setupDialogs() {
     saveCompositionDialog->setFileMode(QFileDialog::FileMode::AnyFile);
     saveCompositionDialog->setNameFilter("Compositions (*.comp)");
     saveCompositionDialog->setDirectory(QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
-    connect(saveCompositionDialog, &QFileDialog::fileSelected, this, [this](const QString &path) { saveComposition(path); });
+    connect(saveCompositionDialog, &QFileDialog::fileSelected, this, [this](const QString &path) {
+        saveComposition(path);
+    });
 }
 
 void PhotoWindow::setupActions() {

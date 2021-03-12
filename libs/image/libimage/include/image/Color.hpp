@@ -17,12 +17,12 @@ namespace image {
         constexpr ColorRGB() noexcept : glm::vec<3, T, glm::defaultp>(0) {}
 
         template <class... Args>
-        constexpr ColorRGB(Args&& ... args) noexcept : glm::vec<3, T, glm::defaultp>(std::forward<Args>(args)...) {}
+        constexpr ColorRGB(Args &&... args) noexcept : glm::vec<3, T, glm::defaultp>(std::forward<Args>(args)...) {}
     };
 
     template <class Out, class In>
-    requires (std::unsigned_integral<In> && std::unsigned_integral<Out>) || (std::floating_point<In> && std::floating_point<Out>)
-    constexpr Out conv(const In &in) noexcept {
+        requires(std::unsigned_integral<In> &&std::unsigned_integral<Out>) ||
+        (std::floating_point<In> && std::floating_point<Out>)constexpr Out conv(const In &in) noexcept {
         return in;
     }
 
@@ -33,7 +33,9 @@ namespace image {
 
     template <std::unsigned_integral Out, std::floating_point In>
     constexpr Out conv(const In &in) noexcept {
-        return static_cast<Out>(std::clamp(in * static_cast<In>(std::numeric_limits<Out>::max()), static_cast<In>(0), static_cast<In>(std::numeric_limits<Out>::max())));
+        return static_cast<Out>(std::clamp(in * static_cast<In>(std::numeric_limits<Out>::max()),
+                                           static_cast<In>(0),
+                                           static_cast<In>(std::numeric_limits<Out>::max())));
     }
 
     template <class Out, class In>
@@ -63,11 +65,9 @@ namespace image {
 
     template <class T, std::floating_point F = F32>
     constexpr ColorRGB<T> mix(F factor, ColorRGB<T> a, F invFactor, ColorRGB<T> b) noexcept {
-        return ColorRGB<T> {
-            mix(factor, a.r, invFactor, b.r),
-            mix(factor, a.g, invFactor, b.g),
-            mix(factor, a.b, invFactor, b.b)
-        };
+        return ColorRGB<T> { mix(factor, a.r, invFactor, b.r),
+                             mix(factor, a.g, invFactor, b.g),
+                             mix(factor, a.b, invFactor, b.b) };
     }
 
     template <class T, std::floating_point F = F32>
@@ -95,20 +95,12 @@ namespace image {
 
     template <std::floating_point T>
     constexpr ColorRGB<T> sRgbToLinear(ColorRGB<T> in) noexcept {
-        return ColorRGB<T> {
-            sRgbToLinear(in.x),
-            sRgbToLinear(in.y),
-            sRgbToLinear(in.z)
-        };
+        return ColorRGB<T> { sRgbToLinear(in.x), sRgbToLinear(in.y), sRgbToLinear(in.z) };
     }
 
     template <std::floating_point T>
     constexpr ColorRGB<T> linearToSRgb(ColorRGB<T> in) noexcept {
-        return ColorRGB<T> {
-            linearToSRgb(in.x),
-            linearToSRgb(in.y),
-            linearToSRgb(in.z)
-        };
+        return ColorRGB<T> { linearToSRgb(in.x), linearToSRgb(in.y), linearToSRgb(in.z) };
     }
 
 }
