@@ -10,7 +10,10 @@ namespace image {
     void ExposureFilterSpec::update() noexcept { exposureFactor = evToScale(exposureEvs); }
 
     void ExposureFilterSpec::apply(luts::Lattice3D &lattice) const noexcept {
-        lattice.accumulate([this](ColorRGB<F32> &c) { return c * exposureFactor; });
+        lattice.accumulate([this](ColorRGB<F32> &c) {
+            ColorRGB<F32> linear = sRgbToLinear(c) * exposureFactor;
+            return linearToSRgb(linear);
+        });
     }
 
     void LutFilterSpec::update() noexcept {
