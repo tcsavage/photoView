@@ -63,10 +63,12 @@ void MaskManager::createOverlay() noexcept {
     overlay_ = std::make_unique<MaskOverlayControl>(scene_, maskProcessor_, this);
     overlay_->setMask(*mask_->mask());
     connect(this, &MaskManager::maskUpdated, this, [this] {
-        if (mask_) {
-            overlay_->setMask(*mask_->mask());
-        } else {
-            overlay_->clearMask();
+        if (isOverlayEnabled_) {
+            if (mask_) {
+                overlay_->setMask(*mask_->mask());
+            } else {
+                overlay_->clearMask();
+            }
         }
     });
 }
