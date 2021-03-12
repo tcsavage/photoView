@@ -39,17 +39,22 @@ void MaskManager::setMask(image::GeneratedMask *mask) noexcept {
         return;
     }
     activateControls();
-    if (isOverlayEnabled_) { overlay_->setMask(*mask_->mask()); }
+    if (isOverlayEnabled_) {
+        if (!overlay_) { createOverlay(); }
+        overlay_->setMask(*mask_->mask());
+    }
 }
 
 void MaskManager::clearMask() noexcept {
     deactivateControls();
-    overlay_->clearMask();
+    if (overlay_) { overlay_->clearMask(); }
 }
 
 void MaskManager::setOverlayEnabled(bool isEnabled) noexcept {
     if (isOverlayEnabled_ == isEnabled) { return; }
     isOverlayEnabled_ = isEnabled;
+
+    if (!mask_) { return; }
 
     if (!isOverlayEnabled_ && overlay_) { overlay_->clearMask(); }
 
