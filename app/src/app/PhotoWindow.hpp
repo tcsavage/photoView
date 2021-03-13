@@ -33,7 +33,6 @@ public:
     void failedToOpenImage(const QString &path);
 
     void saveComposition();
-    void saveComposition(const QString &path);
 
     void updateImageView();
 

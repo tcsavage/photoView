@@ -58,6 +58,14 @@ void CompositionManager::openComposition(const QString &qPath) noexcept {
 
     compositionModel_->setComposition(composition_);
     emit compositionChanged();
+    emit compositionPathChanged(qPath);
+}
+
+void CompositionManager::saveComposition(const QString &qPath) noexcept {
+    image::Path path = qPath.toStdString();
+    image::saveToFile(path, *composition_);
+
+    emit compositionPathChanged(qPath);
 }
 
 void CompositionManager::openImage(const QString &qPath) noexcept {

@@ -23,6 +23,13 @@ public:
     void openComposition(const QString &path) noexcept;
 
     /**
+     * @brief Saves the composition to path
+     * 
+     * @param path Where to save the composition
+     */
+    void saveComposition(const QString &path) noexcept;
+
+    /**
      * @brief Open an image into a new composition.
      *
      * @param path The image to load
@@ -67,6 +74,11 @@ signals:
      * @brief Emitted whenever the composition changes.
      */
     void compositionChanged();
+
+    /**
+     * @brief Emitted when the composition is loaded/saved from/to a file.
+     */
+    void compositionPathChanged(const QString &path);
 
 private:
     std::shared_ptr<image::Composition> composition_;

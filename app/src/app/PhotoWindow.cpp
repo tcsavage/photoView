@@ -88,9 +88,7 @@ void PhotoWindow::setupDialogs() {
     saveCompositionDialog->setFileMode(QFileDialog::FileMode::AnyFile);
     saveCompositionDialog->setNameFilter("Compositions (*.comp)");
     saveCompositionDialog->setDirectory(QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
-    connect(saveCompositionDialog, &QFileDialog::fileSelected, this, [this](const QString &path) {
-        saveComposition(path);
-    });
+    connect(saveCompositionDialog, &QFileDialog::fileSelected, compositionManager, &CompositionManager::saveComposition);
 }
 
 void PhotoWindow::setupActions() {
@@ -201,6 +199,12 @@ void PhotoWindow::setupProcessor() {
         saveCompositionAction->setEnabled(true);
         saveCompositionAsAction->setEnabled(true);
     });
+    connect(compositionManager, &CompositionManager::compositionPathChanged, this, [this](const QString &qPath) {
+        image::Path path = qPath.toStdString();
+        setWindowTitle(QString::fromStdString(path.filename()));
+        isCompositionFromFile = true;
+        compositionPath = qPath;
+    });
 }
 
 void PhotoWindow::openImage(const QString &pathStr) {
@@ -226,16 +230,7 @@ void PhotoWindow::failedToOpenImage(const QString &pathStr) {
 
 void PhotoWindow::saveComposition() {
     assert(!compositionPath.isEmpty());
-    saveComposition(compositionPath);
-}
-
-void PhotoWindow::saveComposition(const QString &pathStr) {
-    image::Path path = pathStr.toStdString();
-    image::saveToFile(path, *compositionManager->composition());
-
-    setWindowTitle(QString::fromStdString(path.filename()));
-    isCompositionFromFile = true;
-    compositionPath = pathStr;
+    compositionManager->saveComposition(compositionPath);
 }
 
 void PhotoWindow::updateImageView() {
