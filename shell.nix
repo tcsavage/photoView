@@ -16,6 +16,7 @@ in pkgs.stdenvNoCC.mkDerivation {
       pkgs.ocl-icd
       pkgs.qt5.qtbase
       pkgs.boost172
+      pkgs.gbenchmark
       pkgs.flatpak-builder
       pkgs.linuxPackages.perf
   ];
