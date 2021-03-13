@@ -179,6 +179,7 @@ namespace image::opencl {
     }
 
     void Configurator::dumpPlatforms() {
+        std::cout << ">>>> Available OpenCL platforms >>>>\n";
         for (auto platform : getPlatforms()) {
             std::cout << "Platform: " << platform.name << " (" << platform.vendor << ")\n";
             for (auto device : platform.getDevices()) {
@@ -186,9 +187,11 @@ namespace image::opencl {
                 dumpDeviceInfo(device);
             }
         }
+        std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n";
     }
 
     Device Configurator::selectDevice() {
+        dumpPlatforms();
         // TODO: Make safer and smarter.
         return getPlatforms()[0].getDevices()[0];
     }
