@@ -74,7 +74,8 @@ namespace image {
 
         void update(const ImageBuf<F32> &img) const noexcept;
 
-        GeneratedMask(std::unique_ptr<AbstractMaskGenerator> &&gen) noexcept : gen_(std::move(gen)) {}
+        GeneratedMask() noexcept {}
+        explicit GeneratedMask(std::unique_ptr<AbstractMaskGenerator> &&gen) noexcept : gen_(std::move(gen)) {}
 
     protected:
         void ensureMask(memory::Size width, memory::Size height) const noexcept;

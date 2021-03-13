@@ -36,11 +36,11 @@ namespace image {
         std::cerr << "========================\n";
     }
 
-    Expected<Composition, CompositionLoadError> Composition::newFromPath(const Path &path) noexcept {
+    Expected<Composition, CompositionCreationError> Composition::newFromPath(const Path &path) noexcept {
         Composition comp;
         comp.inputImage.setPath(path);
         auto loadResult = comp.inputImage.load();
-        if (loadResult.hasError()) { return Unexpected(CompositionLoadError { path }); }
+        if (loadResult.hasError()) { return Unexpected(CompositionCreationError { path }); }
         comp.layers.push_back(std::make_shared<Layer>());
         return comp;
     }

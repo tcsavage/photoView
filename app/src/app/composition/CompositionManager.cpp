@@ -3,8 +3,11 @@
 #include <cassert>
 #include <iostream>
 
+#include <image/CompositionIO.hpp>
 #include <image/IO.hpp>
 #include <image/opencl/Manager.hpp>
+
+#include <app/masks/MaskGenerators.hpp>
 
 using namespace image;
 
@@ -32,6 +35,29 @@ CompositionManager::CompositionManager(QObject *parent) noexcept
   : QObject(parent)
   , compositionModel_(new CompositionModel()) {
     connect(compositionModel_, &CompositionModel::compositionUpdated, this, [this] { process(); });
+}
+
+void CompositionManager::openComposition(const QString &qPath) noexcept {
+    emit imageStartedLoading(qPath);
+    std::cerr << "[CompositionManager] Opening composition: " << qPath.toStdString() << "\n";
+    Path path = qPath.toStdString();
+    auto compResult = loadFromFile(path, &filterRegistry, &maskGeneratorRegistry);
+    if (compResult.hasError()) {
+        std::cerr << "[CompositionManager] Error opening composition: " << compResult.error().message << "\n";
+        // TODO: Error state
+        return;
+    }
+    composition_ = std::make_shared<Composition>(std::move(compResult.value()));
+    allocOpenCL(*composition_->inputImage.data);
+    writeToOpenCL(*composition_->inputImage.data);
+    ensureOutput();
+    emit imageLoaded(qPath);
+
+    resetProcessor();
+    process();
+
+    compositionModel_->setComposition(composition_);
+    emit compositionChanged();
 }
 
 void CompositionManager::openImage(const QString &qPath) noexcept {

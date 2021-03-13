@@ -119,6 +119,9 @@ namespace internal {
             for (auto &&filterSpec : layer->filters->filterSpecs) {
                 filtersNode->addChild(filterSpec.get());
             }
+            if (layer->mask) {
+                layerNode->addChild(layer->mask.get());
+            }
         }
     }
 

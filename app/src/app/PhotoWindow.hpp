@@ -54,6 +54,7 @@ private:
     QAction *newWindowAction;
     QAction *openImageAction;
     QAction *exportImageAction;
+    QAction *openCompositionAction;
     QAction *saveCompositionAction;
     QAction *saveCompositionAsAction;
     QAction *quitAction;
@@ -61,6 +62,7 @@ private:
 
     QFileDialog *openImageDialog;
     QFileDialog *exportImageDialog;
+    QFileDialog *openCompositionDialog;
     QFileDialog *saveCompositionDialog;
 
     std::unique_ptr<MaskManager> activeMaskManager;

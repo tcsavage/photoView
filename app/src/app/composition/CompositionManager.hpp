@@ -16,6 +16,13 @@ public:
     explicit CompositionManager(QObject *parent = nullptr) noexcept;
 
     /**
+     * @brief Load the composition at path
+     * 
+     * @param path The composition to load
+     */
+    void openComposition(const QString &path) noexcept;
+
+    /**
      * @brief Open an image into a new composition.
      *
      * @param path The image to load

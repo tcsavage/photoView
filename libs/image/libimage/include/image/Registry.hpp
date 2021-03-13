@@ -36,7 +36,7 @@ namespace image {
             _metas[id] = std::move(meta);
         }
 
-        constexpr Expected<std::unique_ptr<Base>, NotFoundInRegistry> create(Id id) noexcept {
+        constexpr Expected<std::unique_ptr<Base>, NotFoundInRegistry> create(Id id) const noexcept {
             auto iter = _factories.find(id);
             if (iter != _factories.end()) { return iter->second(); }
 

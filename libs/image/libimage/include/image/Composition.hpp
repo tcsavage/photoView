@@ -10,7 +10,7 @@
 
 namespace image {
 
-    struct CompositionLoadError {
+    struct CompositionCreationError {
         Path path;
     };
 
@@ -34,7 +34,7 @@ namespace image {
         std::vector<std::shared_ptr<Layer>> layers;
         ImageResource inputImage;
 
-        static Expected<Composition, CompositionLoadError> newFromPath(const Path &path) noexcept;
+        static Expected<Composition, CompositionCreationError> newFromPath(const Path &path) noexcept;
     };
 
     void dumpComp(Composition &comp);

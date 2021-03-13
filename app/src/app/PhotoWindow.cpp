@@ -76,6 +76,13 @@ void PhotoWindow::setupDialogs() {
     exportImageDialog->setDirectory(QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
     connect(exportImageDialog, &QFileDialog::fileSelected, compositionManager, &CompositionManager::exportImage);
 
+    openCompositionDialog = new QFileDialog(this, "Open composition");
+    openCompositionDialog->setAcceptMode(QFileDialog::AcceptMode::AcceptOpen);
+    openCompositionDialog->setFileMode(QFileDialog::FileMode::ExistingFile);
+    openCompositionDialog->setNameFilter("Compositions (*.comp)");
+    openCompositionDialog->setDirectory(QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
+    connect(openCompositionDialog, &QFileDialog::fileSelected, compositionManager, &CompositionManager::openComposition);
+
     saveCompositionDialog = new QFileDialog(this, "Save composition");
     saveCompositionDialog->setAcceptMode(QFileDialog::AcceptMode::AcceptSave);
     saveCompositionDialog->setFileMode(QFileDialog::FileMode::AnyFile);
@@ -100,6 +107,10 @@ void PhotoWindow::setupActions() {
 
     exportImageAction = new QAction("&Export image", this);
     connect(exportImageAction, &QAction::triggered, this, [this] { exportImageDialog->show(); });
+
+    openCompositionAction = new QAction("&Open composition", this);
+    openCompositionAction->setIcon(style()->standardIcon(QStyle::StandardPixmap::SP_DialogOpenButton));
+    connect(openCompositionAction, &QAction::triggered, this, [this] { openCompositionDialog->show(); });
 
     saveCompositionAction = new QAction("&Save composition", this);
     saveCompositionAction->setShortcuts(QKeySequence::Save);
@@ -129,10 +140,15 @@ void PhotoWindow::setupMenus() {
     // File
     auto fileMenu = menuBar()->addMenu("&File");
     fileMenu->addAction(newWindowAction);
+    fileMenu->addSeparator();
     fileMenu->addAction(openImageAction);
     fileMenu->addAction(exportImageAction);
+    fileMenu->addSeparator();
+    fileMenu->addAction(openCompositionAction);
+    fileMenu->addSeparator();
     fileMenu->addAction(saveCompositionAction);
     fileMenu->addAction(saveCompositionAsAction);
+    fileMenu->addSeparator();
     fileMenu->addAction(quitAction);
 
     // View
