@@ -113,6 +113,7 @@ void PhotoWindow::setupActions() {
     connect(openCompositionAction, &QAction::triggered, this, [this] { openCompositionDialog->show(); });
 
     saveCompositionAction = new QAction("&Save composition", this);
+    saveCompositionAction->setEnabled(false);
     saveCompositionAction->setShortcuts(QKeySequence::Save);
     saveCompositionAction->setIcon(style()->standardIcon(QStyle::StandardPixmap::SP_DialogSaveButton));
     connect(saveCompositionAction, &QAction::triggered, this, [this] {
@@ -124,6 +125,7 @@ void PhotoWindow::setupActions() {
     });
 
     saveCompositionAsAction = new QAction("Save composition &as", this);
+    saveCompositionAsAction->setEnabled(false);
     saveCompositionAsAction->setShortcuts(QKeySequence::SaveAs);
     connect(saveCompositionAsAction, &QAction::triggered, this, [this] { saveCompositionDialog->show(); });
 
@@ -195,6 +197,10 @@ void PhotoWindow::setupProcessor() {
     });
     connect(compositionManager, &CompositionManager::imageLoaded, this, &PhotoWindow::imageOpened);
     connect(compositionManager, &CompositionManager::imageChanged, this, &PhotoWindow::updateImageView);
+    connect(compositionManager, &CompositionManager::compositionChanged, this, [this] {
+        saveCompositionAction->setEnabled(true);
+        saveCompositionAsAction->setEnabled(true);
+    });
 }
 
 void PhotoWindow::openImage(const QString &pathStr) {
