@@ -9,6 +9,7 @@
 #include <app/composition/CompositionManager.hpp>
 #include <app/composition/CompositionOutline.hpp>
 #include <app/masks/MaskManager.hpp>
+#include <app/widgets/Histogram.hpp>
 #include <app/widgets/ProcessingIndicator.hpp>
 
 class PhotoWindow : public QMainWindow {
@@ -44,6 +45,7 @@ private:
     CanvasView *canvasView;
     ProcessingIndicator *processingIndicator;
     CompositionOutline *compositionOutline;
+    Histogram *histogram;
 
     QString compositionPath;
     bool isCompositionFromFile { false };

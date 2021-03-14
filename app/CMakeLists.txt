@@ -24,6 +24,7 @@ set(photoView_sources
     src/app/filters/FilterWidget.cpp
     src/app/masks/MaskManager.cpp
     src/app/widgets/FileChooser.cpp
+    src/app/widgets/Histogram.cpp
     src/app/widgets/ProcessingIndicator.cpp
 )
 

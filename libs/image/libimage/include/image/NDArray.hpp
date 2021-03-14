@@ -250,6 +250,11 @@ namespace image {
             return NDArray<U>(Shape { sizeBytes() / sizeof(U) }, NDArrayStorage::buffer);
         }
 
+        template <class U>
+        NDArray<const U> reinterpret() const noexcept {
+            return NDArray<const U>(Shape { sizeBytes() / sizeof(U) }, NDArrayStorage::buffer);
+        }
+
         NDArray reshape(Shape s) noexcept {
             assert(s.size() == size());
             return NDArray(s, NDArrayStorage::buffer);

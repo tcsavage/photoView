@@ -167,20 +167,33 @@ void PhotoWindow::setupToolBars() {
 }
 
 void PhotoWindow::setupDockWidgets() {
-    auto dock = new QDockWidget(tr("Composition"), this);
-    dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    compositionOutline = new CompositionOutline();
-    compositionOutline->setCompositionModel(compositionManager->compositionModel());
-    dock->setWidget(compositionOutline);
-    addDockWidget(Qt::RightDockWidgetArea, dock);
-    viewMenu->addAction(dock->toggleViewAction());
+    {
+        auto dock = new QDockWidget(tr("Histogram"), this);
+        dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+        histogram = new Histogram();
+        // QDockWidget doesn't respect the size policy. So lets just set a max height for now.
+        histogram->setMaximumHeight(150);
+        dock->setWidget(histogram);
+        addDockWidget(Qt::RightDockWidgetArea, dock);
+        viewMenu->addAction(dock->toggleViewAction());
+    }
+    
+    {
+        auto dock = new QDockWidget(tr("Composition"), this);
+        dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+        compositionOutline = new CompositionOutline();
+        compositionOutline->setCompositionModel(compositionManager->compositionModel());
+        dock->setWidget(compositionOutline);
+        addDockWidget(Qt::RightDockWidgetArea, dock);
+        viewMenu->addAction(dock->toggleViewAction());
 
-    connect(compositionOutline,
-            &CompositionOutline::filtersEnabledChanged,
-            compositionManager,
-            &CompositionManager::setFiltersEnabled);
+        connect(compositionOutline,
+                &CompositionOutline::filtersEnabledChanged,
+                compositionManager,
+                &CompositionManager::setFiltersEnabled);
 
-    connect(compositionOutline, &CompositionOutline::activeMaskChanged, activeMaskManager.get(), &MaskManager::setMask);
+        connect(compositionOutline, &CompositionOutline::activeMaskChanged, activeMaskManager.get(), &MaskManager::setMask);
+    }
 }
 
 void PhotoWindow::setupProcessor() {
@@ -237,4 +250,5 @@ void PhotoWindow::updateImageView() {
     auto &img = compositionManager->output();
     QSize size { static_cast<int>(img.width()), static_cast<int>(img.height()) };
     canvasScene->setImage(size, img.data());
+    histogram->generate(img);
 }

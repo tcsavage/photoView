@@ -21,10 +21,8 @@ namespace image {
     };
 
     template <class Out, class In>
-        requires(std::unsigned_integral<In> &&std::unsigned_integral<Out>) ||
-        (std::floating_point<In> && std::floating_point<Out>)constexpr Out conv(const In &in) noexcept {
-        return in;
-    }
+    requires(std::unsigned_integral<In> && std::unsigned_integral<Out>) || (std::floating_point<In> && std::floating_point<Out>)
+    constexpr Out conv(const In &in) noexcept { return in; }
 
     template <std::floating_point Out, std::unsigned_integral In>
     constexpr Out conv(const In &in) noexcept {
