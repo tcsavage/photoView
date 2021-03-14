@@ -10,3 +10,5 @@ void FilterManager::showDialog(QWidget *parent) noexcept {
     dialog->raise();
     dialog->activateWindow();
 }
+
+FilterManager::~FilterManager() { dialog->deleteLater(); }

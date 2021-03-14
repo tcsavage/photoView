@@ -55,8 +55,10 @@ void PhotoWindow::setupMainWidget() {
 
     activeMaskManager = std::make_unique<MaskManager>(canvasScene, nullptr, nullptr);
     connect(activeMaskManager.get(), &MaskManager::maskUpdated, this, [this] {
-        activeMaskManager->mask()->update(*compositionManager->composition()->inputImage.data);
-        compositionManager->compositionModel()->compositionUpdated();
+        if (auto mask = activeMaskManager->mask()) {
+            mask->update(*compositionManager->composition()->inputImage.data);
+            compositionManager->compositionModel()->compositionUpdated();
+        }
     });
 }
 
@@ -204,7 +206,8 @@ void PhotoWindow::setupProcessor() {
 
     // Connect to composition manager signals.
     connect(compositionManager, &CompositionManager::imageStartedLoading, this, [this](const QString &) {
-        // processingIndicator->setVisible(true);
+        processingIndicator->setVisible(true);
+        activeMaskManager->setMask(nullptr);
     });
     connect(compositionManager, &CompositionManager::imageLoaded, this, &PhotoWindow::imageOpened);
     connect(compositionManager, &CompositionManager::imageChanged, this, &PhotoWindow::updateImageView);

@@ -13,6 +13,8 @@ public:
       : QObject(parent)
       , filter_(filter) {}
 
+    virtual ~FilterManager();
+
     inline image::AbstractFilterSpec *filter() noexcept { return filter_; }
 
     void showDialog(QWidget *parent) noexcept;

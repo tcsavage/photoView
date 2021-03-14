@@ -138,6 +138,7 @@ using namespace internal;
 
 void CompositionModel::setComposition(std::shared_ptr<Composition> composition) noexcept {
     beginResetModel();
+    filterManagers_.clear();
     composition_ = composition;
     root_ = std::make_shared<Node>(composition);
     endResetModel();
@@ -191,12 +192,12 @@ FilterManager *CompositionModel::filterManagerAtIndex(const QModelIndex &idx) no
     if (node->type != NodeType::Filter) { return nullptr; }
     auto &filter = node->get<AbstractFilterSpec>();
     if (filterManagers_.contains(&filter)) {
-        return filterManagers_.value(&filter);
+        return filterManagers_.value(&filter).get();
     } else {
-        auto manager = new FilterManager(&filter, this);
+        auto manager = std::make_shared<FilterManager>(&filter, this);
         filterManagers_.insert(&filter, manager);
-        connect(manager, &FilterManager::filterUpdated, this, &CompositionModel::compositionUpdated);
-        return manager;
+        connect(manager.get(), &FilterManager::filterUpdated, this, &CompositionModel::compositionUpdated);
+        return manager.get();
     }
 }
 

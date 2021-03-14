@@ -171,5 +171,5 @@ signals:
 private:
     std::shared_ptr<image::Composition> composition_;
     std::shared_ptr<internal::Node> root_;
-    QMap<image::AbstractFilterSpec *, FilterManager *> filterManagers_;
+    QMap<image::AbstractFilterSpec *, std::shared_ptr<FilterManager>> filterManagers_;
 };
