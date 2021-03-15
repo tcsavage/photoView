@@ -20,6 +20,7 @@ namespace image {
 
         registerFilter<ExposureFilterSpec>(reg);
         registerFilter<LutFilterSpec>(reg);
+        registerFilter<SaturationFilterSpec>(reg);
 
         return reg;
     }

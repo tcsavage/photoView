@@ -46,12 +46,25 @@ private:
     image::LutFilterSpec *filter_;
 };
 
+class SaturationFilterWidget : public FilterWidget {
+    Q_OBJECT
+public:
+    explicit SaturationFilterWidget(image::AbstractFilterSpec *filter, QWidget *parent = nullptr) noexcept;
+
+    virtual ~SaturationFilterWidget() {}
+
+private:
+    image::SaturationFilterSpec *filter_;
+};
+
 inline FilterWidget *makeFilterWidget(image::AbstractFilterSpec *filter, QWidget *parent = nullptr) noexcept {
     const auto &meta = filter->getMeta();
     if (meta.id == "filters.exposure") {
         return new ExposureFilterWidget(filter, parent);
     } else if (meta.id == "filters.lut") {
         return new LutFilterWidget(filter, parent);
+    } else if (meta.id == "filters.saturation") {
+        return new SaturationFilterWidget(filter, parent);
     } else {
         std::terminate();
     }

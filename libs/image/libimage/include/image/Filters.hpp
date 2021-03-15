@@ -61,4 +61,13 @@ namespace image {
         virtual void apply(luts::Lattice3D &lattice) const noexcept override;
     };
 
+    struct SaturationFilterSpec final : AbstractFilterSpec {
+        F32 multiplier { 1.0f };
+
+        static inline FilterMeta meta { "filters.saturation", "Saturation" };
+
+        virtual const FilterMeta &getMeta() const noexcept override { return meta; }
+        virtual void apply(luts::Lattice3D &lattice) const noexcept override;
+    };
+
 }

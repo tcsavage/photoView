@@ -27,4 +27,12 @@ namespace image {
         }
     }
 
+    void SaturationFilterSpec::apply(luts::Lattice3D &lattice) const noexcept {
+        lattice.accumulate([this](ColorRGB<F32> &c) {
+            auto hsl = rgbToHsl(c);
+            hsl.saturation() *= multiplier;
+            return hslToRgb(hsl);
+        });
+    }
+
 }
