@@ -22,7 +22,7 @@ void Histogram::paintEvent(QPaintEvent *) {
     QColor green = QColor::fromRgbF(0, 1, 0);
     QColor blue = QColor::fromRgbF(0, 0, 1);
     qreal fillOpacity = 0.3;
-    qreal penWidth = 2;
+    qreal penWidth = 1.5;
 
     QPainter painter(this);
     painter.fillRect(rect(), QColor::fromRgbF(bgBrightness, bgBrightness, bgBrightness));
