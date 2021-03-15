@@ -4,7 +4,6 @@
 #include <array>
 #include <cmath>
 #include <limits>
-#include <iostream>
 
 #include <image/Color.hpp>
 #include <image/CoreTypes.hpp>
@@ -51,7 +50,6 @@ namespace image {
                 red[i] = static_cast<F32>(ired[i]) / maxAll;
                 green[i] = static_cast<F32>(igreen[i]) / maxAll;
                 blue[i] = static_cast<F32>(iblue[i]) / maxAll;
-                std::cerr << red[i] << ", " << green[i] << ", " << blue[i] << "\n";
             }
         }
 
