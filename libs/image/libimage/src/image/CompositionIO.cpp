@@ -62,6 +62,14 @@ namespace image {
         tree.put("strength", filter.strength);
     }
 
+    void write(const Context &, pt::ptree &tree, const SaturationFilterSpec &filter) noexcept {
+        tree.put("multiplier", filter.multiplier);
+    }
+
+    void write(const Context &, pt::ptree &tree, const ContrastFilterSpec &filter) noexcept {
+        tree.put("factor", filter.factor);
+    }
+
     void write(const Context &ctx, pt::ptree &tree, const AbstractFilterSpec &filter) noexcept {
         auto &meta = filter.getMeta();
         tree.put("filter", meta.id);
@@ -70,6 +78,10 @@ namespace image {
             write(ctx, subtree, static_cast<const ExposureFilterSpec &>(filter));
         } else if (meta.id == "filters.lut") {
             write(ctx, subtree, static_cast<const LutFilterSpec &>(filter));
+        } else if (meta.id == "filters.saturation") {
+            write(ctx, subtree, static_cast<const SaturationFilterSpec &>(filter));
+        } else if (meta.id == "filters.contrast") {
+            write(ctx, subtree, static_cast<const ContrastFilterSpec &>(filter));
         }
         if (!subtree.empty()) { tree.put_child("options", subtree); }
     }
@@ -206,6 +218,22 @@ namespace image {
         return success;
     }
 
+    Expected<void, CompositionParseError> read(const Context &, pt::ptree &tree, SaturationFilterSpec &filter) noexcept {
+        if (auto multiplier = tree.get_optional<F32>("multiplier")) {
+            filter.multiplier = *multiplier;
+        }
+
+        return success;
+    }
+
+    Expected<void, CompositionParseError> read(const Context &, pt::ptree &tree, ContrastFilterSpec &filter) noexcept {
+        if (auto factor = tree.get_optional<F32>("factor")) {
+            filter.factor = *factor;
+        }
+
+        return success;
+    }
+
     Expected<void, CompositionParseError> read(const Context &ctx, pt::ptree &tree, Filters &filters) noexcept {
         for (auto &&[path, filterTree] : tree) {
             if (auto filterName = filterTree.get_optional<String>("filter")) {
@@ -237,6 +265,22 @@ namespace image {
                         }
                     } else if (filterSpec->getMeta().id == "filters.lut") {
                         auto optionsResult = read(ctx, *options, static_cast<LutFilterSpec &>(*filterSpec));
+                        if (optionsResult.hasError()) {
+                            std::stringstream ss;
+                            ss << "[" << filters.filterSpecs.size() << "]";
+                            return Unexpected(
+                                CompositionParseError { "Filters", ss.str(), optionsResult.error().generateString() });
+                        }
+                    } else if (filterSpec->getMeta().id == "filters.saturation") {
+                        auto optionsResult = read(ctx, *options, static_cast<SaturationFilterSpec &>(*filterSpec));
+                        if (optionsResult.hasError()) {
+                            std::stringstream ss;
+                            ss << "[" << filters.filterSpecs.size() << "]";
+                            return Unexpected(
+                                CompositionParseError { "Filters", ss.str(), optionsResult.error().generateString() });
+                        }
+                    } else if (filterSpec->getMeta().id == "filters.contrast") {
+                        auto optionsResult = read(ctx, *options, static_cast<ContrastFilterSpec &>(*filterSpec));
                         if (optionsResult.hasError()) {
                             std::stringstream ss;
                             ss << "[" << filters.filterSpecs.size() << "]";
