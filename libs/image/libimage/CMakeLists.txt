@@ -23,26 +23,27 @@ cmrc_add_resource_library(
 # libimage
 add_library(libimage
     src/image/Composition.cpp
-    src/image/CompositionSerialization.cpp
     src/image/Filters.cpp
-    src/image/FiltersSerialization.cpp
-    src/image/Mask.cpp
-    src/image/MaskProcessor.cpp
-    src/image/Processor.cpp
-    src/image/Resource.cpp
-    src/image/Serialization.cpp
-    src/image/Stopwatch.cpp
-    src/image/Type.cpp
     src/image/luts/Barycentric.cpp
     src/image/luts/CubeFile.cpp
     src/image/luts/Lattice3D.cpp
     src/image/luts/SimpleCube.cpp
     src/image/luts/TetrahedralInterpolator.cpp
+    src/image/Mask.cpp
+    src/image/MaskProcessor.cpp
     src/image/memory/Allocator.cpp
     src/image/opencl/BufferDevice.cpp
     src/image/opencl/Context.cpp
     src/image/opencl/Manager.cpp
     src/image/opencl/Program.cpp
+    src/image/Processor.cpp
+    src/image/Resource.cpp
+    src/image/serialization/CompositionSerialization.cpp
+    src/image/serialization/FiltersSerialization.cpp
+    src/image/serialization/MaskGeneratorSerialization.cpp
+    src/image/serialization/Serialization.cpp
+    src/image/Stopwatch.cpp
+    src/image/Type.cpp
 )
 add_library(image::libimage ALIAS libimage)
 

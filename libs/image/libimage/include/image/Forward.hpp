@@ -2,7 +2,10 @@
 
 namespace image {
 
-    class AbstractFilterSpec;
-    class FilterMeta;
+    struct AbstractFilterSpec;
+    struct FilterMeta;
+
+    struct AbstractMaskGenerator;
+    struct MaskGeneratorMeta;
 
 }

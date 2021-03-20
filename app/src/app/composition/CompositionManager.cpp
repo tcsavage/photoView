@@ -3,7 +3,7 @@
 #include <cassert>
 #include <iostream>
 
-#include <image/CompositionSerialization.hpp>
+#include <image/Serialization.hpp>
 #include <image/IO.hpp>
 #include <image/opencl/Manager.hpp>
 

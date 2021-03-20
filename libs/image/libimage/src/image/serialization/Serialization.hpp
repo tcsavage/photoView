@@ -17,8 +17,11 @@ namespace image::serialization {
     namespace pt = boost::property_tree;
 
     struct FilterSerialization;
+    struct MaskGeneratorSerialization;
 
     using FilterSerializationRegistry = image::Registry<FilterSerialization, image::FilterMeta>;
+
+    using MaskGeneratorSerializationRegistry = image::Registry<MaskGeneratorSerialization, image::MaskGeneratorMeta>;
 
 
     // Reading
@@ -37,6 +40,7 @@ namespace image::serialization {
     struct ReadContext {
         Path basePath;
         const FilterSerializationRegistry *filterSerializationRegistry { nullptr };
+        const MaskGeneratorSerializationRegistry *maskGeneratorSerializationRegistry { nullptr };
         const FilterRegistry *filterRegistry { nullptr };
         const MaskGeneratorRegistry *maskGeneratorRegistry { nullptr };
     };
@@ -55,6 +59,7 @@ namespace image::serialization {
     struct WriteContext {
         Path basePath;
         const FilterSerializationRegistry *filterSerializationRegistry { nullptr };
+        const MaskGeneratorSerializationRegistry *maskGeneratorSerializationRegistry { nullptr };
     };
 
     void write(const WriteContext &, pt::ptree &tree, const glm::vec2 vec) noexcept;

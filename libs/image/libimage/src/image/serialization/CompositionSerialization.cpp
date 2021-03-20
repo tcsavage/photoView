@@ -1,4 +1,4 @@
-#include <image/CompositionSerialization.hpp>
+#include <image/Serialization.hpp>
 
 #include <memory>
 #include <sstream>
@@ -7,6 +7,7 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "FiltersSerialization.hpp"
+#include "MaskGeneratorSerialization.hpp"
 #include "Serialization.hpp"
 
 namespace pt = boost::property_tree;
@@ -15,60 +16,24 @@ using namespace image;
 
 namespace image::serialization {
 
-    void write(const WriteContext &ctx, pt::ptree &tree, const LinearGradientMaskSpec &gen) noexcept {
-        {
-            pt::ptree subtree;
-            write(ctx, subtree, gen.from);
-            tree.put_child("from", subtree);
-        }
-        {
-            pt::ptree subtree;
-            write(ctx, subtree, gen.to);
-            tree.put_child("to", subtree);
-        }
-    }
-
     void write(const WriteContext &ctx, pt::ptree &tree, const GeneratedMask &mask) noexcept {
         auto &meta = mask.generator()->getMeta();
         tree.put("generator", meta.id);
         pt::ptree subtree;
-        if (meta.id == "maskGenerators.linearGradient") {
-            write(ctx, subtree, *static_cast<LinearGradientMaskSpec *>(mask.generator()));
+        auto serializerResult = ctx.maskGeneratorSerializationRegistry->create(meta.id);
+        if (serializerResult.hasValue()) {
+            serializerResult.value()->write(ctx, subtree, mask.generator());
         }
         if (!subtree.empty()) { tree.put_child("options", subtree); }
-    }
-
-    void write(const WriteContext &, pt::ptree &tree, const ExposureFilterSpec &filter) noexcept {
-        tree.put("exposureEvs", filter.exposureEvs);
-    }
-
-    void write(const WriteContext &ctx, pt::ptree &tree, const LutFilterSpec &filter) noexcept {
-        pt::ptree subtree;
-        write(ctx, subtree, filter.lut);
-        tree.put_child("lut", subtree);
-        tree.put("strength", filter.strength);
-    }
-
-    void write(const WriteContext &, pt::ptree &tree, const SaturationFilterSpec &filter) noexcept {
-        tree.put("multiplier", filter.multiplier);
-    }
-
-    void write(const WriteContext &, pt::ptree &tree, const ContrastFilterSpec &filter) noexcept {
-        tree.put("factor", filter.factor);
     }
 
     void write(const WriteContext &ctx, pt::ptree &tree, const AbstractFilterSpec &filter) noexcept {
         auto &meta = filter.getMeta();
         tree.put("filter", meta.id);
         pt::ptree subtree;
-        if (meta.id == "filters.exposure") {
-            write(ctx, subtree, static_cast<const ExposureFilterSpec &>(filter));
-        } else if (meta.id == "filters.lut") {
-            write(ctx, subtree, static_cast<const LutFilterSpec &>(filter));
-        } else if (meta.id == "filters.saturation") {
-            write(ctx, subtree, static_cast<const SaturationFilterSpec &>(filter));
-        } else if (meta.id == "filters.contrast") {
-            write(ctx, subtree, static_cast<const ContrastFilterSpec &>(filter));
+        auto serializerResult = ctx.filterSerializationRegistry->create(meta.id);
+        if (serializerResult.hasValue()) {
+            serializerResult.value()->write(ctx, subtree, &filter);
         }
         if (!subtree.empty()) { tree.put_child("options", subtree); }
     }
@@ -101,7 +66,8 @@ namespace image::serialization {
 
     void saveToFile(const Path &path, const Composition &comp) noexcept {
         auto filterSerializationRegistry = makeFilterSerializationRegistry();
-        WriteContext ctx { path.parent_path(), &filterSerializationRegistry };
+        auto maskGeneratorSerializationRegistry = makeMaskGeneratorSerializationRegistry();
+        WriteContext ctx { path.parent_path(), &filterSerializationRegistry, &maskGeneratorSerializationRegistry };
         pt::ptree tree;
         tree.put("meta.version", 1);
         pt::ptree subtree;
@@ -111,14 +77,11 @@ namespace image::serialization {
     }
 
 
-
     Expected<void, ReadError> read(const ReadContext &ctx, const pt::ptree &tree, Filters &filters) noexcept {
         for (auto &&[path, filterTree] : tree) {
             if (auto filterName = filterTree.get_optional<String>("filter")) {
                 // Check that we have a filter registry.
-                if (!ctx.filterRegistry) {
-                    return Unexpected(ReadError { "Filters", "*", "No filter registry set" });
-                }
+                if (!ctx.filterRegistry) { return Unexpected(ReadError { "Filters", "*", "No filter registry set" }); }
 
                 // Check that we have a filter serialization registry.
                 if (!ctx.filterSerializationRegistry) {
@@ -160,34 +123,18 @@ namespace image::serialization {
         return success;
     }
 
-    Expected<void, ReadError>
-    read(const ReadContext &ctx, const pt::ptree &tree, LinearGradientMaskSpec &spec) noexcept {
-        if (auto from = tree.get_child_optional("from")) {
-            auto fromResult = read(ctx, *from, spec.from);
-            if (fromResult.hasError()) {
-                return Unexpected(
-                    ReadError { "LinearGradientMaskSpec", "from", fromResult.error().generateString() });
-            }
-        }
-
-        if (auto to = tree.get_child_optional("to")) {
-            auto toResult = read(ctx, *to, spec.to);
-            if (toResult.hasError()) {
-                return Unexpected(
-                    ReadError { "LinearGradientMaskSpec", "to", toResult.error().generateString() });
-            }
-        }
-
-        return success;
-    }
-
     Expected<void, ReadError> read(const ReadContext &ctx, const pt::ptree &tree, GeneratedMask &mask) noexcept {
         std::cerr << "Reading mask\n";
         if (auto generatorId = tree.get_optional<String>("generator")) {
             std::cerr << "Mask generator is " << *generatorId << "\n";
             // Check that we have a mask generator registry.
-            if (!ctx.filterRegistry) {
+            if (!ctx.maskGeneratorRegistry) {
                 return Unexpected(ReadError { "GeneratedMask", "*", "No mask generator registry set" });
+            }
+
+            // Check that we have a mask generator serialization registry.
+            if (!ctx.maskGeneratorSerializationRegistry) {
+                return Unexpected(ReadError { "GeneratedMask", "*", "No mask generator serialization registry set" });
             }
 
             // Create new generator implementation instance.
@@ -203,13 +150,14 @@ namespace image::serialization {
 
             // Read generator-specific options.
             if (auto options = tree.get_child_optional("options")) {
-                if (generator->getMeta().id == "maskGenerators.linearGradient") {
-                    auto optionsResult = read(ctx, *options, static_cast<LinearGradientMaskSpec &>(*generator));
-                    if (optionsResult.hasError()) {
-                        return Unexpected(ReadError {
-                            "GeneratedMask", "options", optionsResult.error().generateString() });
-                    }
+                auto serializerResult = ctx.maskGeneratorSerializationRegistry->create(*generatorId);
+                if (serializerResult.hasError()) {
+                    std::stringstream messageSs;
+                    messageSs << "Mask generator named '" << *generatorId << "' has options but no serialisation handler";
+                    return Unexpected(ReadError { "GeneratedMask", "generator", messageSs.str() });
                 }
+                auto &serialization = *serializerResult;
+                serialization->read(ctx, *options, generator.get());
             }
 
             std::cerr << "Inserting into generated mask\n";
@@ -224,9 +172,7 @@ namespace image::serialization {
 
     Expected<void, ReadError> read(const ReadContext &ctx, const pt::ptree &tree, Layer &layer) noexcept {
         if (auto filters = tree.get_child_optional("filters")) {
-            if (!layer.filters) {
-                return Unexpected(ReadError { "Layer", "filters", "Filters not yet created" });
-            }
+            if (!layer.filters) { return Unexpected(ReadError { "Layer", "filters", "Filters not yet created" }); }
             auto filtersResult = read(ctx, *filters, *layer.filters);
             if (filtersResult.hasError()) {
                 return Unexpected(ReadError { "Layer", "filters", filtersResult.error().generateString() });
@@ -253,8 +199,7 @@ namespace image::serialization {
         auto &image = tree.get_child("inputImage");
         auto imageResult = read(ctx, image, comp.inputImage);
         if (imageResult.hasError()) {
-            return Unexpected(
-                ReadError { "Composition", "inputImage", imageResult.error().generateString() });
+            return Unexpected(ReadError { "Composition", "inputImage", imageResult.error().generateString() });
         }
 
         // Read layers.
@@ -266,8 +211,7 @@ namespace image::serialization {
                 if (layerResult.hasError()) {
                     std::stringstream ss;
                     ss << "layers[" << comp.layers.size() << "]";
-                    return Unexpected(
-                        ReadError { "Composition", ss.str(), layerResult.error().generateString() });
+                    return Unexpected(ReadError { "Composition", ss.str(), layerResult.error().generateString() });
                 }
 
                 // Update the generated mask
@@ -285,7 +229,12 @@ namespace image::serialization {
                  const FilterRegistry *filterRegistry,
                  const MaskGeneratorRegistry *maskGeneratorRegistry) noexcept {
         auto filterSerializationRegistry = makeFilterSerializationRegistry();
-        ReadContext ctx { path.parent_path(), &filterSerializationRegistry, filterRegistry, maskGeneratorRegistry };
+        auto maskGeneratorSerializationRegistry = makeMaskGeneratorSerializationRegistry();
+        ReadContext ctx { path.parent_path(),
+                          &filterSerializationRegistry,
+                          &maskGeneratorSerializationRegistry,
+                          filterRegistry,
+                          maskGeneratorRegistry };
         pt::ptree tree;
         pt::read_json(path, tree);
 
