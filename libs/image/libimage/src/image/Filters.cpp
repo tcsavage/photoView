@@ -34,4 +34,11 @@ namespace image {
         });
     }
 
+    void ContrastFilterSpec::apply(luts::Lattice3D &lattice) const noexcept {
+        ColorRGB<F32> grey { 0.5 };
+        lattice.accumulate([this, &grey](ColorRGB<F32> &c) {
+            return linearToSRgb(mix(factor, grey, sRgbToLinear(c)));
+        });
+    }
+
 }

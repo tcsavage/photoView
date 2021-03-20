@@ -32,10 +32,10 @@ namespace {
     //     return out;
     // }
 
-    QString formatFloat(F32 value) noexcept {
+    QString formatFloat(F32 value, int precision = 2) noexcept {
         QString out;
         QTextStream ts(&out);
-        ts.setRealNumberPrecision(2);
+        ts.setRealNumberPrecision(precision);
         ts << Qt::forcepoint << value;
         return out;
     }
@@ -144,6 +144,41 @@ SaturationFilterWidget::SaturationFilterWidget(image::AbstractFilterSpec *filter
         auto multiplier = static_cast<F32>(value) / 100;
         valueLabel->setText(formatFloat(multiplier));
         filter_->multiplier = multiplier;
+        // filter_->update(); // Not necessary
+        emit filterUpdated();
+    });
+}
+
+ContrastFilterWidget::ContrastFilterWidget(image::AbstractFilterSpec *filter, QWidget *parent) noexcept
+  : FilterWidget(filter, parent)
+  , filter_(reinterpret_cast<ContrastFilterSpec *>(filter)) {
+    auto layout = new QVBoxLayout();
+    setLayout(layout);
+
+    auto topLayout = new QHBoxLayout();
+    layout->addLayout(topLayout);
+
+    auto textLabel = new QLabel(tr("Contrast"));
+    topLayout->addWidget(textLabel);
+
+    topLayout->addStretch();
+
+    auto valueLabel = new QLabel(formatFloat(filter_->factor, 4));
+    topLayout->addWidget(valueLabel);
+
+    auto slider = new QSlider(Qt::Horizontal);
+    slider->setRange(-63, 64);
+    slider->setTickInterval(8);
+    slider->setTickPosition(QSlider::TickPosition::TicksBelow);
+    slider->setValue(0);
+    slider->setFixedWidth(300);
+    layout->addWidget(slider);
+
+    connect(slider, &QSlider::valueChanged, this, [this, valueLabel](int value) {
+        auto valuef = static_cast<F32>(value) / 64;
+        auto factor = std::pow(valuef, 3.0) / 2.0 + 1.0;
+        valueLabel->setText(formatFloat(factor, 4));
+        filter_->factor = factor;
         // filter_->update(); // Not necessary
         emit filterUpdated();
     });

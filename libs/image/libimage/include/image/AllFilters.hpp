@@ -21,6 +21,7 @@ namespace image {
         registerFilter<ExposureFilterSpec>(reg);
         registerFilter<LutFilterSpec>(reg);
         registerFilter<SaturationFilterSpec>(reg);
+        registerFilter<ContrastFilterSpec>(reg);
 
         return reg;
     }

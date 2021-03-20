@@ -57,6 +57,17 @@ private:
     image::SaturationFilterSpec *filter_;
 };
 
+class ContrastFilterWidget : public FilterWidget {
+    Q_OBJECT
+public:
+    explicit ContrastFilterWidget(image::AbstractFilterSpec *filter, QWidget *parent = nullptr) noexcept;
+
+    virtual ~ContrastFilterWidget() {}
+
+private:
+    image::ContrastFilterSpec *filter_;
+};
+
 inline FilterWidget *makeFilterWidget(image::AbstractFilterSpec *filter, QWidget *parent = nullptr) noexcept {
     const auto &meta = filter->getMeta();
     if (meta.id == "filters.exposure") {
@@ -65,6 +76,8 @@ inline FilterWidget *makeFilterWidget(image::AbstractFilterSpec *filter, QWidget
         return new LutFilterWidget(filter, parent);
     } else if (meta.id == "filters.saturation") {
         return new SaturationFilterWidget(filter, parent);
+    } else if (meta.id == "filters.contrast") {
+        return new ContrastFilterWidget(filter, parent);
     } else {
         std::terminate();
     }
