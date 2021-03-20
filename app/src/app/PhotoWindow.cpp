@@ -92,25 +92,25 @@ void PhotoWindow::setupDialogs() {
 }
 
 void PhotoWindow::setupActions() {
-    newWindowAction = new QAction("&New window", this);
+    newWindowAction = new QAction("&New Window", this);
     connect(newWindowAction, &QAction::triggered, this, [] {
         auto wnd = new PhotoWindow();
         wnd->show();
     });
 
-    openImageAction = new QAction("&Open image", this);
+    openImageAction = new QAction("&Open Image...", this);
     openImageAction->setShortcuts(QKeySequence::Open);
     openImageAction->setIcon(style()->standardIcon(QStyle::StandardPixmap::SP_DialogOpenButton));
     connect(openImageAction, &QAction::triggered, this, [this] { openImageDialog->show(); });
 
-    exportImageAction = new QAction("&Export image", this);
+    exportImageAction = new QAction("&Export Image...", this);
     connect(exportImageAction, &QAction::triggered, this, [this] { exportImageDialog->show(); });
 
-    openCompositionAction = new QAction("&Open composition", this);
+    openCompositionAction = new QAction("&Open Composition...", this);
     openCompositionAction->setIcon(style()->standardIcon(QStyle::StandardPixmap::SP_DialogOpenButton));
     connect(openCompositionAction, &QAction::triggered, this, [this] { openCompositionDialog->show(); });
 
-    saveCompositionAction = new QAction("&Save composition", this);
+    saveCompositionAction = new QAction("&Save Composition", this);
     saveCompositionAction->setEnabled(false);
     saveCompositionAction->setShortcuts(QKeySequence::Save);
     saveCompositionAction->setIcon(style()->standardIcon(QStyle::StandardPixmap::SP_DialogSaveButton));
@@ -122,7 +122,7 @@ void PhotoWindow::setupActions() {
         }
     });
 
-    saveCompositionAsAction = new QAction("Save composition &as", this);
+    saveCompositionAsAction = new QAction("Save Composition &As...", this);
     saveCompositionAsAction->setEnabled(false);
     saveCompositionAsAction->setShortcuts(QKeySequence::SaveAs);
     connect(saveCompositionAsAction, &QAction::triggered, this, [this] { saveCompositionDialog->show(); });
@@ -131,7 +131,7 @@ void PhotoWindow::setupActions() {
     quitAction->setShortcuts(QKeySequence::Quit);
     connect(quitAction, &QAction::triggered, this, &QApplication::quit);
 
-    toggleShowMaskOverlayAction = new QAction("&Show mask overlay", this);
+    toggleShowMaskOverlayAction = new QAction("&Show Mask Overlay", this);
     toggleShowMaskOverlayAction->setCheckable(true);
     connect(toggleShowMaskOverlayAction, &QAction::toggled, activeMaskManager.get(), &MaskManager::setOverlayEnabled);
 }
