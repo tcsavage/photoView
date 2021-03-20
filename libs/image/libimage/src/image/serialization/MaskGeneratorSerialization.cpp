@@ -24,7 +24,9 @@ namespace image::serialization {
 
     Expected<void, ReadError> LumaMaskGeneratorSerialization::read(const ReadContext &,
                                                                    const pt::ptree &,
-                                                                   AbstractMaskGenerator *) const noexcept { return success; }
+                                                                   AbstractMaskGenerator *) const noexcept {
+        return success;
+    }
 
     // Linear gradient
 

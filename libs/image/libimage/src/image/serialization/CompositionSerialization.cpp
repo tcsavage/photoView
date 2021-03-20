@@ -21,9 +21,7 @@ namespace image::serialization {
         tree.put("generator", meta.id);
         pt::ptree subtree;
         auto serializerResult = ctx.maskGeneratorSerializationRegistry->create(meta.id);
-        if (serializerResult.hasValue()) {
-            serializerResult.value()->write(ctx, subtree, mask.generator());
-        }
+        if (serializerResult.hasValue()) { serializerResult.value()->write(ctx, subtree, mask.generator()); }
         if (!subtree.empty()) { tree.put_child("options", subtree); }
     }
 
@@ -32,9 +30,7 @@ namespace image::serialization {
         tree.put("filter", meta.id);
         pt::ptree subtree;
         auto serializerResult = ctx.filterSerializationRegistry->create(meta.id);
-        if (serializerResult.hasValue()) {
-            serializerResult.value()->write(ctx, subtree, &filter);
-        }
+        if (serializerResult.hasValue()) { serializerResult.value()->write(ctx, subtree, &filter); }
         if (!subtree.empty()) { tree.put_child("options", subtree); }
     }
 
@@ -124,9 +120,7 @@ namespace image::serialization {
     }
 
     Expected<void, ReadError> read(const ReadContext &ctx, const pt::ptree &tree, GeneratedMask &mask) noexcept {
-        std::cerr << "Reading mask\n";
         if (auto generatorId = tree.get_optional<String>("generator")) {
-            std::cerr << "Mask generator is " << *generatorId << "\n";
             // Check that we have a mask generator registry.
             if (!ctx.maskGeneratorRegistry) {
                 return Unexpected(ReadError { "GeneratedMask", "*", "No mask generator registry set" });
@@ -146,21 +140,18 @@ namespace image::serialization {
             }
             auto &generator = *createResult;
 
-            std::cerr << "Created generator\n";
-
             // Read generator-specific options.
             if (auto options = tree.get_child_optional("options")) {
                 auto serializerResult = ctx.maskGeneratorSerializationRegistry->create(*generatorId);
                 if (serializerResult.hasError()) {
                     std::stringstream messageSs;
-                    messageSs << "Mask generator named '" << *generatorId << "' has options but no serialisation handler";
+                    messageSs << "Mask generator named '" << *generatorId
+                              << "' has options but no serialisation handler";
                     return Unexpected(ReadError { "GeneratedMask", "generator", messageSs.str() });
                 }
                 auto &serialization = *serializerResult;
                 serialization->read(ctx, *options, generator.get());
             }
-
-            std::cerr << "Inserting into generated mask\n";
 
             mask.setGenerator(std::move(generator));
         } else {
@@ -179,18 +170,13 @@ namespace image::serialization {
             }
         }
 
-        std::cerr << "Read layer filters\n";
-
         if (auto mask = tree.get_child_optional("mask")) {
-            std::cerr << "Mask present\n";
             layer.mask = std::make_shared<GeneratedMask>();
             auto maskResult = read(ctx, *mask, *layer.mask);
             if (maskResult.hasError()) {
                 return Unexpected(ReadError { "Layer", "mask", maskResult.error().generateString() });
             }
         }
-
-        std::cerr << "Layer complete\n";
 
         return success;
     }

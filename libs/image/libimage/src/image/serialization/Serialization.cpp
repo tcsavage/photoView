@@ -70,7 +70,7 @@ namespace image::serialization {
 
 
     // Writing
-    
+
 
     void write(const WriteContext &, pt::ptree &tree, const glm::vec2 vec) noexcept {
         tree.put("x", vec.x);
