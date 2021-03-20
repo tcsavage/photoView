@@ -23,12 +23,14 @@ cmrc_add_resource_library(
 # libimage
 add_library(libimage
     src/image/Composition.cpp
-    src/image/CompositionIO.cpp
+    src/image/CompositionSerialization.cpp
     src/image/Filters.cpp
+    src/image/FiltersSerialization.cpp
     src/image/Mask.cpp
     src/image/MaskProcessor.cpp
     src/image/Processor.cpp
     src/image/Resource.cpp
+    src/image/Serialization.cpp
     src/image/Stopwatch.cpp
     src/image/Type.cpp
     src/image/luts/Barycentric.cpp

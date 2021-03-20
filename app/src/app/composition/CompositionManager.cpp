@@ -3,7 +3,7 @@
 #include <cassert>
 #include <iostream>
 
-#include <image/CompositionIO.hpp>
+#include <image/CompositionSerialization.hpp>
 #include <image/IO.hpp>
 #include <image/opencl/Manager.hpp>
 
@@ -41,7 +41,7 @@ void CompositionManager::openComposition(const QString &qPath) noexcept {
     emit imageStartedLoading(qPath);
     std::cerr << "[CompositionManager] Opening composition: " << qPath.toStdString() << "\n";
     Path path = qPath.toStdString();
-    auto compResult = loadFromFile(path, &filterRegistry, &maskGeneratorRegistry);
+    auto compResult = serialization::loadFromFile(path, &filterRegistry, &maskGeneratorRegistry);
     if (compResult.hasError()) {
         std::cerr << "[CompositionManager] Error opening composition: " << compResult.error().message << "\n";
         // TODO: Error state
@@ -62,8 +62,8 @@ void CompositionManager::openComposition(const QString &qPath) noexcept {
 }
 
 void CompositionManager::saveComposition(const QString &qPath) noexcept {
-    image::Path path = qPath.toStdString();
-    image::saveToFile(path, *composition_);
+    Path path = qPath.toStdString();
+    serialization::saveToFile(path, *composition_);
 
     emit compositionPathChanged(qPath);
 }

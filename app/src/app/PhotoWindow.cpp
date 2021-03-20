@@ -16,8 +16,6 @@
 #include <QUrl>
 #include <QVBoxLayout>
 
-#include <image/CompositionIO.hpp>
-
 PhotoWindow::PhotoWindow() {
     qDebug() << "Constructing PhotoWindow";
     setupProcessor();
