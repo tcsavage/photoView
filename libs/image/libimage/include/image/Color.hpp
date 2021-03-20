@@ -13,10 +13,20 @@
 namespace image {
 
     template <class T>
+    struct MatrixRGB final : public glm::mat<4, 4, T, glm::defaultp> {
+        using GLMType = glm::mat<4, 4, T, glm::defaultp>;
+
+        template <class... Args>
+        constexpr MatrixRGB(Args &&... args) noexcept : glm::mat<4, 4, T, glm::defaultp>(std::forward<Args>(args)...) {}
+    };
+
+    template <class T>
     using BaseColor3 = glm::vec<3, T, glm::defaultp>;
 
     template <class T>
     struct ColorRGB final : public BaseColor3<T> {
+        using GLMType = BaseColor3<T>;
+
         constexpr ColorRGB() noexcept : BaseColor3<T>(0) {}
 
         template <class... Args>
@@ -32,6 +42,8 @@ namespace image {
 
     template <class T>
     struct ColorHSL final : public BaseColor3<T> {
+        using GLMType = BaseColor3<T>;
+
         constexpr ColorHSL() noexcept : BaseColor3<T>(0) {}
 
         template <class... Args>
@@ -44,6 +56,14 @@ namespace image {
         constexpr T &luminance() noexcept { return BaseColor3<T>::z; }
         constexpr const T &luminance() const noexcept { return BaseColor3<T>::z; }
     };
+
+    template <class T>
+    ColorRGB<T> operator*(const MatrixRGB<T> &mat, const ColorRGB<T> &rgb) noexcept {
+        auto glmMat = static_cast<MatrixRGB<T>::GLMType>(mat);
+        glm::vec<4, T, glm::defaultp> glmVec { static_cast<ColorRGB<T>::GLMType>(rgb), 1.0 };
+        auto out = glmMat * glmVec;
+        return ColorRGB<T>(out.r, out.g, out.b) / out.w;
+    }
 
     template <class Out, class In>
     requires(std::unsigned_integral<In> && std::unsigned_integral<Out>) || (std::floating_point<In> && std::floating_point<Out>)
@@ -181,6 +201,31 @@ namespace image {
 
         return ColorRGB<T>(r, g, b);
     }
+
+    template <class T>
+    constexpr MatrixRGB<T> saturationMatrix(T factor) noexcept {
+        T rwgt = 0.3086;
+        T gwgt = 0.6094;
+        T bwgt = 0.0820;
+
+        T s = factor;
+
+        T a = (1.0-s)*rwgt + s;
+        T b = (1.0-s)*rwgt;
+        T c = (1.0-s)*rwgt;
+        T d = (1.0-s)*gwgt;
+        T e = (1.0-s)*gwgt + s;
+        T f = (1.0-s)*gwgt;
+        T g = (1.0-s)*bwgt;
+        T h = (1.0-s)*bwgt;
+        T i = (1.0-s)*bwgt + s;
+        MatrixRGB<T> mat {
+            a,      b,      c,      0.0,
+            d,      e,      f,      0.0,
+            g,      h,      i,      0.0,
+            0.0,    0.0,    0.0,    1.0,
+        };
+        return mat;
     }
 
 }
