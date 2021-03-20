@@ -24,11 +24,19 @@ namespace {
         return out;
     }
 
+    // QString formatSignedFloat(F32 value) noexcept {
+    //     QString out;
+    //     QTextStream ts(&out);
+    //     ts.setRealNumberPrecision(2);
+    //     ts << Qt::forcesign << Qt::forcepoint << value;
+    //     return out;
+    // }
+
     QString formatFloat(F32 value) noexcept {
         QString out;
         QTextStream ts(&out);
         ts.setRealNumberPrecision(2);
-        ts << Qt::forcesign << Qt::forcepoint << value;
+        ts << Qt::forcepoint << value;
         return out;
     }
 
@@ -125,16 +133,15 @@ SaturationFilterWidget::SaturationFilterWidget(image::AbstractFilterSpec *filter
     topLayout->addWidget(valueLabel);
 
     auto slider = new QSlider(Qt::Horizontal);
-    slider->setRange(-100, 100);
+    slider->setRange(0, 200);
     slider->setTickInterval(10);
     slider->setTickPosition(QSlider::TickPosition::TicksBelow);
-    slider->setValue(static_cast<int>(0));
+    slider->setValue(100);
     slider->setFixedWidth(300);
     layout->addWidget(slider);
 
     connect(slider, &QSlider::valueChanged, this, [this, valueLabel](int value) {
-        auto valuef = static_cast<F32>(value) / 100;
-        auto multiplier = std::min(10.0, 1.0 - std::log2(-valuef + 1.0));
+        auto multiplier = static_cast<F32>(value) / 100;
         valueLabel->setText(formatFloat(multiplier));
         filter_->multiplier = multiplier;
         // filter_->update(); // Not necessary
