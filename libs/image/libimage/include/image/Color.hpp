@@ -133,60 +133,54 @@ namespace image {
 
     template <std::floating_point T>
     constexpr ColorHSL<T> rgbToHsl(const ColorRGB<T> &rgb) noexcept {
-        auto r = rgb.red();
-        auto g = rgb.green();
-        auto b = rgb.blue();
+        T r = rgb.red();
+        T g = rgb.green();
+        T b = rgb.blue();
 
-        auto xMax = std::max(r, std::max(g, b));
-        auto xMin = std::min(r, std::min(g, b));
-        auto cr = xMax - xMin;
-        auto l = (xMax + xMin) / 2.0;
-        auto deg60 = 1.0 / 6.0;
+        T v = std::max<T>(std::max<T>(r, g), b);
+        T c = v - std::min<T>(std::min<T>(r, g), b);
+        T f = 1.0 - std::abs(v + v - c - 1.0);
+
         T h = 0.0;
-        if (xMax == xMin) {
-            h = 0.0;
-        } else if (xMax == r) {
-            h = deg60 * ((g - b) / cr);
-        } else if (xMax == g) {
-            h = deg60 * (2.0 + ((b - r) / cr));
-        } else if (xMax == b) {
-            h = deg60 * (4.0 + ((r - g) / cr));
+        if (c) {
+            if (v == r) {
+                h = (g - b) / c;
+            } else if (v == g) {
+                h = 2.0 + (b - r) / c;
+            } else {
+                h = 4.0 + (r - g) / c;
+            }
+            if (h < 0.0) { h += 6.0; }
+            h /= 6.0;
         }
+
         T s = 0.0;
-        if (xMax != xMin) {
-            s = cr / (1.0 - std::abs(xMax + xMin - 1.0));
-        }
+        if (f > 0.0) { s = c / f; }
+
+        T l = (v + v - c) / 2.0;
+
         return ColorHSL<T>(h, s, l);
     }
 
     template <std::floating_point T>
     constexpr ColorRGB<T> hslToRgb(const ColorHSL<T> &hsl) noexcept {
-        auto h = hsl.hue();
-        auto s = hsl.saturation();
-        auto l = hsl.luminance();
+        auto h = std::clamp<T>(hsl.hue(), 0.0, 1.0) * 360.0;
+        auto s = std::clamp<T>(hsl.saturation(), 0.0, 1.0);
+        auto l = std::clamp<T>(hsl.luminance(), 0.0, 1.0);
 
-        auto deg60 = 1.0 / 6.0;
+        auto a = s * std::min<T>(l, 1 - l);
 
-        auto cr = (1.0 - std::abs(2.0 * l - 1.0)) * s;
-        auto hp = h / deg60;
-        auto xr = cr * (1.0 - std::abs(std::fmod(hp, 2.0) - 1.0));
-        auto m = l - cr / 2.0;
+        auto kr = std::fmod(h / 30.0, 12.0);
+        auto r = l - a * std::max<T>(std::min<T>(kr - 3.0, 9.0 - kr), -1.0);
 
-        if (hp >= 0 && hp <= 1) {
-            return ColorRGB<T>(cr + m, xr + m, m);
-        } else if (hp >= 1 && hp <= 2) {
-            return ColorRGB<T>(xr + m, cr + m, m);
-        } else if (hp >= 2 && hp <= 3) {
-            return ColorRGB<T>(m, cr + m, xr + m);
-        } else if (hp >= 3 && hp <= 4) {
-            return ColorRGB<T>(m, xr + m, cr + m);
-        } else if (hp >= 4 && hp <= 5) {
-            return ColorRGB<T>(cr + m, m, xr + m);
-        } else if (hp >= 5 && hp <= 6) {
-            return ColorRGB<T>(xr + m, m, cr + m);
-        } else {
-            return ColorRGB<T>(m, m, m);
-        }
+        auto kg = std::fmod(8.0 + h / 30.0, 12.0);
+        auto g = l - a * std::max<T>(std::min<T>(kg - 3.0, 9.0 - kg), -1.0);
+
+        auto kb = std::fmod(4.0 + h / 30.0, 12.0);
+        auto b = l - a * std::max<T>(std::min<T>(kb - 3.0, 9.0 - kb), -1.0);
+
+        return ColorRGB<T>(r, g, b);
+    }
     }
 
 }
