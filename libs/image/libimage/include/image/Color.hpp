@@ -92,18 +92,18 @@ namespace image {
     }
 
     template <std::floating_point T>
-    constexpr T mix(T factor, T a, T invFactor, T b) noexcept {
-        return (factor * a) + (invFactor * b);
+    constexpr T mix(T invFactor, T a, T factor, T b) noexcept {
+        return (invFactor * a) + (factor * b);
     }
 
     template <std::floating_point T>
     constexpr T mix(T factor, T a, T b) noexcept {
-        return mix(factor, a, 1 - factor, b);
+        return mix(1 - factor, a, factor, b);
     }
 
     template <std::unsigned_integral T, std::floating_point F = F32>
-    constexpr T mix(F factor, T a, F invFactor, T b) noexcept {
-        return conv<T, F>(mix(factor, conv<F, T>(a), invFactor, conv<F, T>(b)));
+    constexpr T mix(F invFactor, T a, F factor, T b) noexcept {
+        return conv<T, F>(mix(invFactor, conv<F, T>(a), factor, conv<F, T>(b)));
     }
 
     template <std::unsigned_integral T, std::floating_point F = F32>
@@ -112,15 +112,15 @@ namespace image {
     }
 
     template <class T, std::floating_point F = F32>
-    constexpr ColorRGB<T> mix(F factor, ColorRGB<T> a, F invFactor, ColorRGB<T> b) noexcept {
-        return ColorRGB<T> { mix(factor, a.r, invFactor, b.r),
-                             mix(factor, a.g, invFactor, b.g),
-                             mix(factor, a.b, invFactor, b.b) };
+    constexpr ColorRGB<T> mix(F invFactor, ColorRGB<T> a, F factor, ColorRGB<T> b) noexcept {
+        return ColorRGB<T> { mix(invFactor, a.r, factor, b.r),
+                             mix(invFactor, a.g, factor, b.g),
+                             mix(invFactor, a.b, factor, b.b) };
     }
 
     template <class T, std::floating_point F = F32>
     constexpr ColorRGB<T> mix(F factor, ColorRGB<T> a, ColorRGB<T> b) noexcept {
-        return mix(factor, a, 1 - factor, b);
+        return mix(1 - factor, a, factor, b);
     }
 
     template <std::floating_point T>

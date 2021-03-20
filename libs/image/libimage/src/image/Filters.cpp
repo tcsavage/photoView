@@ -23,7 +23,7 @@ namespace image {
 
     void LutFilterSpec::apply(luts::Lattice3D &lattice) const noexcept {
         if (lut.data) {
-            lattice.accumulate([this](ColorRGB<F32> &c) { return mix(strength, interp.map(c), c); });
+            lattice.accumulate([this](ColorRGB<F32> &c) { return mix(strength, c, interp.map(c)); });
         }
     }
 
