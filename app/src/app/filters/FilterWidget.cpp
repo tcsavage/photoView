@@ -42,43 +42,84 @@ namespace {
 
 }
 
-ExposureFilterWidget::ExposureFilterWidget(image::AbstractFilterSpec *filter, QWidget *parent) noexcept
-  : FilterWidget(filter, parent)
-  , filter_(reinterpret_cast<ExposureFilterSpec *>(filter)) {
+SimpleSliderFilterWidget::SimpleSliderFilterWidget(QWidget *parent) noexcept : FilterWidget(parent) {}
+
+void SimpleSliderFilterWidget::setup() noexcept {
     auto layout = new QVBoxLayout();
     setLayout(layout);
 
     auto topLayout = new QHBoxLayout();
     layout->addLayout(topLayout);
 
-    auto textLabel = new QLabel(tr("Exposure"));
-    topLayout->addWidget(textLabel);
+    widgetLabel = new QLabel(title());
+    topLayout->addWidget(widgetLabel);
 
     topLayout->addStretch();
 
-    auto valueLabel = new QLabel(formatEvsLabel(filter_->exposureEvs));
+    valueLabel = new QLabel();
     topLayout->addWidget(valueLabel);
 
-    auto slider = new QSlider(Qt::Horizontal);
-    slider->setRange(-(rangeEvs * nDivisions), rangeEvs * nDivisions);
-    slider->setTickInterval(nDivisions);
+    int minVal = scaleToInt(this->minValue());
+    int maxVal = scaleToInt(this->maxValue());
+
+    slider = new QSlider(Qt::Horizontal);
+    slider->setRange(minVal, maxVal);
+    slider->setTickInterval(this->tickInterval());
     slider->setTickPosition(QSlider::TickPosition::TicksBelow);
-    slider->setValue(static_cast<int>(filter_->exposureEvs * static_cast<F32>(nDivisions)));
     slider->setFixedWidth(300);
     layout->addWidget(slider);
 
-    connect(slider, &QSlider::valueChanged, this, [this, valueLabel](int value) {
-        auto exposureEvs = static_cast<F32>(value) / static_cast<F32>(nDivisions);
-        valueLabel->setText(formatEvsLabel(exposureEvs));
-        filter_->exposureEvs = exposureEvs;
-        filter_->update();
-        emit filterUpdated();
+    connect(slider, &QSlider::valueChanged, this, [this](int value) {
+        emit valueChanged(scaleToFloat(value));
+    });
+
+    setValue(this->defaultValue());
+
+    connect(this, &SimpleSliderFilterWidget::valueChanged, this, [this](F32 value) {
+        valueLabel->setText(formatValueLabel(value));
     });
 }
 
-LutFilterWidget::LutFilterWidget(image::AbstractFilterSpec *filter, QWidget *parent) noexcept
-  : FilterWidget(filter, parent)
-  , filter_(reinterpret_cast<LutFilterSpec *>(filter)) {
+void SimpleSliderFilterWidget::setValue(image::F32 value) noexcept {
+    slider->setValue(scaleToInt(value));
+}
+
+int SimpleSliderFilterWidget::scaleToInt(image::F32 value) const noexcept {
+    auto scaledRange = static_cast<F32>(numSubdivisions()) / (maxValue() - minValue());
+    return static_cast<int>(scaledRange * value);
+}
+
+image::F32 SimpleSliderFilterWidget::scaleToFloat(int value) const noexcept {
+    auto scaledRange = static_cast<F32>(numSubdivisions()) / (maxValue() - minValue());
+    return static_cast<F32>(value) / scaledRange;
+}
+
+QString SimpleSliderFilterWidget::formatValueLabel(F32 value) const noexcept { return formatFloat(value); }
+
+ExposureFilterWidget::ExposureFilterWidget(QWidget *parent) noexcept
+  : SimpleSliderFilterWidget(parent) {
+      setup();
+      connect(this, &SimpleSliderFilterWidget::valueChanged, this, [this](F32 value) {
+        valueLabel->setText(formatValueLabel(value));
+        if (filter_) {
+            filter_->exposureEvs = value;
+            filter_->update();
+            emit filterUpdated();
+        }
+    });
+  }
+
+QString ExposureFilterWidget::formatValueLabel(image::F32 value) const noexcept { return formatEvsLabel(value); }
+
+void ExposureFilterWidget::setFilter(image::AbstractFilterSpec *filter) noexcept {
+    filter_ = static_cast<ExposureFilterSpec *>(filter);
+    if (filter_) {
+        setValue(filter_->exposureEvs);
+    }
+}
+
+LutFilterWidget::LutFilterWidget(QWidget *parent) noexcept
+  : FilterWidget(parent) {
     auto layout = new QFormLayout();
     setLayout(layout);
 
@@ -88,14 +129,12 @@ LutFilterWidget::LutFilterWidget(image::AbstractFilterSpec *filter, QWidget *par
     fileDialog->setNameFilter("3D LUTs (*.cube)");
     fileDialog->setDirectory(QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
 
-    auto fileChooser = new FileChooser(fileDialog, this);
-    fileChooser->setPath(QString::fromStdString(filter_->lut.filePath.value_or("")));
+    fileChooser = new FileChooser(fileDialog, this);
     layout->addRow("3D Lut file", fileChooser);
 
-    auto slider = new QSlider(Qt::Horizontal);
+    slider = new QSlider(Qt::Horizontal);
     slider->setRange(0, 100);
     slider->setTickInterval(1);
-    slider->setValue(static_cast<int>(filter_->strength * 100.0f));
     layout->addRow("Strength", slider);
 
     connect(fileChooser, &FileChooser::fileChosen, this, [this](const QString &path) {
@@ -115,71 +154,48 @@ LutFilterWidget::LutFilterWidget(image::AbstractFilterSpec *filter, QWidget *par
     });
 }
 
-SaturationFilterWidget::SaturationFilterWidget(image::AbstractFilterSpec *filter, QWidget *parent) noexcept
-  : FilterWidget(filter, parent)
-  , filter_(reinterpret_cast<SaturationFilterSpec *>(filter)) {
-    auto layout = new QVBoxLayout();
-    setLayout(layout);
-
-    auto topLayout = new QHBoxLayout();
-    layout->addLayout(topLayout);
-
-    auto textLabel = new QLabel(tr("Saturation"));
-    topLayout->addWidget(textLabel);
-
-    topLayout->addStretch();
-
-    auto valueLabel = new QLabel(formatFloat(filter_->multiplier));
-    topLayout->addWidget(valueLabel);
-
-    auto slider = new QSlider(Qt::Horizontal);
-    slider->setRange(0, 200);
-    slider->setTickInterval(10);
-    slider->setTickPosition(QSlider::TickPosition::TicksBelow);
-    slider->setValue(100);
-    slider->setFixedWidth(300);
-    layout->addWidget(slider);
-
-    connect(slider, &QSlider::valueChanged, this, [this, valueLabel](int value) {
-        auto multiplier = static_cast<F32>(value) / 100;
-        valueLabel->setText(formatFloat(multiplier));
-        filter_->multiplier = multiplier;
-        // filter_->update(); // Not necessary
-        emit filterUpdated();
-    });
+void LutFilterWidget::setFilter(image::AbstractFilterSpec *filter) noexcept {
+    filter_ = static_cast<LutFilterSpec *>(filter);
+    if (filter_) {
+        fileChooser->setPath(QString::fromStdString(filter_->lut.filePath.value_or("")));
+        slider->setValue(static_cast<int>(filter_->strength * 100.0f));
+    }
 }
 
-ContrastFilterWidget::ContrastFilterWidget(image::AbstractFilterSpec *filter, QWidget *parent) noexcept
-  : FilterWidget(filter, parent)
-  , filter_(reinterpret_cast<ContrastFilterSpec *>(filter)) {
-    auto layout = new QVBoxLayout();
-    setLayout(layout);
-
-    auto topLayout = new QHBoxLayout();
-    layout->addLayout(topLayout);
-
-    auto textLabel = new QLabel(tr("Contrast"));
-    topLayout->addWidget(textLabel);
-
-    topLayout->addStretch();
-
-    auto valueLabel = new QLabel(formatFloat(filter_->factor, 4));
-    topLayout->addWidget(valueLabel);
-
-    auto slider = new QSlider(Qt::Horizontal);
-    slider->setRange(-63, 64);
-    slider->setTickInterval(8);
-    slider->setTickPosition(QSlider::TickPosition::TicksBelow);
-    slider->setValue(0);
-    slider->setFixedWidth(300);
-    layout->addWidget(slider);
-
-    connect(slider, &QSlider::valueChanged, this, [this, valueLabel](int value) {
-        auto valuef = static_cast<F32>(value) / 64;
-        auto factor = std::pow(valuef, 3.0) / 2.0 + 1.0;
-        valueLabel->setText(formatFloat(factor, 4));
-        filter_->factor = factor;
-        // filter_->update(); // Not necessary
-        emit filterUpdated();
+SaturationFilterWidget::SaturationFilterWidget(QWidget *parent) noexcept
+  : SimpleSliderFilterWidget(parent) {
+      setup();
+      connect(this, &SimpleSliderFilterWidget::valueChanged, this, [this](F32 value) {
+        valueLabel->setText(formatValueLabel(value));
+        if (filter_) {
+            filter_->multiplier = value;
+            emit filterUpdated();
+        }
     });
+  }
+
+void SaturationFilterWidget::setFilter(image::AbstractFilterSpec *filter) noexcept {
+    filter_ = static_cast<SaturationFilterSpec *>(filter);
+    if (filter_) {
+        setValue(filter_->multiplier);
+    }
+}
+
+ContrastFilterWidget::ContrastFilterWidget(QWidget *parent) noexcept
+  : SimpleSliderFilterWidget(parent) {
+      setup();
+      connect(this, &SimpleSliderFilterWidget::valueChanged, this, [this](F32 value) {
+        valueLabel->setText(formatValueLabel(value));
+        if (filter_) {
+            filter_->factor = value;
+            emit filterUpdated();
+        }
+    });
+  }
+
+void ContrastFilterWidget::setFilter(image::AbstractFilterSpec *filter) noexcept {
+    filter_ = static_cast<ContrastFilterSpec *>(filter);
+    if (filter_) {
+        setValue(filter_->factor);
+    }
 }

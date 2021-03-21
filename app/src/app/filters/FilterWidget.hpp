@@ -1,84 +1,160 @@
 #pragma once
 
+#include <QLabel>
+#include <QSlider>
 #include <QWidget>
 
+#include <image/Registry.hpp>
+
 #include <app/filters/Filters.hpp>
+#include <app/widgets/FileChooser.hpp>
 
 class FilterWidget : public QWidget {
     Q_OBJECT
 public:
-    explicit FilterWidget(image::AbstractFilterSpec *filter, QWidget *parent = nullptr) noexcept
-      : QWidget(parent)
-      , filter_(filter) {}
+    explicit FilterWidget(QWidget *parent = nullptr) noexcept
+      : QWidget(parent) {}
+
+    explicit FilterWidget(image::AbstractFilterSpec *, QWidget *parent = nullptr) noexcept
+      : QWidget(parent) {}
 
     virtual ~FilterWidget() {}
 
-    inline image::AbstractFilterSpec *filter() noexcept { return filter_; }
+    virtual image::AbstractFilterSpec *filter() noexcept = 0;
+    virtual void setFilter(image::AbstractFilterSpec *filter) noexcept = 0;
 
 signals:
     void filterUpdated();
-
-private:
-    image::AbstractFilterSpec *filter_ { nullptr };
 };
 
-class ExposureFilterWidget : public FilterWidget {
+class SimpleSliderFilterWidget : public FilterWidget {
     Q_OBJECT
 public:
-    explicit ExposureFilterWidget(image::AbstractFilterSpec *filter, QWidget *parent = nullptr) noexcept;
+    explicit SimpleSliderFilterWidget(QWidget *parent = nullptr) noexcept;
+
+    void setValue(image::F32 value) noexcept;
+
+    virtual QString title() const noexcept = 0;
+
+    virtual image::F32 defaultValue() const noexcept { return 0.0; }
+    virtual image::F32 minValue() const noexcept { return -1.0; }
+    virtual image::F32 maxValue() const noexcept { return 1.0; }
+    virtual int numSubdivisions() const noexcept { return 128; }
+    virtual int tickInterval() const noexcept { return 16; }
+
+    virtual QString formatValueLabel(image::F32 value) const noexcept;
+
+signals:
+    void valueChanged(image::F32 value);
+
+protected:
+    void setup() noexcept;
+
+    int scaleToInt(image::F32 value) const noexcept;
+    image::F32 scaleToFloat(int value) const noexcept;
+
+    QSlider *slider;
+    QLabel *widgetLabel;
+    QLabel *valueLabel;
+};
+
+class ExposureFilterWidget : public SimpleSliderFilterWidget {
+    Q_OBJECT
+public:
+    explicit ExposureFilterWidget(QWidget *parent = nullptr) noexcept;
 
     virtual ~ExposureFilterWidget() {}
 
+    virtual QString title() const noexcept override { return tr("Exposure"); }
+
+    virtual image::F32 minValue() const noexcept override { return -4.0; }
+    virtual image::F32 maxValue() const noexcept override { return 4.0; }
+
+    virtual QString formatValueLabel(image::F32 value) const noexcept override;
+
+    virtual image::AbstractFilterSpec *filter() noexcept override { return filter_; }
+    virtual void setFilter(image::AbstractFilterSpec *filter) noexcept override;
+
 private:
     image::ExposureFilterSpec *filter_;
-    int rangeEvs { 5 };
-    int nDivisions { 9 };
 };
 
 class LutFilterWidget : public FilterWidget {
     Q_OBJECT
 public:
-    explicit LutFilterWidget(image::AbstractFilterSpec *filter, QWidget *parent = nullptr) noexcept;
+    explicit LutFilterWidget(QWidget *parent = nullptr) noexcept;
 
     virtual ~LutFilterWidget() {}
 
+    virtual image::AbstractFilterSpec *filter() noexcept override { return filter_; }
+    virtual void setFilter(image::AbstractFilterSpec *filter) noexcept override;
+
 private:
     image::LutFilterSpec *filter_;
+
+    QSlider *slider { nullptr };
+    FileChooser *fileChooser { nullptr };
 };
 
-class SaturationFilterWidget : public FilterWidget {
+class SaturationFilterWidget : public SimpleSliderFilterWidget {
     Q_OBJECT
 public:
-    explicit SaturationFilterWidget(image::AbstractFilterSpec *filter, QWidget *parent = nullptr) noexcept;
+    explicit SaturationFilterWidget(QWidget *parent = nullptr) noexcept;
 
     virtual ~SaturationFilterWidget() {}
+
+    virtual QString title() const noexcept override { return tr("Saturation"); }
+
+    virtual image::F32 defaultValue() const noexcept override { return 1.0; }
+    virtual image::F32 minValue() const noexcept override { return 0.0; }
+    virtual image::F32 maxValue() const noexcept override { return 2.0; }
+
+    virtual image::AbstractFilterSpec *filter() noexcept override { return filter_; }
+    virtual void setFilter(image::AbstractFilterSpec *filter) noexcept override;
 
 private:
     image::SaturationFilterSpec *filter_;
 };
 
-class ContrastFilterWidget : public FilterWidget {
+class ContrastFilterWidget : public SimpleSliderFilterWidget {
     Q_OBJECT
 public:
-    explicit ContrastFilterWidget(image::AbstractFilterSpec *filter, QWidget *parent = nullptr) noexcept;
+    explicit ContrastFilterWidget(QWidget *parent = nullptr) noexcept;
 
     virtual ~ContrastFilterWidget() {}
+
+    virtual QString title() const noexcept override { return tr("Contrast"); }
+
+    virtual image::F32 defaultValue() const noexcept { return 1.0; }
+    virtual image::F32 minValue() const noexcept { return 0.8; }
+    virtual image::F32 maxValue() const noexcept { return 1.2; }
+
+    virtual image::AbstractFilterSpec *filter() noexcept override { return filter_; }
+    virtual void setFilter(image::AbstractFilterSpec *filter) noexcept override;
 
 private:
     image::ContrastFilterSpec *filter_;
 };
 
-inline FilterWidget *makeFilterWidget(image::AbstractFilterSpec *filter, QWidget *parent = nullptr) noexcept {
-    const auto &meta = filter->getMeta();
-    if (meta.id == "filters.exposure") {
-        return new ExposureFilterWidget(filter, parent);
-    } else if (meta.id == "filters.lut") {
-        return new LutFilterWidget(filter, parent);
-    } else if (meta.id == "filters.saturation") {
-        return new SaturationFilterWidget(filter, parent);
-    } else if (meta.id == "filters.contrast") {
-        return new ContrastFilterWidget(filter, parent);
-    } else {
-        std::terminate();
+using FilterWidgetRegistry = image::Registry<FilterWidget, image::FilterMeta>;
+
+namespace {
+    template <class Filter, class Widget>
+    void registerFilterWidget(FilterWidgetRegistry &reg) noexcept {
+        image::FilterMeta meta = Filter::meta;
+        reg.registerType<Widget>(Filter::meta.id, std::move(meta));
     }
 }
+
+inline FilterWidgetRegistry makeFilterWidgetRegistry() noexcept {
+    FilterWidgetRegistry reg;
+
+    registerFilterWidget<image::ExposureFilterSpec, ExposureFilterWidget>(reg);
+    registerFilterWidget<image::LutFilterSpec, LutFilterWidget>(reg);
+    registerFilterWidget<image::SaturationFilterSpec, SaturationFilterWidget>(reg);
+    registerFilterWidget<image::ContrastFilterSpec, ContrastFilterWidget>(reg);
+
+    return reg;
+}
+
+inline FilterWidgetRegistry filterWidgetRegistry { makeFilterWidgetRegistry() };
