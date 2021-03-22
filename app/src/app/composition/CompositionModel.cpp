@@ -325,6 +325,8 @@ QVariant CompositionModel::data(const QModelIndex &idx, int role) const {
         switch (role) {
         case Qt::DisplayRole:
             return gen ? QString::fromStdString(gen->getMeta().name) : "Mask";
+        case Qt::CheckStateRole:
+            return mask.isEnabled ? Qt::Checked : Qt::Unchecked;
         default:
             return QVariant();
         }
@@ -361,6 +363,18 @@ bool CompositionModel::setData(const QModelIndex &idx, const QVariant &value, in
         switch (role) {
         case Qt::CheckStateRole:
             filter.isEnabled = value.value<Qt::CheckState>() == Qt::Checked;
+            emit compositionUpdated();
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    if (node->type == NodeType::Mask) {
+        auto &mask = node->get<GeneratedMask>();
+        switch (role) {
+        case Qt::CheckStateRole:
+            mask.isEnabled = value.value<Qt::CheckState>() == Qt::Checked;
             emit compositionUpdated();
             return true;
         default:

@@ -66,6 +66,8 @@ namespace image {
 
     class GeneratedMask {
     public:
+        bool isEnabled { true };
+        
         inline std::shared_ptr<Mask> mask() const noexcept { return mask_; }
 
         inline AbstractMaskGenerator *generator() const noexcept { return gen_.get(); }

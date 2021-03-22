@@ -86,13 +86,14 @@ namespace image {
     }
 
     void OpSequenceBuilder::accumulate(Layer &layer) noexcept {
-        if (currentOp.mask || layer.mask) {
+        bool hasActiveMask = layer.mask && layer.mask->isEnabled;
+        if (currentOp.mask || hasActiveMask) {
             // We need a new op if:
             // - the current op has one already
             // - or the layer has a mask (regardless of whether the current op has one or not)
             newOp();
         }
-        if (layer.mask) { setMask(layer.mask->mask()); }
+        if (hasActiveMask) { setMask(layer.mask->mask()); }
         for (auto &&filter : layer.filters->filterSpecs) {
             if (filter->isEnabled) { accumulate(*filter); }
         }
