@@ -86,6 +86,7 @@ namespace image {
     }
 
     void OpSequenceBuilder::accumulate(Layer &layer) noexcept {
+        if (!layer.isEnabled) { return; }
         bool hasActiveMask = layer.mask && layer.mask->isEnabled;
         if (currentOp.mask || hasActiveMask) {
             // We need a new op if:

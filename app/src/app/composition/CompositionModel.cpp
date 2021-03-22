@@ -302,9 +302,12 @@ QVariant CompositionModel::data(const QModelIndex &idx, int role) const {
     }
 
     if (node->type == NodeType::Layer) {
+        auto &layer = node->get<Layer>();
         switch (role) {
         case Qt::DisplayRole:
             return "Layer";
+        case Qt::CheckStateRole:
+            return layer.isEnabled ? Qt::Checked : Qt::Unchecked;
         default:
             return QVariant();
         }
@@ -363,6 +366,18 @@ bool CompositionModel::setData(const QModelIndex &idx, const QVariant &value, in
         switch (role) {
         case Qt::CheckStateRole:
             filter.isEnabled = value.value<Qt::CheckState>() == Qt::Checked;
+            emit compositionUpdated();
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    if (node->type == NodeType::Layer) {
+        auto &layer = node->get<Layer>();
+        switch (role) {
+        case Qt::CheckStateRole:
+            layer.isEnabled = value.value<Qt::CheckState>() == Qt::Checked;
             emit compositionUpdated();
             return true;
         default:
