@@ -19,6 +19,7 @@ namespace image::serialization {
     void write(const WriteContext &ctx, pt::ptree &tree, const GeneratedMask &mask) noexcept {
         auto &meta = mask.generator()->getMeta();
         tree.put("generator", meta.id);
+        tree.put("enabled", mask.isEnabled);
         pt::ptree subtree;
         auto serializerResult = ctx.maskGeneratorSerializationRegistry->create(meta.id);
         if (serializerResult.hasValue()) { serializerResult.value()->write(ctx, subtree, mask.generator()); }
@@ -28,6 +29,7 @@ namespace image::serialization {
     void write(const WriteContext &ctx, pt::ptree &tree, const AbstractFilterSpec &filter) noexcept {
         auto &meta = filter.getMeta();
         tree.put("filter", meta.id);
+        tree.put("enabled", filter.isEnabled);
         pt::ptree subtree;
         auto serializerResult = ctx.filterSerializationRegistry->create(meta.id);
         if (serializerResult.hasValue()) { serializerResult.value()->write(ctx, subtree, &filter); }
@@ -35,6 +37,7 @@ namespace image::serialization {
     }
 
     void write(const WriteContext &ctx, pt::ptree &tree, const Layer &layer) noexcept {
+        tree.put("enabled", layer.isEnabled);
         for (auto &&filterSpec : layer.filters->filterSpecs) {
             pt::ptree subtree;
             write(ctx, subtree, *filterSpec);
@@ -109,6 +112,8 @@ namespace image::serialization {
                     serialization->read(ctx, *options, filterSpec.get());
                 }
 
+                filterSpec->isEnabled = tree.get<bool>("enabled", true);
+
                 filters.filterSpecs.emplace_back(std::move(filterSpec));
             } else {
                 std::stringstream ss;
@@ -154,6 +159,8 @@ namespace image::serialization {
             }
 
             mask.setGenerator(std::move(generator));
+
+            mask.isEnabled = tree.get<bool>("enabled", true);
         } else {
             return Unexpected(ReadError { "GeneratedMask", "generator", "Missing" });
         }
@@ -177,6 +184,8 @@ namespace image::serialization {
                 return Unexpected(ReadError { "Layer", "mask", maskResult.error().generateString() });
             }
         }
+
+        layer.isEnabled = tree.get<bool>("enabled", true);
 
         return success;
     }
