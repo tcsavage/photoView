@@ -1,8 +1,27 @@
 #include "FiltersSerialization.hpp"
 
+#include <sstream>
+
+#include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
 namespace image::serialization {
+
+    String encodeFilter(const image::AbstractFilterSpec &filter) noexcept {
+        auto filterSerializationRegistry = makeFilterSerializationRegistry();
+        WriteContext ctx { std::filesystem::current_path(), &filterSerializationRegistry, nullptr };
+        pt::ptree tree;
+        auto &meta = filter.getMeta();
+        tree.put("filter", meta.id);
+        tree.put("enabled", filter.isEnabled);
+        pt::ptree subtree;
+        auto serializerResult = filterSerializationRegistry.create(meta.id);
+        if (serializerResult.hasValue()) { serializerResult.value()->write(ctx, subtree, &filter); }
+        if (!subtree.empty()) { tree.put_child("options", subtree); }
+        std::stringstream ss;
+        pt::write_json(ss, tree);
+        return ss.str();
+    }
 
     // Helpers
 

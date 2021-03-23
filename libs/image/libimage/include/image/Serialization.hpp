@@ -21,4 +21,6 @@ namespace image::serialization {
                  const image::FilterRegistry *filterRegistry,
                  const image::MaskGeneratorRegistry *maskGeneratorRegistry) noexcept;
 
+    String encodeFilter(const image::AbstractFilterSpec &filter) noexcept;
+
 }

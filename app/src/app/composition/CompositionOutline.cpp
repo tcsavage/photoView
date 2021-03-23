@@ -3,16 +3,21 @@
 #include <cassert>
 
 #include <QAction>
+#include <QApplication>
+#include <QByteArray>
+#include <QClipboard>
 #include <QDebug>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMenu>
+#include <QMimeData>
 #include <QPushButton>
 #include <QSlider>
 #include <QToolButton>
 #include <QVBoxLayout>
 
 #include <image/Filters.hpp>
+#include <image/Serialization.hpp>
 
 #include <app/filters/Filters.hpp>
 #include <app/masks/MaskGenerators.hpp>
@@ -143,6 +148,17 @@ void CompositionOutline::setupContextMenu() noexcept {
                 auto id = action->data().toString().toStdString();
                 auto maskGeneratorResult = maskGeneratorRegistry.create(id);  // TODO: Could this result in an error?
                 model_->addLayerMask(idx, std::move(*maskGeneratorResult));
+            });
+        }
+        if (node->type == internal::NodeType::Filter) {
+            menu.addAction("&Copy", [&] {
+                auto &filterSpec = node->get<AbstractFilterSpec>();
+                auto enc = serialization::encodeFilter(filterSpec);
+                auto clipboard = QGuiApplication::clipboard();
+                QMimeData *mimeData = new QMimeData();
+                mimeData->setText((QString::fromStdString(filterSpec.getMeta().id)));
+                mimeData->setData("application/x.photoView.filter+json", QByteArray::fromStdString(enc));
+                clipboard->setMimeData(mimeData);
             });
         }
         if (node->type == internal::NodeType::Filter || node->type == internal::NodeType::Mask ||
