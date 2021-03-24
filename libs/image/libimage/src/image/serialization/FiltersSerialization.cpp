@@ -5,6 +5,8 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
+#include <image/AllFilters.hpp>
+
 namespace image::serialization {
 
     String encodeFilter(const image::AbstractFilterSpec &filter) noexcept {
@@ -21,6 +23,45 @@ namespace image::serialization {
         std::stringstream ss;
         pt::write_json(ss, tree);
         return ss.str();
+    }
+
+    std::unique_ptr<image::AbstractFilterSpec> decodeFilter(const String &encoded) noexcept {
+        auto filterSerializationRegistry = makeFilterSerializationRegistry();
+        auto filterRegistry = makeFilterRegistry();
+        ReadContext ctx { std::filesystem::current_path(),
+                          &filterSerializationRegistry,
+                          nullptr,
+                          &filterRegistry,
+                          nullptr };
+        
+        pt::ptree tree;
+        std::stringstream ss { encoded };
+        pt::read_json(ss, tree);
+
+        if (auto filterName = tree.get_optional<String>("filter")) {
+            // Create new filter implementation instance.
+            auto createResult = ctx.filterRegistry->create(*filterName);
+            if (createResult.hasError()) {
+                return nullptr;
+            }
+            auto &filterSpec = *createResult;
+
+            // Read filter-specific options.
+            if (auto options = tree.get_child_optional("options")) {
+                auto filterSerializationCreateResult = ctx.filterSerializationRegistry->create(*filterName);
+                if (filterSerializationCreateResult.hasError()) {
+                    return nullptr;
+                }
+                auto &serialization = *filterSerializationCreateResult;
+                serialization->read(ctx, *options, filterSpec.get());
+            }
+
+            filterSpec->isEnabled = tree.get<bool>("enabled", true);
+
+            return std::move(filterSpec);
+        } else {
+            return nullptr;
+        }
     }
 
     // Helpers

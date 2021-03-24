@@ -161,6 +161,16 @@ void CompositionOutline::setupContextMenu() noexcept {
                 clipboard->setMimeData(mimeData);
             });
         }
+        if (node->type == internal::NodeType::Filter || node->type == internal::NodeType::Filters ||
+            node->type == internal::NodeType::Layer) {
+            auto clipboard = QGuiApplication::clipboard();
+            auto mimeData = clipboard->mimeData();
+            menu.addAction("&Paste", [&] {
+                auto data = mimeData->data("application/x.photoView.filter+json");
+                auto filterSpec = serialization::decodeFilter(data.toStdString());
+                model_->addFilter(idx, std::move(filterSpec));
+            })->setEnabled(mimeData->hasFormat("application/x.photoView.filter+json"));
+        }
         if (node->type == internal::NodeType::Filter || node->type == internal::NodeType::Mask ||
             node->type == internal::NodeType::Layer) {
             menu.addAction("&Delete", [&] {
