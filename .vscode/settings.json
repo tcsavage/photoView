@@ -86,6 +86,13 @@
         "valarray": "cpp",
         "csetjmp": "cpp",
         "rope": "cpp",
-        "any": "cpp"
-    }
+        "any": "cpp",
+        "qlineargradient": "cpp",
+        "qcolor": "cpp",
+        "qlabel": "cpp",
+        "qslider": "cpp",
+        "*.ipp": "cpp",
+        "qbytearray": "cpp"
+    },
+    "C_Cpp.default.cppStandard": "c++20"
 }
