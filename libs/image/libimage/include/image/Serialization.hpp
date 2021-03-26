@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include <image/AllFilters.hpp>
 #include <image/AllMaskGenerators.hpp>
 #include <image/Composition.hpp>
@@ -23,5 +25,8 @@ namespace image::serialization {
 
     String encodeFilter(const image::AbstractFilterSpec &filter) noexcept;
     std::unique_ptr<image::AbstractFilterSpec> decodeFilter(const String &encoded) noexcept;
+
+    String encodeFilters(const std::vector<image::AbstractFilterSpec *> &filters) noexcept;
+    std::vector<std::unique_ptr<image::AbstractFilterSpec>> decodeFilters(const String &encoded) noexcept;
 
 }

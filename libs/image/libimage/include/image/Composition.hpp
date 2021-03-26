@@ -18,6 +18,7 @@ namespace image {
         std::vector<std::unique_ptr<AbstractFilterSpec>> filterSpecs;
 
         std::unique_ptr<AbstractFilterSpec> &addFilter(std::unique_ptr<AbstractFilterSpec> &&filter) noexcept;
+        std::unique_ptr<AbstractFilterSpec> &addFilter(std::unique_ptr<AbstractFilterSpec> &&filter, int idx) noexcept;
 
         void removeFilters(int start, int numFilters) noexcept;
         void rotateFilters(int src, int count, int dest) noexcept;

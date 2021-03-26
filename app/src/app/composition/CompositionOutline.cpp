@@ -67,6 +67,9 @@ CompositionOutline::CompositionOutline(QWidget *parent) noexcept : QWidget(paren
     treeView = new CompositionTreeView();
     treeView->setHeaderHidden(true);
     layout->addWidget(treeView);
+    treeView->setDragEnabled(true);
+    treeView->setAcceptDrops(true);
+    treeView->setDropIndicatorShown(true);
 
     // Context menu.
     setupContextMenu();
@@ -122,12 +125,12 @@ void CompositionOutline::setCompositionModel(CompositionModel *model) noexcept {
 
     connect(model_, &QAbstractItemModel::modelReset, this, &CompositionOutline::syncWidgetEnabled);
 
-    connect(model_, &CompositionModel::rowsInserted, this, [this](const QModelIndex &parent, int first, int) {
-        // Scroll to the position of the first inserted row.
-        auto idx = model_->index(first, 0, parent);
-        treeView->scrollTo(idx);
-        treeView->setCurrentIndex(idx);
-    });
+    // connect(model_, &CompositionModel::rowsInserted, this, [this](const QModelIndex &parent, int first, int) {
+    //     // Scroll to the position of the first inserted row.
+    //     auto idx = model_->index(first, 0, parent);
+    //     treeView->scrollTo(idx);
+    //     treeView->setCurrentIndex(idx);
+    // });
 
     syncWidgetEnabled();
 }
@@ -151,7 +154,7 @@ void CompositionOutline::setupContextMenu() noexcept {
             });
         }
         if (node->type == internal::NodeType::Filter) {
-            menu.addAction("&Copy", [&] {
+            menu.addAction("&Copy Filters", [&] {
                 auto &filterSpec = node->get<AbstractFilterSpec>();
                 auto enc = serialization::encodeFilter(filterSpec);
                 auto clipboard = QGuiApplication::clipboard();
@@ -165,7 +168,7 @@ void CompositionOutline::setupContextMenu() noexcept {
             node->type == internal::NodeType::Layer) {
             auto clipboard = QGuiApplication::clipboard();
             auto mimeData = clipboard->mimeData();
-            menu.addAction("&Paste", [&] {
+            menu.addAction("&Paste Filters", [&] {
                 auto data = mimeData->data("application/x.photoView.filter+json");
                 auto filterSpec = serialization::decodeFilter(data.toStdString());
                 model_->addFilter(idx, std::move(filterSpec));

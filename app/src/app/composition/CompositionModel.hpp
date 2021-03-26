@@ -91,13 +91,18 @@ namespace internal {
          * @return Node* A pointer to the newly created node
          */
         template <class T>
-        Node *addChild(T *value) noexcept {
+        Node *addChild(T *value, int idx = -1) noexcept {
             auto node = new Node();
             node->type = NodeTraits<T>::type;
             node->ptr = value;
             node->parent = this;
             node->root = root;
-            children.push_back(node);
+            if (idx < 0) {
+                children.push_back(node);
+            } else {
+                auto it = children.begin() + idx;
+                children.insert(it, node);
+            }
             return node;
         }
 
@@ -113,6 +118,7 @@ namespace internal {
         void removeLayers(int startIdx, int count) noexcept;
 
         Node *addFilter(std::unique_ptr<image::AbstractFilterSpec> &&filter) noexcept;
+        Node *addFilter(std::unique_ptr<image::AbstractFilterSpec> &&filter, int idx) noexcept;
         void removeFilters(int startIdx, int count) noexcept;
 
         Node *addMask(std::unique_ptr<image::AbstractMaskGenerator> &&gen) noexcept;
@@ -140,6 +146,9 @@ public:
 
     void addLayer() noexcept;
     void addFilter(const QModelIndex &idx, std::unique_ptr<image::AbstractFilterSpec> &&filter) noexcept;
+    void addFilters(const QModelIndex &parent,
+                    int row,
+                    std::vector<std::unique_ptr<image::AbstractFilterSpec>> &&filters) noexcept;
     void addLayerMask(const QModelIndex &idx, std::unique_ptr<image::AbstractMaskGenerator> &&gen) noexcept;
 
     internal::Node *nodeAtIndex(const QModelIndex &idx) const noexcept;
@@ -158,6 +167,16 @@ public:
     virtual bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
     virtual Qt::ItemFlags flags(const QModelIndex &index) const override;
     virtual QHash<int, QByteArray> roleNames() const override;
+    virtual Qt::DropActions supportedDropActions() const override;
+    virtual QStringList mimeTypes() const override;
+    virtual QMimeData *mimeData(const QModelIndexList &indexes) const override;
+    virtual bool
+    dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
+    virtual bool canDropMimeData(const QMimeData *data,
+                                 Qt::DropAction action,
+                                 int row,
+                                 int column,
+                                 const QModelIndex &parent) const override;
 
     CompositionModel() noexcept {}
     explicit CompositionModel(std::shared_ptr<image::Composition> composition, QObject *parent = nullptr) noexcept;

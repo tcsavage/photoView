@@ -8,6 +8,12 @@ namespace image {
         return filterSpecs.emplace_back(std::move(filter));
     }
 
+    std::unique_ptr<AbstractFilterSpec> &Filters::addFilter(std::unique_ptr<AbstractFilterSpec> &&filter, int idx) noexcept {
+        auto it = filterSpecs.begin() + idx;
+        it = filterSpecs.insert(it, std::move(filter));
+        return *it;
+    }
+
     void Filters::removeFilters(int start, int numFilters) noexcept {
         auto it = filterSpecs.begin() + start;
         filterSpecs.erase(it, it + numFilters);

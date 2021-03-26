@@ -65,7 +65,7 @@ namespace image::serialization {
             }
             return success;
         }
-        return Unexpected(ReadError { "LutResource", "path", "Missing" });
+        return success;
     }
 
 

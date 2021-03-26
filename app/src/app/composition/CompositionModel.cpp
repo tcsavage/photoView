@@ -6,6 +6,10 @@
 #include <QByteArray>
 #include <QDebug>
 #include <QHash>
+#include <QMimeData>
+#include <QStringList>
+
+#include <image/Serialization.hpp>
 
 using namespace image;
 
@@ -82,6 +86,12 @@ namespace internal {
         return addChild(ref.get());
     }
 
+    Node *Node::addFilter(std::unique_ptr<AbstractFilterSpec> &&filter, int idx) noexcept {
+        assert(type == NodeType::Filters);
+        auto &ref = get<Filters>().addFilter(std::move(filter), idx);
+        return addChild(ref.get(), idx);
+    }
+
     void Node::removeFilters(int startIdx, int count) noexcept {
         assert(type == NodeType::Filters);
         auto &filters = get<Filters>();
@@ -119,9 +129,7 @@ namespace internal {
             for (auto &&filterSpec : layer->filters->filterSpecs) {
                 filtersNode->addChild(filterSpec.get());
             }
-            if (layer->mask) {
-                layerNode->addChild(layer->mask.get());
-            }
+            if (layer->mask) { layerNode->addChild(layer->mask.get()); }
         }
     }
 
@@ -165,6 +173,21 @@ void CompositionModel::addFilter(const QModelIndex &idx, std::unique_ptr<image::
     node->addFilter(std::move(filter));
     endInsertRows();
     emit compositionUpdated();
+}
+
+void CompositionModel::addFilters(const QModelIndex &parent,
+                                  int row,
+                                  std::vector<std::unique_ptr<image::AbstractFilterSpec>> &&filters) noexcept {
+    if (!composition_ || !root_) { return; }
+    auto node = nodeAtIndex(parent);
+    if (node->type != NodeType::Filters) { return; }
+    beginInsertRows(parent, row, row);
+    int idx = row;
+    for (auto &&filter : filters) {
+        node->addFilter(std::move(filter), idx);
+        ++idx;
+    }
+    endInsertRows();
 }
 
 void CompositionModel::addLayerMask(const QModelIndex &idx, std::unique_ptr<AbstractMaskGenerator> &&gen) noexcept {
@@ -432,7 +455,8 @@ bool CompositionModel::removeRows(int row, int count, const QModelIndex &parent)
 Qt::ItemFlags CompositionModel::flags(const QModelIndex &index) const {
     if (!index.isValid() || !composition_) { return Qt::NoItemFlags; }
 
-    return Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsUserCheckable;
+    return Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsUserCheckable | Qt::ItemFlag::ItemIsDragEnabled |
+           Qt::ItemFlag::ItemIsDropEnabled | Qt::ItemFlag::ItemIsSelectable;
 }
 
 QHash<int, QByteArray> CompositionModel::roleNames() const {
@@ -441,6 +465,71 @@ QHash<int, QByteArray> CompositionModel::roleNames() const {
     roles[NameRole] = "name";
     roles[NodeTypeRole] = "nodeType";
     return roles;
+}
+
+Qt::DropActions CompositionModel::supportedDropActions() const { return Qt::DropAction::MoveAction; }
+
+QStringList CompositionModel::mimeTypes() const {
+    QStringList out { "application/x.photoView.filters+json" };
+    return out;
+}
+
+QMimeData *CompositionModel::mimeData(const QModelIndexList &indexes) const {
+    std::vector<AbstractFilterSpec *> filters;
+    for (auto &&idx : indexes) {
+        auto node = nodeAtIndex(idx);
+        if (node->type == NodeType::Filter) { filters.push_back(&node->get<AbstractFilterSpec>()); }
+    }
+    if (filters.size() == 0) { return nullptr; }
+    auto enc = serialization::encodeFilters(filters);
+    QMimeData *mimeData = new QMimeData();
+    mimeData->setData("application/x.photoView.filters+json", QByteArray::fromStdString(enc));
+    return mimeData;
+}
+
+bool CompositionModel::dropMimeData(const QMimeData *data, Qt::DropAction, int row, int, const QModelIndex &parent) {
+    // Ignore any data we can't handle.
+    if (!data->hasFormat("application/x.photoView.filters+json")) { return false; }
+
+    // Decode filters data. If empty, fail immediately.
+    auto enc = data->data("application/x.photoView.filters+json").toStdString();
+    auto filters = serialization::decodeFilters(enc);
+    if (filters.size() == 0) { return false; }
+
+    // Look-up parent node so we can decide what do do based on what it is.
+    auto node = nodeAtIndex(parent);
+
+    if (node->type == NodeType::Filters) {
+        // If we dropped on the Filters node itself, insert the filters at the top.
+        if (row < 0) { row = 0; }
+        addFilters(parent, row, std::move(filters));
+        return true;
+    } else if (node->type == NodeType::Filter) {
+        // We dropped on another filter. Insert in its place (i.e. above it.)
+        // We ignore the value of row in this case. Filters can't have children, so it's expected row will always == -1.
+        addFilters(parent.parent(), parent.row(), std::move(filters));
+        return true;
+    } else if (node->type == NodeType::Layer) {
+        // We dropped on a layer. Again, we assume row always == -1.
+        // Generate a new model index for the filters node. Assumes this is always at row 0.
+        auto filtersIdx = index(0, 0, parent);
+        // Inserts at top like if we dropped on filters node.
+        addFilters(filtersIdx, 0, std::move(filters));
+        return true;
+    }
+    return false;
+}
+
+bool CompositionModel::canDropMimeData(const QMimeData *data,
+                                       Qt::DropAction,
+                                       int,
+                                       int,
+                                       const QModelIndex &parent) const {
+    if (data->hasFormat("application/x.photoView.filters+json")) {
+        auto node = nodeAtIndex(parent);
+        return node->type == NodeType::Filter || node->type == NodeType::Filters || node->type == NodeType::Layer;
+    }
+    return false;
 }
 
 CompositionModel::CompositionModel(std::shared_ptr<image::Composition> composition, QObject *parent) noexcept
