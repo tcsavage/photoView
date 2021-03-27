@@ -389,6 +389,7 @@ bool CompositionModel::setData(const QModelIndex &idx, const QVariant &value, in
         switch (role) {
         case Qt::CheckStateRole:
             filter.isEnabled = value.value<Qt::CheckState>() == Qt::Checked;
+            emit dataChanged(idx, idx);
             emit compositionUpdated();
             return true;
         default:
@@ -401,6 +402,7 @@ bool CompositionModel::setData(const QModelIndex &idx, const QVariant &value, in
         switch (role) {
         case Qt::CheckStateRole:
             layer.isEnabled = value.value<Qt::CheckState>() == Qt::Checked;
+            emit dataChanged(idx, idx);
             emit compositionUpdated();
             return true;
         default:
@@ -413,6 +415,7 @@ bool CompositionModel::setData(const QModelIndex &idx, const QVariant &value, in
         switch (role) {
         case Qt::CheckStateRole:
             mask.isEnabled = value.value<Qt::CheckState>() == Qt::Checked;
+            emit dataChanged(idx, idx);
             emit compositionUpdated();
             return true;
         default:

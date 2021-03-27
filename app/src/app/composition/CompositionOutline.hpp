@@ -9,9 +9,14 @@
 class CompositionTreeView : public QTreeView {
     Q_OBJECT
 public:
-    explicit CompositionTreeView(QWidget *parent = nullptr) : QTreeView(parent) {}
+    explicit CompositionTreeView(QWidget *parent = nullptr);
 
     virtual ~CompositionTreeView() {}
+
+    virtual void setModel(QAbstractItemModel *model) override;
+
+public slots:
+    void handleRowsInserted(const QModelIndex &parent, int, int);
 
 signals:
     void currentIndexChanged(const QModelIndex &current);

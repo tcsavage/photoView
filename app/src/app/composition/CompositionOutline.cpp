@@ -24,6 +24,19 @@
 
 using namespace image;
 
+CompositionTreeView::CompositionTreeView(QWidget *parent) : QTreeView(parent) {}
+
+void CompositionTreeView::setModel(QAbstractItemModel *model) {
+    QTreeView::setModel(model);
+    auto compositionModel = static_cast<CompositionModel *>(model);
+    connect(compositionModel, &CompositionModel::rowsInserted, this, &CompositionTreeView::handleRowsInserted);
+}
+
+void CompositionTreeView::handleRowsInserted(const QModelIndex &parent, int first, int) {
+    auto idx = model()->index(first, 0, parent);
+    scrollTo(idx);
+}
+
 void CompositionTreeView::currentChanged(const QModelIndex &current, const QModelIndex &) {
     emit currentIndexChanged(current);
 }
@@ -121,16 +134,8 @@ void CompositionOutline::setCompositionModel(CompositionModel *model) noexcept {
     assert(model != nullptr);
     model_ = model;
     treeView->setModel(model);
-    treeView->expandAll();
 
     connect(model_, &QAbstractItemModel::modelReset, this, &CompositionOutline::syncWidgetEnabled);
-
-    // connect(model_, &CompositionModel::rowsInserted, this, [this](const QModelIndex &parent, int first, int) {
-    //     // Scroll to the position of the first inserted row.
-    //     auto idx = model_->index(first, 0, parent);
-    //     treeView->scrollTo(idx);
-    //     treeView->setCurrentIndex(idx);
-    // });
 
     syncWidgetEnabled();
 }
