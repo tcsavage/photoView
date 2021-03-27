@@ -3,8 +3,7 @@
 #include <QHBoxLayout>
 
 FileChooser::FileChooser(QFileDialog *fd, QWidget *parent) noexcept : QWidget(parent) {
-    fileDialog = fd ? fd : new QFileDialog();
-    fileDialog->setParent(this);
+    fileDialog = fd ? fd : new QFileDialog(this);
     openButton = new QPushButton("Open", this);
     openFileText = new QLineEdit(this);
     openFileText->setEnabled(false);
