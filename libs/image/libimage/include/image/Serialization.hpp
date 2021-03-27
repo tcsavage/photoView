@@ -23,9 +23,6 @@ namespace image::serialization {
                  const image::FilterRegistry *filterRegistry,
                  const image::MaskGeneratorRegistry *maskGeneratorRegistry) noexcept;
 
-    String encodeFilter(const image::AbstractFilterSpec &filter) noexcept;
-    std::unique_ptr<image::AbstractFilterSpec> decodeFilter(const String &encoded) noexcept;
-
     String encodeFilters(const std::vector<image::AbstractFilterSpec *> &filters) noexcept;
     std::vector<std::unique_ptr<image::AbstractFilterSpec>> decodeFilters(const String &encoded) noexcept;
 

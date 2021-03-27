@@ -155,12 +155,16 @@ void CompositionOutline::setupContextMenu() noexcept {
         }
         if (node->type == internal::NodeType::Filter) {
             menu.addAction("&Copy Filters", [&] {
-                auto &filterSpec = node->get<AbstractFilterSpec>();
-                auto enc = serialization::encodeFilter(filterSpec);
+                std::vector<AbstractFilterSpec *> filters;
+                for (auto &&idx : treeView->selectionModel()->selectedIndexes()) {
+                    auto node = model_->nodeAtIndex(idx);
+                    if (node->type == internal::NodeType::Filter) { filters.push_back(&node->get<AbstractFilterSpec>()); }
+                }
+                if (filters.size() == 0) { return; }
+                auto enc = serialization::encodeFilters(filters);
                 auto clipboard = QGuiApplication::clipboard();
                 QMimeData *mimeData = new QMimeData();
-                mimeData->setText((QString::fromStdString(filterSpec.getMeta().id)));
-                mimeData->setData("application/x.photoView.filter+json", QByteArray::fromStdString(enc));
+                mimeData->setData("application/x.photoView.filters+json", QByteArray::fromStdString(enc));
                 clipboard->setMimeData(mimeData);
             });
         }
@@ -169,10 +173,13 @@ void CompositionOutline::setupContextMenu() noexcept {
             auto clipboard = QGuiApplication::clipboard();
             auto mimeData = clipboard->mimeData();
             menu.addAction("&Paste Filters", [&] {
-                auto data = mimeData->data("application/x.photoView.filter+json");
-                auto filterSpec = serialization::decodeFilter(data.toStdString());
-                model_->addFilter(idx, std::move(filterSpec));
-            })->setEnabled(mimeData->hasFormat("application/x.photoView.filter+json"));
+                auto data = mimeData->data("application/x.photoView.filters+json");
+                auto filterSpecs = serialization::decodeFilters(data.toStdString());
+                auto filtersIdx = model_->findClosestFiltersNode(idx);
+                int row = node->type == internal::NodeType::Filter ? idx.row() : 0;
+                model_->addFilters(filtersIdx, row, std::move(filterSpecs));
+                emit model_->compositionUpdated();
+            })->setEnabled(mimeData->hasFormat("application/x.photoView.filters+json"));
         }
         if (node->type == internal::NodeType::Filter || node->type == internal::NodeType::Mask ||
             node->type == internal::NodeType::Layer) {
