@@ -41,4 +41,10 @@ namespace image {
         });
     }
 
+    void ChannelMixerFilterSpec::apply(luts::Lattice3D &lattice) const noexcept {
+        lattice.accumulate([this](ColorRGB<F32> &c) {
+            return linearToSRgb(matrix * sRgbToLinear(c));
+        });
+    }
+
 }

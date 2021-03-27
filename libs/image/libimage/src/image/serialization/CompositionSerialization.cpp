@@ -38,10 +38,14 @@ namespace image::serialization {
 
     void write(const WriteContext &ctx, pt::ptree &tree, const Layer &layer) noexcept {
         tree.put("enabled", layer.isEnabled);
+        pt::ptree filtersTree;
         for (auto &&filterSpec : layer.filters->filterSpecs) {
             pt::ptree subtree;
             write(ctx, subtree, *filterSpec);
-            tree.add_child("filters.", subtree);
+            filtersTree.push_back(std::make_pair("", subtree));
+        }
+        if (!filtersTree.empty()) {
+            tree.add_child("filters", filtersTree);
         }
         if (layer.mask) {
             pt::ptree subtree;
@@ -56,10 +60,14 @@ namespace image::serialization {
             write(ctx, subtree, comp.inputImage);
             tree.add_child("inputImage", subtree);
         }
+        pt::ptree layersTree;
         for (auto &&layer : comp.layers) {
             pt::ptree subtree;
             write(ctx, subtree, *layer);
-            tree.add_child("layers.", subtree);
+            layersTree.push_back(std::make_pair("", subtree));
+        }
+        if (!layersTree.empty()) {
+            tree.add_child("layers", layersTree);
         }
     }
 

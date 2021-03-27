@@ -16,6 +16,8 @@ namespace image {
     struct MatrixRGB final : public glm::mat<4, 4, T, glm::defaultp> {
         using GLMType = glm::mat<4, 4, T, glm::defaultp>;
 
+        constexpr MatrixRGB() noexcept : glm::mat<4, 4, T, glm::defaultp>(glm::identity<typename MatrixRGB<T>::GLMType>()) {}
+
         template <class... Args>
         constexpr MatrixRGB(Args &&... args) noexcept : glm::mat<4, 4, T, glm::defaultp>(std::forward<Args>(args)...) {}
     };

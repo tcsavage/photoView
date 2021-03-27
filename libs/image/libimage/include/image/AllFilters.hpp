@@ -22,6 +22,7 @@ namespace image {
         registerFilter<LutFilterSpec>(reg);
         registerFilter<SaturationFilterSpec>(reg);
         registerFilter<ContrastFilterSpec>(reg);
+        registerFilter<ChannelMixerFilterSpec>(reg);
 
         return reg;
     }

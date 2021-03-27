@@ -79,4 +79,13 @@ namespace image {
         virtual void apply(luts::Lattice3D &lattice) const noexcept override;
     };
 
+    struct ChannelMixerFilterSpec final : AbstractFilterSpec {
+        MatrixRGB<F32> matrix;
+
+        static inline FilterMeta meta { "filters.channelMixer", "Channel Mixer" };
+
+        virtual const FilterMeta &getMeta() const noexcept override { return meta; }
+        virtual void apply(luts::Lattice3D &lattice) const noexcept override;
+    };
+
 }

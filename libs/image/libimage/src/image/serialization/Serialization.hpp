@@ -47,6 +47,10 @@ namespace image::serialization {
 
     Expected<void, ReadError> read(const ReadContext &, const pt::ptree &tree, glm::vec2 &vec) noexcept;
 
+    Expected<void, ReadError> read(const ReadContext &, const pt::ptree &tree, glm::vec4 &vec) noexcept;
+
+    Expected<void, ReadError> read(const ReadContext &, const pt::ptree &tree, glm::mat4 &mat) noexcept;
+
     Expected<void, ReadError>
     read(const ReadContext &ctx, const pt::ptree &tree, ImageResource &imageResource) noexcept;
 
@@ -63,6 +67,10 @@ namespace image::serialization {
     };
 
     void write(const WriteContext &, pt::ptree &tree, const glm::vec2 vec) noexcept;
+
+    void write(const WriteContext &, pt::ptree &tree, const glm::vec4 vec) noexcept;
+
+    void write(const WriteContext &, pt::ptree &tree, const glm::mat4 vec) noexcept;
 
     void write(const WriteContext &ctx, pt::ptree &tree, const ImageResource &imageResource) noexcept;
 

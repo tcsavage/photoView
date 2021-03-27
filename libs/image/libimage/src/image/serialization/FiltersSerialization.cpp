@@ -34,12 +34,10 @@ namespace image::serialization {
     std::vector<std::unique_ptr<image::AbstractFilterSpec>> decodeFilters(const String &encoded) noexcept {
         auto filterSerializationRegistry = makeFilterSerializationRegistry();
         auto filterRegistry = makeFilterRegistry();
-        ReadContext ctx { std::filesystem::current_path(),
-                          &filterSerializationRegistry,
-                          nullptr,
-                          &filterRegistry,
-                          nullptr };
-        
+        ReadContext ctx {
+            std::filesystem::current_path(), &filterSerializationRegistry, nullptr, &filterRegistry, nullptr
+        };
+
         pt::ptree tree;
         std::stringstream ss { encoded };
         pt::read_json(ss, tree);
@@ -50,17 +48,13 @@ namespace image::serialization {
             if (auto filterName = filterTree.get_optional<String>("filter")) {
                 // Create new filter implementation instance.
                 auto createResult = ctx.filterRegistry->create(*filterName);
-                if (createResult.hasError()) {
-                    continue;
-                }
+                if (createResult.hasError()) { continue; }
                 auto &filterSpec = *createResult;
 
                 // Read filter-specific options.
                 if (auto options = filterTree.get_child_optional("options")) {
                     auto filterSerializationCreateResult = ctx.filterSerializationRegistry->create(*filterName);
-                    if (filterSerializationCreateResult.hasError()) {
-                        continue;
-                    }
+                    if (filterSerializationCreateResult.hasError()) { continue; }
                     auto &serialization = *filterSerializationCreateResult;
                     serialization->read(ctx, *options, filterSpec.get());
                 }
@@ -172,6 +166,30 @@ namespace image::serialization {
         auto f = cast<ContrastFilterSpec>(filter);
 
         if (auto factor = tree.get_optional<F32>("factor")) { f->factor = *factor; }
+
+        return success;
+    }
+
+    // ChannelMixer
+
+    void ChannelMixerFilterSerialization::write(const WriteContext &ctx,
+                                                pt::ptree &tree,
+                                                const AbstractFilterSpec *filter) const noexcept {
+        auto f = cast<ChannelMixerFilterSpec>(filter);
+        pt::ptree matrixTree;
+        serialization::write(ctx, matrixTree, f->matrix);
+        tree.put_child("matrix", matrixTree);
+    }
+
+    Expected<void, ReadError> ChannelMixerFilterSerialization::read(const ReadContext &ctx,
+                                                                    const pt::ptree &tree,
+                                                                    AbstractFilterSpec *filter) const noexcept {
+        auto f = cast<ChannelMixerFilterSpec>(filter);
+
+        if (auto matrixTree = tree.get_child_optional("matrix")) {
+            auto r = serialization::read(ctx, *matrixTree, f->matrix);
+            if (r.hasError()) { return Unexpected(ReadError { "ChannelMixerFilterSpec", "matrix", r.error().generateString() }); }
+        }
 
         return success;
     }

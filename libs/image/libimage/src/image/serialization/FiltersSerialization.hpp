@@ -48,6 +48,13 @@ namespace image::serialization {
         read(const ReadContext &ctx, const pt::ptree &tree, AbstractFilterSpec *filter) const noexcept override;
     };
 
+    struct ChannelMixerFilterSerialization final : public FilterSerialization {
+        virtual void
+        write(const WriteContext &ctx, pt::ptree &tree, const AbstractFilterSpec *filter) const noexcept override;
+        virtual Expected<void, ReadError>
+        read(const ReadContext &ctx, const pt::ptree &tree, AbstractFilterSpec *filter) const noexcept override;
+    };
+
     // Registry
 
     namespace {
@@ -65,6 +72,7 @@ namespace image::serialization {
         registerFilterSerialization<LutFilterSpec, LutFilterSerialization>(reg);
         registerFilterSerialization<SaturationFilterSpec, SaturationFilterSerialization>(reg);
         registerFilterSerialization<ContrastFilterSpec, ContrastFilterSerialization>(reg);
+        registerFilterSerialization<ChannelMixerFilterSpec, ChannelMixerFilterSerialization>(reg);
 
         return reg;
     }

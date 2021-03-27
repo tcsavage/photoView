@@ -125,15 +125,60 @@ public:
 
     virtual QString title() const noexcept override { return tr("Contrast"); }
 
-    virtual image::F32 defaultValue() const noexcept { return 1.0; }
-    virtual image::F32 minValue() const noexcept { return 0.8; }
-    virtual image::F32 maxValue() const noexcept { return 1.2; }
+    virtual image::F32 defaultValue() const noexcept override { return 1.0; }
+    virtual image::F32 minValue() const noexcept override { return 0.8; }
+    virtual image::F32 maxValue() const noexcept override { return 1.2; }
 
     virtual image::AbstractFilterSpec *filter() noexcept override { return filter_; }
     virtual void setFilter(image::AbstractFilterSpec *filter) noexcept override;
 
 private:
     image::ContrastFilterSpec *filter_;
+};
+
+class ChannelMixerFilterWidget : public FilterWidget {
+    Q_OBJECT
+public:
+    explicit ChannelMixerFilterWidget(QWidget *parent = nullptr) noexcept;
+
+    virtual ~ChannelMixerFilterWidget() {}
+
+    constexpr image::F32 defaultValue() const noexcept { return 1.0; }
+    constexpr image::F32 minValue() const noexcept { return 0.0; }
+    constexpr image::F32 maxValue() const noexcept { return 2.0; }
+    constexpr int numSubdivisions() const noexcept { return 128; }
+    constexpr int tickInterval() const noexcept { return 16; }
+
+    virtual image::AbstractFilterSpec *filter() noexcept override { return filter_; }
+    virtual void setFilter(image::AbstractFilterSpec *filter) noexcept override;
+
+protected:
+    void handleValueChanged(int row, int column, int value) noexcept;
+
+    constexpr int scaleToInt(image::F32 value) const noexcept {
+        auto scaledRange = static_cast<image::F32>(numSubdivisions()) / (maxValue() - minValue());
+        return static_cast<int>(scaledRange * value);
+    }
+
+    constexpr image::F32 scaleToFloat(int value) const noexcept {
+        auto scaledRange = static_cast<image::F32>(numSubdivisions()) / (maxValue() - minValue());
+        return static_cast<image::F32>(value) / scaledRange;
+    }
+
+private:
+    image::ChannelMixerFilterSpec *filter_;
+
+    QSlider *redOutRedIn { nullptr };
+    QSlider *redOutGreenIn { nullptr };
+    QSlider *redOutBlueIn { nullptr };
+
+    QSlider *greenOutRedIn { nullptr };
+    QSlider *greenOutGreenIn { nullptr };
+    QSlider *greenOutBlueIn { nullptr };
+
+    QSlider *blueOutRedIn { nullptr };
+    QSlider *blueOutGreenIn { nullptr };
+    QSlider *blueOutBlueIn { nullptr };
 };
 
 using FilterWidgetRegistry = image::Registry<FilterWidget, image::FilterMeta>;
@@ -153,6 +198,7 @@ inline FilterWidgetRegistry makeFilterWidgetRegistry() noexcept {
     registerFilterWidget<image::LutFilterSpec, LutFilterWidget>(reg);
     registerFilterWidget<image::SaturationFilterSpec, SaturationFilterWidget>(reg);
     registerFilterWidget<image::ContrastFilterSpec, ContrastFilterWidget>(reg);
+    registerFilterWidget<image::ChannelMixerFilterSpec, ChannelMixerFilterWidget>(reg);
 
     return reg;
 }
