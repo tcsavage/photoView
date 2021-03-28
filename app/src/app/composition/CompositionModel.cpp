@@ -158,7 +158,7 @@ void CompositionModel::addLayer() noexcept {
     beginInsertRows(QModelIndex(), newIdx, newIdx);
     root_->addLayer();
     endInsertRows();
-    emit compositionUpdated();
+    notifyCompositionUpdated();
 }
 
 void CompositionModel::addFilter(const QModelIndex &idx, std::unique_ptr<image::AbstractFilterSpec> &&filter) noexcept {
@@ -172,7 +172,7 @@ void CompositionModel::addFilter(const QModelIndex &idx, std::unique_ptr<image::
     beginInsertRows(filtersIdx, rowIdx, rowIdx);
     node->addFilter(std::move(filter));
     endInsertRows();
-    emit compositionUpdated();
+    notifyCompositionUpdated();
 }
 
 void CompositionModel::addFilters(const QModelIndex &parent,
@@ -188,6 +188,7 @@ void CompositionModel::addFilters(const QModelIndex &parent,
         ++idx;
     }
     endInsertRows();
+    notifyCompositionUpdated();
 }
 
 void CompositionModel::addLayerMask(const QModelIndex &idx, std::unique_ptr<AbstractMaskGenerator> &&gen) noexcept {
@@ -199,7 +200,7 @@ void CompositionModel::addLayerMask(const QModelIndex &idx, std::unique_ptr<Abst
     beginInsertRows(idx, 1, 1);  // Mask should always live at row 1 under a Layer.
     node->addMask(std::move(gen));
     endInsertRows();
-    emit compositionUpdated();
+    notifyCompositionUpdated();
 }
 
 Node *CompositionModel::nodeAtIndex(const QModelIndex &idx) const noexcept {
@@ -390,7 +391,7 @@ bool CompositionModel::setData(const QModelIndex &idx, const QVariant &value, in
         case Qt::CheckStateRole:
             filter.isEnabled = value.value<Qt::CheckState>() == Qt::Checked;
             emit dataChanged(idx, idx);
-            emit compositionUpdated();
+            notifyCompositionUpdated();
             return true;
         default:
             return false;
@@ -403,7 +404,7 @@ bool CompositionModel::setData(const QModelIndex &idx, const QVariant &value, in
         case Qt::CheckStateRole:
             layer.isEnabled = value.value<Qt::CheckState>() == Qt::Checked;
             emit dataChanged(idx, idx);
-            emit compositionUpdated();
+            notifyCompositionUpdated();
             return true;
         default:
             return false;
@@ -416,7 +417,7 @@ bool CompositionModel::setData(const QModelIndex &idx, const QVariant &value, in
         case Qt::CheckStateRole:
             mask.isEnabled = value.value<Qt::CheckState>() == Qt::Checked;
             emit dataChanged(idx, idx);
-            emit compositionUpdated();
+            notifyCompositionUpdated();
             return true;
         default:
             return false;
@@ -433,14 +434,14 @@ bool CompositionModel::removeRows(int row, int count, const QModelIndex &parent)
         beginRemoveRows(parent, row, row + count - 1);
         node->removeFilters(row, count);
         endRemoveRows();
-        emit compositionUpdated();
+        notifyCompositionUpdated();
         return true;
     }
     if (node->type == NodeType::Composition) {
         beginRemoveRows(parent, row, row + count - 1);
         node->removeLayers(row, count);
         endRemoveRows();
-        emit compositionUpdated();
+        notifyCompositionUpdated();
         return true;
     }
     if (node->type == NodeType::Layer) {
@@ -449,7 +450,7 @@ bool CompositionModel::removeRows(int row, int count, const QModelIndex &parent)
         beginRemoveRows(parent, 1, 1);
         node->removeMask();
         endRemoveRows();
-        emit compositionUpdated();
+        notifyCompositionUpdated();
         return true;
     }
     return false;
@@ -470,7 +471,9 @@ QHash<int, QByteArray> CompositionModel::roleNames() const {
     return roles;
 }
 
-Qt::DropActions CompositionModel::supportedDropActions() const { return Qt::DropAction::MoveAction; }
+Qt::DropActions CompositionModel::supportedDropActions() const {
+    return Qt::DropAction::CopyAction | Qt::DropAction::MoveAction;
+}
 
 QStringList CompositionModel::mimeTypes() const {
     QStringList out { "application/x.photoView.filters+json" };
@@ -533,6 +536,19 @@ bool CompositionModel::canDropMimeData(const QMimeData *data,
         return node->type == NodeType::Filter || node->type == NodeType::Filters || node->type == NodeType::Layer;
     }
     return false;
+}
+
+void CompositionModel::notifyCompositionUpdated() noexcept {
+    // To avoid unpleasentness when dealing with rapid repeating updates, this function uses a timer to
+    // emit the event. The timer is started with a short timeout when requested, and then reset if requested
+    // again before the timout expires.
+    if (!updateNotificationTimer) {
+        updateNotificationTimer = new QTimer(this);
+        updateNotificationTimer->setSingleShot(true);
+        updateNotificationTimer->callOnTimeout(this, &CompositionModel::compositionUpdated);
+    }
+    // Emit compositionUpdated in 10msec.
+    updateNotificationTimer->start(10);
 }
 
 CompositionModel::CompositionModel(std::shared_ptr<image::Composition> composition, QObject *parent) noexcept

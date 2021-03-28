@@ -5,6 +5,7 @@
 #include <QAbstractListModel>
 #include <QDebug>
 #include <QMap>
+#include <QTimer>
 
 #include <image/Composition.hpp>
 
@@ -187,8 +188,17 @@ public:
 signals:
     void compositionUpdated();
 
+protected:
+    /**
+     * @brief Safer way to emit compositionUpdated.
+     *
+     * Call this function instead of emitting compositionUpdated directly. It is better able to handle repeated updates.
+     */
+    void notifyCompositionUpdated() noexcept;
+
 private:
     std::shared_ptr<image::Composition> composition_;
     std::shared_ptr<internal::Node> root_;
     QMap<image::AbstractFilterSpec *, std::shared_ptr<FilterManager>> filterManagers_;
+    QTimer *updateNotificationTimer { nullptr };
 };

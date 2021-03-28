@@ -24,7 +24,9 @@
 
 using namespace image;
 
-CompositionTreeView::CompositionTreeView(QWidget *parent) : QTreeView(parent) {}
+CompositionTreeView::CompositionTreeView(QWidget *parent) : QTreeView(parent) {
+    setDefaultDropAction(Qt::DropAction::MoveAction);
+}
 
 void CompositionTreeView::setModel(QAbstractItemModel *model) {
     QTreeView::setModel(model);
@@ -163,7 +165,9 @@ void CompositionOutline::setupContextMenu() noexcept {
                 std::vector<AbstractFilterSpec *> filters;
                 for (auto &&idx : treeView->selectionModel()->selectedIndexes()) {
                     auto node = model_->nodeAtIndex(idx);
-                    if (node->type == internal::NodeType::Filter) { filters.push_back(&node->get<AbstractFilterSpec>()); }
+                    if (node->type == internal::NodeType::Filter) {
+                        filters.push_back(&node->get<AbstractFilterSpec>());
+                    }
                 }
                 if (filters.size() == 0) { return; }
                 auto enc = serialization::encodeFilters(filters);
@@ -177,14 +181,15 @@ void CompositionOutline::setupContextMenu() noexcept {
             node->type == internal::NodeType::Layer) {
             auto clipboard = QGuiApplication::clipboard();
             auto mimeData = clipboard->mimeData();
-            menu.addAction("&Paste Filters", [&] {
-                auto data = mimeData->data("application/x.photoView.filters+json");
-                auto filterSpecs = serialization::decodeFilters(data.toStdString());
-                auto filtersIdx = model_->findClosestFiltersNode(idx);
-                int row = node->type == internal::NodeType::Filter ? idx.row() : 0;
-                model_->addFilters(filtersIdx, row, std::move(filterSpecs));
-                emit model_->compositionUpdated();
-            })->setEnabled(mimeData->hasFormat("application/x.photoView.filters+json"));
+            menu.addAction("&Paste Filters",
+                           [&] {
+                               auto data = mimeData->data("application/x.photoView.filters+json");
+                               auto filterSpecs = serialization::decodeFilters(data.toStdString());
+                               auto filtersIdx = model_->findClosestFiltersNode(idx);
+                               int row = node->type == internal::NodeType::Filter ? idx.row() : 0;
+                               model_->addFilters(filtersIdx, row, std::move(filterSpecs));
+                           })
+                ->setEnabled(mimeData->hasFormat("application/x.photoView.filters+json"));
         }
         if (node->type == internal::NodeType::Filter || node->type == internal::NodeType::Mask ||
             node->type == internal::NodeType::Layer) {
@@ -193,9 +198,7 @@ void CompositionOutline::setupContextMenu() noexcept {
 
                 // If we are deleting a mask, also notify that new active mask is nullptr.
                 // There must be a better way to handle this.
-                if (node->type == internal::NodeType::Mask) {
-                    emit activeMaskChanged(nullptr);
-                }
+                if (node->type == internal::NodeType::Mask) { emit activeMaskChanged(nullptr); }
             });
         }
         menu.exec(treeView->mapToGlobal(pos));
