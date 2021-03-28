@@ -81,6 +81,7 @@ namespace image {
 
     struct ChannelMixerFilterSpec final : AbstractFilterSpec {
         MatrixRGB<F32> matrix;
+        bool preserveLuminosity { false };
 
         static inline FilterMeta meta { "filters.channelMixer", "Channel Mixer" };
 

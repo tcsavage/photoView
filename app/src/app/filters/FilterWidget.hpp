@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QCheckBox>
 #include <QLabel>
 #include <QSlider>
 #include <QWidget>
@@ -144,7 +145,7 @@ public:
     virtual ~ChannelMixerFilterWidget() {}
 
     constexpr image::F32 defaultValue() const noexcept { return 1.0; }
-    constexpr image::F32 minValue() const noexcept { return 0.0; }
+    constexpr image::F32 minValue() const noexcept { return -2.0; }
     constexpr image::F32 maxValue() const noexcept { return 2.0; }
     constexpr int numSubdivisions() const noexcept { return 128; }
     constexpr int tickInterval() const noexcept { return 16; }
@@ -179,6 +180,8 @@ private:
     QSlider *blueOutRedIn { nullptr };
     QSlider *blueOutGreenIn { nullptr };
     QSlider *blueOutBlueIn { nullptr };
+
+    QCheckBox *preserveLuminosity { nullptr };
 };
 
 using FilterWidgetRegistry = image::Registry<FilterWidget, image::FilterMeta>;

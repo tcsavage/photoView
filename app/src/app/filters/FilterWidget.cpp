@@ -264,7 +264,7 @@ ChannelMixerFilterWidget::ChannelMixerFilterWidget(QWidget *parent) noexcept : F
 
     // Blue.
     {
-        auto channelLabel = new QLabel("Green channel", this);
+        auto channelLabel = new QLabel("Blue channel", this);
         layout->addWidget(channelLabel);
         auto formLayout = new QFormLayout();
         layout->addLayout(formLayout);
@@ -306,6 +306,14 @@ ChannelMixerFilterWidget::ChannelMixerFilterWidget(QWidget *parent) noexcept : F
     connect(blueOutRedIn, &QSlider::valueChanged, this, [this](int value) { handleValueChanged(2, 0, value); });
     connect(blueOutGreenIn, &QSlider::valueChanged, this, [this](int value) { handleValueChanged(2, 1, value); });
     connect(blueOutBlueIn, &QSlider::valueChanged, this, [this](int value) { handleValueChanged(2, 2, value); });
+
+    // Preserve luminosity.
+    preserveLuminosity = new QCheckBox(tr("Preserve luminosity"), this);
+    layout->addWidget(preserveLuminosity);
+    connect(preserveLuminosity, &QCheckBox::toggled, this, [this](bool checked) {
+        filter_->preserveLuminosity = checked;
+        emit filterUpdated();
+    });
 }
 
 void ChannelMixerFilterWidget::setFilter(image::AbstractFilterSpec *filter) noexcept {
@@ -326,7 +334,7 @@ void ChannelMixerFilterWidget::setFilter(image::AbstractFilterSpec *filter) noex
 
 void ChannelMixerFilterWidget::handleValueChanged(int row, int column, int value) noexcept {
     if (!filter_) { return; }
-    F32 valuef = static_cast<F32>(value) / 100.0f;
+    F32 valuef = scaleToFloat(value);
     filter_->matrix[column][row] = valuef;
     emit filterUpdated();
 }
