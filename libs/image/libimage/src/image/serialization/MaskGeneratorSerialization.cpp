@@ -1,8 +1,25 @@
 #include "MaskGeneratorSerialization.hpp"
 
+#include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
 namespace image::serialization {
+
+    String encodeMask(const image::GeneratedMask *mask) noexcept {
+        auto maskGeneratorSerializationRegistry = makeMaskGeneratorSerializationRegistry();
+        WriteContext ctx { std::filesystem::current_path(), nullptr, &maskGeneratorSerializationRegistry };
+        pt::ptree tree;
+        auto &meta = mask->generator()->getMeta();
+        tree.put("generator", meta.id);
+        tree.put("enabled", mask->isEnabled);
+        pt::ptree subtree;
+        auto serializerResult = ctx.maskGeneratorSerializationRegistry->create(meta.id);
+        if (serializerResult.hasValue()) { serializerResult.value()->write(ctx, subtree, mask->generator()); }
+        if (!subtree.empty()) { tree.put_child("options", subtree); }
+        std::stringstream ss;
+        pt::write_json(ss, tree);
+        return ss.str();
+    }
 
     // Helpers
 

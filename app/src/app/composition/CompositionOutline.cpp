@@ -191,6 +191,15 @@ void CompositionOutline::setupContextMenu() noexcept {
                            })
                 ->setEnabled(mimeData->hasFormat("application/x.photoView.filters+json"));
         }
+        if (node->type == internal::NodeType::Mask) {
+            menu.addAction("&Copy Mask", [&] {
+                auto enc = serialization::encodeMask(&node->get<GeneratedMask>());
+                auto clipboard = QGuiApplication::clipboard();
+                QMimeData *mimeData = new QMimeData();
+                mimeData->setData("application/x.photoView.mask+json", QByteArray::fromStdString(enc));
+                clipboard->setMimeData(mimeData);
+            });
+        }
         if (node->type == internal::NodeType::Filter || node->type == internal::NodeType::Mask ||
             node->type == internal::NodeType::Layer) {
             menu.addAction("&Delete", [&] {
