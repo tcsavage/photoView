@@ -200,6 +200,16 @@ void CompositionOutline::setupContextMenu() noexcept {
                 clipboard->setMimeData(mimeData);
             });
         }
+        if (node->type == internal::NodeType::Layer) {
+            auto clipboard = QGuiApplication::clipboard();
+            auto mimeData = clipboard->mimeData();
+            auto &layer = node->get<Layer>();
+            menu.addAction("&Paste Mask", [&] {
+                auto data = mimeData->data("application/x.photoView.mask+json");
+                               auto mask = serialization::decodeMask(data.toStdString());
+                               model_->addLayerMask(idx, mask);
+            })->setEnabled(mimeData->hasFormat("application/x.photoView.mask+json") && !layer.mask);;
+        }
         if (node->type == internal::NodeType::Filter || node->type == internal::NodeType::Mask ||
             node->type == internal::NodeType::Layer) {
             menu.addAction("&Delete", [&] {

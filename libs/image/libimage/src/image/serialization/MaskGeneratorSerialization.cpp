@@ -21,6 +21,41 @@ namespace image::serialization {
         return ss.str();
     }
 
+    std::shared_ptr<image::GeneratedMask> decodeMask(const String &encoded) noexcept {
+        auto maskGeneratorSerializationRegistry = makeMaskGeneratorSerializationRegistry();
+        auto maskGeneratorRegistry = makeMaskGeneratorRegistry();
+        ReadContext ctx {
+            std::filesystem::current_path(), nullptr, &maskGeneratorSerializationRegistry, nullptr, &maskGeneratorRegistry
+        };
+
+        pt::ptree tree;
+        std::stringstream ss { encoded };
+        pt::read_json(ss, tree);
+
+        if (auto generatorName = tree.get_optional<String>("generator")) {
+            // Create new mask generator implementation instance.
+            auto createResult = ctx.maskGeneratorRegistry->create(*generatorName);
+            if (createResult.hasError()) { return nullptr; }
+            auto &generator = *createResult;
+
+            // Read generator-specific options.
+            if (auto options = tree.get_child_optional("options")) {
+                auto maskGeneratorSerializationCreateResult = ctx.maskGeneratorSerializationRegistry->create(*generatorName);
+                if (maskGeneratorSerializationCreateResult.hasError()) { return nullptr; }
+                auto &serialization = *maskGeneratorSerializationCreateResult;
+                serialization->read(ctx, *options, generator.get());
+            }
+
+            auto genMask = std::make_shared<image::GeneratedMask>(std::move(generator));
+
+            genMask->isEnabled = tree.get<bool>("enabled", true);
+
+            return genMask;
+        }
+
+        return nullptr;
+    }
+
     // Helpers
 
     template <class T>

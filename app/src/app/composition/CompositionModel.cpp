@@ -111,6 +111,15 @@ namespace internal {
         return addChild(layer.mask.get());
     }
 
+    Node *Node::addMask(std::shared_ptr<image::GeneratedMask> mask) noexcept {
+        assert(type == NodeType::Layer);
+        auto &layer = get<Layer>();
+        layer.mask = mask;
+        auto &comp = root->get<Composition>();
+        layer.mask->update(*comp.inputImage.data);
+        return addChild(layer.mask.get());
+    }
+
     void Node::removeMask() noexcept {
         assert(type == NodeType::Layer);
         auto &layer = get<Layer>();
@@ -199,6 +208,18 @@ void CompositionModel::addLayerMask(const QModelIndex &idx, std::unique_ptr<Abst
     assert(!node->get<Layer>().mask);
     beginInsertRows(idx, 1, 1);  // Mask should always live at row 1 under a Layer.
     node->addMask(std::move(gen));
+    endInsertRows();
+    notifyCompositionUpdated();
+}
+
+void CompositionModel::addLayerMask(const QModelIndex &idx, std::shared_ptr<image::GeneratedMask> mask) noexcept {
+    if (!composition_ || !root_) { return; }
+    auto node = nodeAtIndex(idx);
+    // This should only ever be called on an index pointing to a layer.
+    assert(node->type == NodeType::Layer);
+    assert(!node->get<Layer>().mask);
+    beginInsertRows(idx, 1, 1);  // Mask should always live at row 1 under a Layer.
+    node->addMask(mask);
     endInsertRows();
     notifyCompositionUpdated();
 }
