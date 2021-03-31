@@ -497,11 +497,24 @@ Qt::DropActions CompositionModel::supportedDropActions() const {
 }
 
 QStringList CompositionModel::mimeTypes() const {
-    QStringList out { "application/x.photoView.filters+json" };
+    QStringList out {
+        "application/x.photoView.filters+json",
+        "application/x.photoView.mask+json"
+    };
     return out;
 }
 
 QMimeData *CompositionModel::mimeData(const QModelIndexList &indexes) const {
+    Node *node = nodeAtIndex(indexes.at(0));
+    if (node->type == NodeType::Mask) {
+        // Mime data is going to be a mask.
+        auto enc = serialization::encodeMask(&node->get<image::GeneratedMask>());
+        QMimeData *mimeData = new QMimeData();
+        mimeData->setData("application/x.photoView.mask+json", QByteArray::fromStdString(enc));
+        return mimeData;
+    }
+
+    // Collect filters.
     std::vector<AbstractFilterSpec *> filters;
     for (auto &&idx : indexes) {
         auto node = nodeAtIndex(idx);
@@ -515,9 +528,13 @@ QMimeData *CompositionModel::mimeData(const QModelIndexList &indexes) const {
 }
 
 bool CompositionModel::dropMimeData(const QMimeData *data, Qt::DropAction, int row, int, const QModelIndex &parent) {
-    // Ignore any data we can't handle.
-    if (!data->hasFormat("application/x.photoView.filters+json")) { return false; }
+    if (data->hasFormat("application/x.photoView.filters+json")) { return dropFiltersMimeData(data, row, parent); }
+    if (data->hasFormat("application/x.photoView.mask+json")) { return dropMaskMimeData(data, row, parent); }
 
+    return false;
+}
+
+bool CompositionModel::dropFiltersMimeData(const QMimeData *data, int row, const QModelIndex &parent) noexcept {
     // Decode filters data. If empty, fail immediately.
     auto enc = data->data("application/x.photoView.filters+json").toStdString();
     auto filters = serialization::decodeFilters(enc);
@@ -547,6 +564,24 @@ bool CompositionModel::dropMimeData(const QMimeData *data, Qt::DropAction, int r
     return false;
 }
 
+bool CompositionModel::dropMaskMimeData(const QMimeData *data, int, const QModelIndex &parent) noexcept {
+    // Decode mask data.
+    auto enc = data->data("application/x.photoView.mask+json").toStdString();
+    auto mask = serialization::decodeMask(enc);
+
+    // Look-up parent node so we can decide what do do based on what it is.
+    auto node = nodeAtIndex(parent);
+
+    if (node->type == NodeType::Layer) {
+        // We dropped on a layer. Again, we assume row always == -1.
+        // We don't allow dropping on layers which already have a mask, so we can just go ahead and add it.
+        // Add the layer mask.
+        addLayerMask(parent, mask);
+        return true;
+    }
+    return false;
+}
+
 bool CompositionModel::canDropMimeData(const QMimeData *data,
                                        Qt::DropAction,
                                        int,
@@ -555,6 +590,10 @@ bool CompositionModel::canDropMimeData(const QMimeData *data,
     if (data->hasFormat("application/x.photoView.filters+json")) {
         auto node = nodeAtIndex(parent);
         return node->type == NodeType::Filter || node->type == NodeType::Filters || node->type == NodeType::Layer;
+    }
+    if (data->hasFormat("application/x.photoView.mask+json")) {
+        auto node = nodeAtIndex(parent);
+        return node->type == NodeType::Layer && !node->get<image::Layer>().mask;
     }
     return false;
 }

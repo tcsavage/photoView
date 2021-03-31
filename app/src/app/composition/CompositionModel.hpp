@@ -191,6 +191,9 @@ signals:
     void compositionUpdated();
 
 protected:
+    bool dropFiltersMimeData(const QMimeData *data, int row, const QModelIndex &parent) noexcept;
+    bool dropMaskMimeData(const QMimeData *data, int row, const QModelIndex &parent) noexcept;
+
     /**
      * @brief Safer way to emit compositionUpdated.
      *
