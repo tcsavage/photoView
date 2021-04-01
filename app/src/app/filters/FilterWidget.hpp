@@ -9,6 +9,7 @@
 
 #include <app/filters/Filters.hpp>
 #include <app/widgets/FileChooser.hpp>
+#include <app/widgets/Slider.hpp>
 
 class FilterWidget : public QWidget {
     Q_OBJECT
@@ -54,7 +55,7 @@ protected:
     int scaleToInt(image::F32 value) const noexcept;
     image::F32 scaleToFloat(int value) const noexcept;
 
-    QSlider *slider;
+    Slider *slider;
     QLabel *widgetLabel;
     QLabel *valueLabel;
 };

@@ -65,7 +65,7 @@ void SimpleSliderFilterWidget::setup() noexcept {
     int minVal = scaleToInt(this->minValue());
     int maxVal = scaleToInt(this->maxValue());
 
-    slider = new QSlider(Qt::Horizontal);
+    slider = new Slider(Qt::Horizontal);
     slider->setRange(minVal, maxVal);
     slider->setTickInterval(this->tickInterval());
     slider->setTickPosition(QSlider::TickPosition::TicksBelow);
@@ -79,6 +79,8 @@ void SimpleSliderFilterWidget::setup() noexcept {
     connect(this, &SimpleSliderFilterWidget::valueChanged, this, [this](F32 value) {
         valueLabel->setText(formatValueLabel(value));
     });
+
+    connect(slider, &Slider::doubleClicked, this, [this](QMouseEvent *) { setValue(this->defaultValue()); });
 }
 
 void SimpleSliderFilterWidget::setValue(image::F32 value) noexcept { slider->setValue(scaleToInt(value)); }

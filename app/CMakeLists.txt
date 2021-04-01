@@ -26,6 +26,7 @@ set(photoView_sources
     src/app/widgets/FileChooser.cpp
     src/app/widgets/Histogram.cpp
     src/app/widgets/ProcessingIndicator.cpp
+    src/app/widgets/Slider.cpp
 )
 
 add_executable(photoView ${photoView_sources})
