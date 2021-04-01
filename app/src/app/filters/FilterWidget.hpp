@@ -9,7 +9,7 @@
 
 #include <app/filters/Filters.hpp>
 #include <app/widgets/FileChooser.hpp>
-#include <app/widgets/Slider.hpp>
+#include <app/widgets/FloatSlider.hpp>
 
 class FilterWidget : public QWidget {
     Q_OBJECT
@@ -52,10 +52,7 @@ signals:
 protected:
     void setup() noexcept;
 
-    int scaleToInt(image::F32 value) const noexcept;
-    image::F32 scaleToFloat(int value) const noexcept;
-
-    Slider *slider;
+    FloatSlider *slider;
     QLabel *widgetLabel;
     QLabel *valueLabel;
 };
@@ -94,7 +91,7 @@ public:
 private:
     image::LutFilterSpec *filter_;
 
-    QSlider *slider { nullptr };
+    FloatSlider *slider { nullptr };
     FileChooser *fileChooser { nullptr };
 };
 
@@ -145,42 +142,26 @@ public:
 
     virtual ~ChannelMixerFilterWidget() {}
 
-    constexpr image::F32 defaultValue() const noexcept { return 1.0; }
-    constexpr image::F32 minValue() const noexcept { return -2.0; }
-    constexpr image::F32 maxValue() const noexcept { return 2.0; }
-    constexpr int numSubdivisions() const noexcept { return 128; }
-    constexpr int tickInterval() const noexcept { return 16; }
-
     virtual image::AbstractFilterSpec *filter() noexcept override { return filter_; }
     virtual void setFilter(image::AbstractFilterSpec *filter) noexcept override;
 
 protected:
-    void handleValueChanged(int row, int column, int value) noexcept;
-
-    constexpr int scaleToInt(image::F32 value) const noexcept {
-        auto scaledRange = static_cast<image::F32>(numSubdivisions()) / (maxValue() - minValue());
-        return static_cast<int>(scaledRange * value);
-    }
-
-    constexpr image::F32 scaleToFloat(int value) const noexcept {
-        auto scaledRange = static_cast<image::F32>(numSubdivisions()) / (maxValue() - minValue());
-        return static_cast<image::F32>(value) / scaledRange;
-    }
+    void handleValueChanged(int row, int column, float value) noexcept;
 
 private:
     image::ChannelMixerFilterSpec *filter_;
 
-    QSlider *redOutRedIn { nullptr };
-    QSlider *redOutGreenIn { nullptr };
-    QSlider *redOutBlueIn { nullptr };
+    FloatSlider *redOutRedIn { nullptr };
+    FloatSlider *redOutGreenIn { nullptr };
+    FloatSlider *redOutBlueIn { nullptr };
 
-    QSlider *greenOutRedIn { nullptr };
-    QSlider *greenOutGreenIn { nullptr };
-    QSlider *greenOutBlueIn { nullptr };
+    FloatSlider *greenOutRedIn { nullptr };
+    FloatSlider *greenOutGreenIn { nullptr };
+    FloatSlider *greenOutBlueIn { nullptr };
 
-    QSlider *blueOutRedIn { nullptr };
-    QSlider *blueOutGreenIn { nullptr };
-    QSlider *blueOutBlueIn { nullptr };
+    FloatSlider *blueOutRedIn { nullptr };
+    FloatSlider *blueOutGreenIn { nullptr };
+    FloatSlider *blueOutBlueIn { nullptr };
 
     QCheckBox *preserveLuminosity { nullptr };
 };

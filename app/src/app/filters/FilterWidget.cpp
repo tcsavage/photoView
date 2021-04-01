@@ -62,38 +62,24 @@ void SimpleSliderFilterWidget::setup() noexcept {
     valueLabel = new QLabel();
     topLayout->addWidget(valueLabel);
 
-    int minVal = scaleToInt(this->minValue());
-    int maxVal = scaleToInt(this->maxValue());
-
-    slider = new Slider(Qt::Horizontal);
-    slider->setRange(minVal, maxVal);
+    slider = new FloatSlider();
+    slider->setRange(this->minValue(), this->maxValue());
+    slider->setDefault(this->defaultValue());
     slider->setTickInterval(this->tickInterval());
     slider->setTickPosition(QSlider::TickPosition::TicksBelow);
     slider->setFixedWidth(300);
     layout->addWidget(slider);
 
-    connect(slider, &QSlider::valueChanged, this, [this](int value) { emit valueChanged(scaleToFloat(value)); });
+    connect(slider, &FloatSlider::valueChanged, this, &SimpleSliderFilterWidget::valueChanged);
 
     setValue(this->defaultValue());
 
     connect(this, &SimpleSliderFilterWidget::valueChanged, this, [this](F32 value) {
         valueLabel->setText(formatValueLabel(value));
     });
-
-    connect(slider, &Slider::doubleClicked, this, [this](QMouseEvent *) { setValue(this->defaultValue()); });
 }
 
-void SimpleSliderFilterWidget::setValue(image::F32 value) noexcept { slider->setValue(scaleToInt(value)); }
-
-int SimpleSliderFilterWidget::scaleToInt(image::F32 value) const noexcept {
-    auto scaledRange = static_cast<F32>(numSubdivisions()) / (maxValue() - minValue());
-    return static_cast<int>(scaledRange * value);
-}
-
-image::F32 SimpleSliderFilterWidget::scaleToFloat(int value) const noexcept {
-    auto scaledRange = static_cast<F32>(numSubdivisions()) / (maxValue() - minValue());
-    return static_cast<F32>(value) / scaledRange;
-}
+void SimpleSliderFilterWidget::setValue(image::F32 value) noexcept { slider->setValue(value); }
 
 QString SimpleSliderFilterWidget::formatValueLabel(F32 value) const noexcept { return formatFloat(value); }
 
@@ -129,9 +115,9 @@ LutFilterWidget::LutFilterWidget(QWidget *parent) noexcept : FilterWidget(parent
     fileChooser = new FileChooser(fileDialog, this);
     layout->addRow("3D Lut file", fileChooser);
 
-    slider = new QSlider(Qt::Horizontal);
-    slider->setRange(0, 100);
-    slider->setTickInterval(1);
+    slider = new FloatSlider();
+    slider->setRange(0.0f, 1.0f);
+    slider->setDefault(1.0f);
     layout->addRow("Strength", slider);
 
     connect(fileChooser, &FileChooser::fileChosen, this, [this](const QString &path) {
@@ -143,9 +129,8 @@ LutFilterWidget::LutFilterWidget(QWidget *parent) noexcept : FilterWidget(parent
         emit filterUpdated();
     });
 
-    connect(slider, &QSlider::valueChanged, this, [this](int value) {
-        auto strength = static_cast<F32>(value) / 100.0f;
-        filter_->strength = strength;
+    connect(slider, &FloatSlider::valueChanged, this, [this](float value) {
+        filter_->strength = value;
         // Updating strength doesn't require a filter update.
         emit filterUpdated();
     });
@@ -195,8 +180,8 @@ ChannelMixerFilterWidget::ChannelMixerFilterWidget(QWidget *parent) noexcept : F
     auto layout = new QVBoxLayout();
     setLayout(layout);
 
-    int minVal = scaleToInt(this->minValue());
-    int maxVal = scaleToInt(this->maxValue());
+    float minVal = -2.0f;
+    float maxVal = 2.0f;
 
     // Red.
     {
@@ -205,30 +190,27 @@ ChannelMixerFilterWidget::ChannelMixerFilterWidget(QWidget *parent) noexcept : F
         auto formLayout = new QFormLayout();
         layout->addLayout(formLayout);
 
-        redOutRedIn = new QSlider(Qt::Orientation::Horizontal, this);
+        redOutRedIn = new FloatSlider(this);
         redOutRedIn->setRange(minVal, maxVal);
-        redOutRedIn->setTickInterval(this->tickInterval());
         redOutRedIn->setTickPosition(QSlider::TickPosition::TicksBelow);
         redOutRedIn->setFixedWidth(300);
         formLayout->addRow("Red", redOutRedIn);
 
-        redOutGreenIn = new QSlider(Qt::Orientation::Horizontal, this);
+        redOutGreenIn = new FloatSlider(this);
         redOutGreenIn->setRange(minVal, maxVal);
-        redOutGreenIn->setTickInterval(this->tickInterval());
         redOutGreenIn->setTickPosition(QSlider::TickPosition::TicksBelow);
         redOutGreenIn->setFixedWidth(300);
         formLayout->addRow("Green", redOutGreenIn);
 
-        redOutBlueIn = new QSlider(Qt::Orientation::Horizontal, this);
+        redOutBlueIn = new FloatSlider(this);
         redOutBlueIn->setRange(minVal, maxVal);
-        redOutBlueIn->setTickInterval(this->tickInterval());
         redOutBlueIn->setTickPosition(QSlider::TickPosition::TicksBelow);
         redOutBlueIn->setFixedWidth(300);
         formLayout->addRow("Blue", redOutBlueIn);
 
-        redOutRedIn->setValue(100);
-        redOutGreenIn->setValue(0);
-        redOutBlueIn->setValue(0);
+        redOutRedIn->setValue(1.0f, true);
+        redOutGreenIn->setValue(0.0f, true);
+        redOutBlueIn->setValue(0.0f, true);
     }
 
     // Green.
@@ -238,30 +220,27 @@ ChannelMixerFilterWidget::ChannelMixerFilterWidget(QWidget *parent) noexcept : F
         auto formLayout = new QFormLayout();
         layout->addLayout(formLayout);
 
-        greenOutRedIn = new QSlider(Qt::Orientation::Horizontal, this);
+        greenOutRedIn = new FloatSlider(this);
         greenOutRedIn->setRange(minVal, maxVal);
-        greenOutRedIn->setTickInterval(this->tickInterval());
         greenOutRedIn->setTickPosition(QSlider::TickPosition::TicksBelow);
         greenOutRedIn->setFixedWidth(300);
         formLayout->addRow("Red", greenOutRedIn);
 
-        greenOutGreenIn = new QSlider(Qt::Orientation::Horizontal, this);
+        greenOutGreenIn = new FloatSlider(this);
         greenOutGreenIn->setRange(minVal, maxVal);
-        greenOutGreenIn->setTickInterval(this->tickInterval());
         greenOutGreenIn->setTickPosition(QSlider::TickPosition::TicksBelow);
         greenOutGreenIn->setFixedWidth(300);
         formLayout->addRow("Green", greenOutGreenIn);
 
-        greenOutBlueIn = new QSlider(Qt::Orientation::Horizontal, this);
+        greenOutBlueIn = new FloatSlider(this);
         greenOutBlueIn->setRange(minVal, maxVal);
-        greenOutBlueIn->setTickInterval(this->tickInterval());
         greenOutBlueIn->setTickPosition(QSlider::TickPosition::TicksBelow);
         greenOutBlueIn->setFixedWidth(300);
         formLayout->addRow("Blue", greenOutBlueIn);
 
-        greenOutRedIn->setValue(0);
-        greenOutGreenIn->setValue(100);
-        greenOutBlueIn->setValue(0);
+        greenOutRedIn->setValue(0.0f, true);
+        greenOutGreenIn->setValue(1.0f, true);
+        greenOutBlueIn->setValue(0.0f, true);
     }
 
     // Blue.
@@ -271,43 +250,40 @@ ChannelMixerFilterWidget::ChannelMixerFilterWidget(QWidget *parent) noexcept : F
         auto formLayout = new QFormLayout();
         layout->addLayout(formLayout);
 
-        blueOutRedIn = new QSlider(Qt::Orientation::Horizontal, this);
+        blueOutRedIn = new FloatSlider(this);
         blueOutRedIn->setRange(minVal, maxVal);
-        blueOutRedIn->setTickInterval(this->tickInterval());
         blueOutRedIn->setTickPosition(QSlider::TickPosition::TicksBelow);
         blueOutRedIn->setFixedWidth(300);
         formLayout->addRow("Red", blueOutRedIn);
 
-        blueOutGreenIn = new QSlider(Qt::Orientation::Horizontal, this);
+        blueOutGreenIn = new FloatSlider(this);
         blueOutGreenIn->setRange(minVal, maxVal);
-        blueOutGreenIn->setTickInterval(this->tickInterval());
         blueOutGreenIn->setTickPosition(QSlider::TickPosition::TicksBelow);
         blueOutGreenIn->setFixedWidth(300);
         formLayout->addRow("Green", blueOutGreenIn);
 
-        blueOutBlueIn = new QSlider(Qt::Orientation::Horizontal, this);
+        blueOutBlueIn = new FloatSlider(this);
         blueOutBlueIn->setRange(minVal, maxVal);
-        blueOutBlueIn->setTickInterval(this->tickInterval());
         blueOutBlueIn->setTickPosition(QSlider::TickPosition::TicksBelow);
         blueOutBlueIn->setFixedWidth(300);
         formLayout->addRow("Blue", blueOutBlueIn);
 
-        blueOutRedIn->setValue(0);
-        blueOutGreenIn->setValue(0);
-        blueOutBlueIn->setValue(100);
+        blueOutRedIn->setValue(0.0f, true);
+        blueOutGreenIn->setValue(0.0f, true);
+        blueOutBlueIn->setValue(1.0f, true);
     }
 
-    connect(redOutRedIn, &QSlider::valueChanged, this, [this](int value) { handleValueChanged(0, 0, value); });
-    connect(redOutGreenIn, &QSlider::valueChanged, this, [this](int value) { handleValueChanged(0, 1, value); });
-    connect(redOutBlueIn, &QSlider::valueChanged, this, [this](int value) { handleValueChanged(0, 2, value); });
+    connect(redOutRedIn, &FloatSlider::valueChanged, this, [this](float value) { handleValueChanged(0, 0, value); });
+    connect(redOutGreenIn, &FloatSlider::valueChanged, this, [this](float value) { handleValueChanged(0, 1, value); });
+    connect(redOutBlueIn, &FloatSlider::valueChanged, this, [this](float value) { handleValueChanged(0, 2, value); });
 
-    connect(greenOutRedIn, &QSlider::valueChanged, this, [this](int value) { handleValueChanged(1, 0, value); });
-    connect(greenOutGreenIn, &QSlider::valueChanged, this, [this](int value) { handleValueChanged(1, 1, value); });
-    connect(greenOutBlueIn, &QSlider::valueChanged, this, [this](int value) { handleValueChanged(1, 2, value); });
+    connect(greenOutRedIn, &FloatSlider::valueChanged, this, [this](float value) { handleValueChanged(1, 0, value); });
+    connect(greenOutGreenIn, &FloatSlider::valueChanged, this, [this](float value) { handleValueChanged(1, 1, value); });
+    connect(greenOutBlueIn, &FloatSlider::valueChanged, this, [this](float value) { handleValueChanged(1, 2, value); });
 
-    connect(blueOutRedIn, &QSlider::valueChanged, this, [this](int value) { handleValueChanged(2, 0, value); });
-    connect(blueOutGreenIn, &QSlider::valueChanged, this, [this](int value) { handleValueChanged(2, 1, value); });
-    connect(blueOutBlueIn, &QSlider::valueChanged, this, [this](int value) { handleValueChanged(2, 2, value); });
+    connect(blueOutRedIn, &FloatSlider::valueChanged, this, [this](float value) { handleValueChanged(2, 0, value); });
+    connect(blueOutGreenIn, &FloatSlider::valueChanged, this, [this](float value) { handleValueChanged(2, 1, value); });
+    connect(blueOutBlueIn, &FloatSlider::valueChanged, this, [this](float value) { handleValueChanged(2, 2, value); });
 
     // Preserve luminosity.
     preserveLuminosity = new QCheckBox(tr("Preserve luminosity"), this);
@@ -322,21 +298,20 @@ void ChannelMixerFilterWidget::setFilter(image::AbstractFilterSpec *filter) noex
     filter_ = static_cast<ChannelMixerFilterSpec *>(filter);
     if (filter_) {
         auto &mat = filter_->matrix;
-        redOutRedIn->setValue(scaleToInt(mat[0][0]));
-        redOutGreenIn->setValue(scaleToInt(mat[1][0]));
-        redOutBlueIn->setValue(scaleToInt(mat[2][0]));
-        greenOutRedIn->setValue(scaleToInt(mat[0][1]));
-        greenOutGreenIn->setValue(scaleToInt(mat[1][1]));
-        greenOutBlueIn->setValue(scaleToInt(mat[2][1]));
-        blueOutRedIn->setValue(scaleToInt(mat[0][2]));
-        blueOutGreenIn->setValue(scaleToInt(mat[1][2]));
-        blueOutBlueIn->setValue(scaleToInt(mat[2][2]));
+        redOutRedIn->setValue(mat[0][0]);
+        redOutGreenIn->setValue(mat[1][0]);
+        redOutBlueIn->setValue(mat[2][0]);
+        greenOutRedIn->setValue(mat[0][1]);
+        greenOutGreenIn->setValue(mat[1][1]);
+        greenOutBlueIn->setValue(mat[2][1]);
+        blueOutRedIn->setValue(mat[0][2]);
+        blueOutGreenIn->setValue(mat[1][2]);
+        blueOutBlueIn->setValue(mat[2][2]);
     }
 }
 
-void ChannelMixerFilterWidget::handleValueChanged(int row, int column, int value) noexcept {
+void ChannelMixerFilterWidget::handleValueChanged(int row, int column, float value) noexcept {
     if (!filter_) { return; }
-    F32 valuef = scaleToFloat(value);
-    filter_->matrix[column][row] = valuef;
+    filter_->matrix[column][row] = value;
     emit filterUpdated();
 }
