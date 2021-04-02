@@ -35,6 +35,7 @@ CompositionManager::CompositionManager(QObject *parent) noexcept
   : QObject(parent)
   , compositionModel_(new CompositionModel()) {
     connect(compositionModel_, &CompositionModel::compositionUpdated, this, [this] { process(); });
+    connect(compositionModel_, &CompositionModel::maskChanged, this, &CompositionManager::notifyMaskChanged);
 }
 
 void CompositionManager::openComposition(const QString &qPath) noexcept {
@@ -90,6 +91,11 @@ void CompositionManager::exportImage(const QString &qPath) noexcept {
     std::cerr << "[CompositionManager] Exporting image to: " << qPath.toStdString() << "\n";
     Path path = qPath.toStdString();
     writeImageBufToFile(path, output_);
+}
+
+void CompositionManager::notifyMaskChanged(image::GeneratedMask *mask) noexcept {
+    mask->update(*composition_->inputImage.data);
+    process();
 }
 
 void CompositionManager::ensureOutput() noexcept {

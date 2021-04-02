@@ -54,8 +54,7 @@ void PhotoWindow::setupMainWidget() {
     activeMaskManager = std::make_unique<MaskManager>(canvasScene, nullptr, nullptr);
     connect(activeMaskManager.get(), &MaskManager::maskUpdated, this, [this] {
         if (auto mask = activeMaskManager->mask()) {
-            mask->update(*compositionManager->composition()->inputImage.data);
-            compositionManager->compositionModel()->compositionUpdated();
+            compositionManager->notifyMaskChanged(mask);
         }
     });
 }

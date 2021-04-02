@@ -43,6 +43,8 @@ public:
      */
     void exportImage(const QString &path) noexcept;
 
+    void notifyMaskChanged(image::GeneratedMask *mask) noexcept;
+
     void ensureOutput() noexcept;
     void resetProcessor() noexcept;
     void process() noexcept;

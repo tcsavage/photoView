@@ -189,6 +189,7 @@ public:
 
 signals:
     void compositionUpdated();
+    void maskChanged(image::GeneratedMask *mask);
 
 protected:
     bool dropFiltersMimeData(const QMimeData *data, int row, const QModelIndex &parent) noexcept;

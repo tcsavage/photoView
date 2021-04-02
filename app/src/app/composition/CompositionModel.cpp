@@ -106,8 +106,6 @@ namespace internal {
         assert(type == NodeType::Layer);
         auto &layer = get<Layer>();
         layer.mask = std::make_shared<GeneratedMask>(std::move(gen));
-        auto &comp = root->get<Composition>();
-        layer.mask->update(*comp.inputImage.data);
         return addChild(layer.mask.get());
     }
 
@@ -115,8 +113,6 @@ namespace internal {
         assert(type == NodeType::Layer);
         auto &layer = get<Layer>();
         layer.mask = mask;
-        auto &comp = root->get<Composition>();
-        layer.mask->update(*comp.inputImage.data);
         return addChild(layer.mask.get());
     }
 
@@ -207,8 +203,9 @@ void CompositionModel::addLayerMask(const QModelIndex &idx, std::unique_ptr<Abst
     assert(node->type == NodeType::Layer);
     assert(!node->get<Layer>().mask);
     beginInsertRows(idx, 1, 1);  // Mask should always live at row 1 under a Layer.
-    node->addMask(std::move(gen));
+    auto maskNode = node->addMask(std::move(gen));
     endInsertRows();
+    emit maskChanged(&maskNode->get<image::GeneratedMask>());
     notifyCompositionUpdated();
 }
 
@@ -219,8 +216,9 @@ void CompositionModel::addLayerMask(const QModelIndex &idx, std::shared_ptr<imag
     assert(node->type == NodeType::Layer);
     assert(!node->get<Layer>().mask);
     beginInsertRows(idx, 1, 1);  // Mask should always live at row 1 under a Layer.
-    node->addMask(mask);
+    auto maskNode = node->addMask(mask);
     endInsertRows();
+    emit maskChanged(&maskNode->get<image::GeneratedMask>());
     notifyCompositionUpdated();
 }
 
