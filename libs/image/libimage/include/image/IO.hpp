@@ -10,6 +10,7 @@
 #include <image/CoreTypes.hpp>
 #include <image/Expected.hpp>
 #include <image/ImageBuf.hpp>
+#include <image/ImageIOOptions.hpp>
 #include <image/Mask.hpp>
 
 namespace image {
@@ -20,8 +21,11 @@ namespace image {
     };
 
     template <class T>
-    Expected<ImageBuf<T>, ImageIOError> readImageBufFromFile(const Path &path) {
+    Expected<ImageBuf<T>, ImageIOError> readImageBufFromFile(const Path &path, const ImageReadOptions &opts = ImageReadOptions()) {
         OIIO::ImageSpec spec;
+        if (opts.halfSize) {
+            spec.attribute("raw:half_size", 1);
+        }
         auto iin = OIIO::ImageInput::create(path.string());
         if (!iin) {
             return Unexpected(ImageIOError(path, OIIO::geterror()));
