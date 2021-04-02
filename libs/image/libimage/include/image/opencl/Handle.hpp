@@ -51,7 +51,7 @@ namespace image::opencl {
             return out;
         }
 
-        Handle() noexcept {}
+        constexpr Handle() noexcept {}
 
         Handle(const Handle &other) noexcept : handle(other.handle) {
             std::cerr << "[Handle: " << TypeName<T>::get() << "] Retaining resource (copy constructor)\n";

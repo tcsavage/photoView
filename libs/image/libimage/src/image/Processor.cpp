@@ -120,23 +120,12 @@ namespace image {
 
     void Processor::init() noexcept {
         {
-            auto fs = cmrc::image::rc::get_filesystem();
-            auto f = fs.open("kernels/kernels.cl");
-            String src { f.begin(), f.end() };
-
-            auto maybeProg = opencl::Program::fromSource(opencl::Manager::the()->context, src);
+            auto maybeProg = opencl::Manager::the()->programFromResource("kernels/kernels.cl");
             if (maybeProg.hasError()) {
                 std::cerr << "Error loading program\n";
                 std::terminate();
             }
             oclProgram = std::move(*maybeProg);
-        }
-        {
-            auto buildResult = oclProgram.build();
-            if (buildResult.hasError()) {
-                std::cerr << "Error building program\n";
-                std::terminate();
-            }
         }
         {
             auto maybeKern = oclProgram.getKernel("apply3DLut_F32_F32");

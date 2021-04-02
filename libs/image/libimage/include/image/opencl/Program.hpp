@@ -8,14 +8,10 @@
 #include <image/Expected.hpp>
 #include <image/NDArray.hpp>
 #include <image/opencl/BufferDevice.hpp>
-#include <image/opencl/Context.hpp>
 #include <image/opencl/Handle.hpp>
+#include <image/opencl/Types.hpp>
 
 namespace image::opencl {
-
-    using ProgramHandle = Handle<cl_program, &clRetainProgram, &clReleaseProgram>;
-    using KernelHandle = Handle<cl_kernel, &clRetainKernel, &clReleaseKernel>;
-    using SamplerHandle = opencl::Handle<cl_sampler, &clRetainSampler, &clReleaseSampler>;
 
     struct SetArgsError {
         cl_uint argIdx;

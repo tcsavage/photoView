@@ -12,10 +12,9 @@
 #include <image/memory/Buffer.hpp>
 #include <image/opencl/Context.hpp>
 #include <image/opencl/Handle.hpp>
+#include <image/opencl/Types.hpp>
 
 namespace image::memory {
-
-    using MemObjectHandle = opencl::Handle<cl_mem, &clRetainMemObject, &clReleaseMemObject>;
 
     struct OpenCLDevice final : public AbstractDevice {
         opencl::ContextHandle ctx;

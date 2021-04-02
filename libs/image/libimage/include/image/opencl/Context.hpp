@@ -14,11 +14,9 @@
 #endif
 
 #include <image/opencl/Handle.hpp>
+#include <image/opencl/Types.hpp>
 
 namespace image::opencl {
-
-    using ContextHandle = Handle<cl_context, &clRetainContext, &clReleaseContext>;
-    using CommandQueueHandle = Handle<cl_command_queue, &clRetainCommandQueue, &clReleaseCommandQueue>;
 
     struct Error : public std::exception {
         enum struct Code : cl_int {
