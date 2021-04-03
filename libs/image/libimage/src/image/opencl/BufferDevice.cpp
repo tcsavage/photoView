@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+using namespace image::opencl;
+
 namespace image::memory {
 
     void OpenCLDevice::malloc(Buffer &buf) noexcept {
@@ -34,7 +36,7 @@ namespace image::memory {
         clEnqueueWriteBuffer(queue.get(), handle, true, 0, buf.size, buf.data(), 0, nullptr, nullptr);
     }
 
-    OpenCLDevice::OpenCLDevice(const opencl::ContextHandle &ctx, const opencl::CommandQueueHandle &queue) noexcept : ctx(ctx), queue(queue) {
+    OpenCLDevice::OpenCLDevice(const ContextHandle &ctx, const CommandQueueHandle &queue) noexcept : ctx(ctx), queue(queue) {
         ctx.incRef();
         queue.incRef();
     }
@@ -80,11 +82,11 @@ namespace image::memory {
         std::array<std::size_t, 3> region { imageSize.at(0), imageSize.at(1), imageSize.at(2) };
         auto ret = clEnqueueReadImage(queue.get(), handle, true, origin.data(), region.data(), 0, 0, buf.data(), 0, nullptr, nullptr);
         if (ret != CL_SUCCESS) {
-            std::cerr << "[OpenCLImageDevice] error copying from device to host: " << opencl::Error(ret) << "\n";
+            std::cerr << "[OpenCLImageDevice] error copying from device to host: " << Error(ret) << "\n";
         }
         ret = clWaitForEvents(1, &ev);
         if (ret != CL_SUCCESS) {
-            std::cerr << "[OpenCLImageDevice] error copying from device to host: " << opencl::Error(ret) << "\n";
+            std::cerr << "[OpenCLImageDevice] error copying from device to host: " << Error(ret) << "\n";
         }
     }
 
@@ -97,17 +99,17 @@ namespace image::memory {
         std::array<std::size_t, 3> region { imageSize.at(0), imageSize.at(1), imageSize.at(2) };
         auto ret = clEnqueueWriteImage(queue.get(), handle, true, origin.data(), region.data(), 0, 0, buf.data(), 0, nullptr, &ev);
         if (ret != CL_SUCCESS) {
-            std::cerr << "[OpenCLImageDevice] error copying from host to device: " << opencl::Error(ret) << "\n";
+            std::cerr << "[OpenCLImageDevice] error copying from host to device: " << Error(ret) << "\n";
         }
         ret = clWaitForEvents(1, &ev);
         if (ret != CL_SUCCESS) {
-            std::cerr << "[OpenCLImageDevice] error copying from host to device: " << opencl::Error(ret) << "\n";
+            std::cerr << "[OpenCLImageDevice] error copying from host to device: " << Error(ret) << "\n";
         }
     }
 
     OpenCLImageDevice::OpenCLImageDevice(
-        const opencl::ContextHandle &ctx,
-        const opencl::CommandQueueHandle &queue,
+        const ContextHandle &ctx,
+        const CommandQueueHandle &queue,
         const SmallVectorImpl<Size> &imageSize
     ) noexcept : ctx(ctx), queue(queue), imageSize(imageSize) {
         ctx.incRef();
