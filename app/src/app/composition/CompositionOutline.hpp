@@ -39,7 +39,7 @@ public:
 signals:
     void filtersEnabledChanged(bool isEnabled);
 
-    void activeMaskChanged(image::GeneratedMask *activeMask);
+    void activeMaskChanged(image::AbstractMaskGenerator *activeMaskGen);
 
 private:
     void syncWidgetEnabled() noexcept;
@@ -49,5 +49,5 @@ private:
     QAction *addFilterAction { nullptr };
     QMenu *addFilterMenu { nullptr };
 
-    image::GeneratedMask *lastActiveMask_ { nullptr };
+    image::AbstractMaskGenerator *lastActiveMaskGen_ { nullptr };
 };

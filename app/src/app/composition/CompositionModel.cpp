@@ -102,26 +102,19 @@ namespace internal {
         children.erase(it, it + count);
     }
 
-    Node *Node::addMask(std::unique_ptr<AbstractMaskGenerator> &&gen) noexcept {
+    Node *Node::addMask(std::shared_ptr<AbstractMaskGenerator> maskGen) noexcept {
         assert(type == NodeType::Layer);
         auto &layer = get<Layer>();
-        layer.mask = std::make_shared<GeneratedMask>(std::move(gen));
-        return addChild(layer.mask.get());
-    }
-
-    Node *Node::addMask(std::shared_ptr<image::GeneratedMask> mask) noexcept {
-        assert(type == NodeType::Layer);
-        auto &layer = get<Layer>();
-        layer.mask = mask;
-        return addChild(layer.mask.get());
+        layer.maskGen = maskGen;
+        return addChild(layer.maskGen.get());
     }
 
     void Node::removeMask() noexcept {
         assert(type == NodeType::Layer);
         auto &layer = get<Layer>();
-        assert(layer.mask);
+        assert(layer.maskGen);
         children.pop_back();  // Mask should be last child.
-        layer.mask = nullptr;
+        layer.maskGen = nullptr;
     }
 
     Node::Node(std::shared_ptr<Composition> comp) noexcept : type(NodeTraits<Composition>::type), ptr(comp.get()) {
@@ -134,7 +127,7 @@ namespace internal {
             for (auto &&filterSpec : layer->filters->filterSpecs) {
                 filtersNode->addChild(filterSpec.get());
             }
-            if (layer->mask) { layerNode->addChild(layer->mask.get()); }
+            if (layer->maskGen) { layerNode->addChild(layer->maskGen.get()); }
         }
     }
 
@@ -196,29 +189,16 @@ void CompositionModel::addFilters(const QModelIndex &parent,
     notifyCompositionUpdated();
 }
 
-void CompositionModel::addLayerMask(const QModelIndex &idx, std::unique_ptr<AbstractMaskGenerator> &&gen) noexcept {
+void CompositionModel::addLayerMask(const QModelIndex &idx, std::shared_ptr<AbstractMaskGenerator> maskGen) noexcept {
     if (!composition_ || !root_) { return; }
     auto node = nodeAtIndex(idx);
     // This should only ever be called on an index pointing to a layer.
     assert(node->type == NodeType::Layer);
-    assert(!node->get<Layer>().mask);
+    assert(!node->get<Layer>().maskGen);
     beginInsertRows(idx, 1, 1);  // Mask should always live at row 1 under a Layer.
-    auto maskNode = node->addMask(std::move(gen));
+    auto maskNode = node->addMask(maskGen);
     endInsertRows();
-    emit maskChanged(&maskNode->get<image::GeneratedMask>());
-    notifyCompositionUpdated();
-}
-
-void CompositionModel::addLayerMask(const QModelIndex &idx, std::shared_ptr<image::GeneratedMask> mask) noexcept {
-    if (!composition_ || !root_) { return; }
-    auto node = nodeAtIndex(idx);
-    // This should only ever be called on an index pointing to a layer.
-    assert(node->type == NodeType::Layer);
-    assert(!node->get<Layer>().mask);
-    beginInsertRows(idx, 1, 1);  // Mask should always live at row 1 under a Layer.
-    auto maskNode = node->addMask(mask);
-    endInsertRows();
-    emit maskChanged(&maskNode->get<image::GeneratedMask>());
+    emit maskChanged(&maskNode->get<AbstractMaskGenerator>());
     notifyCompositionUpdated();
 }
 
@@ -366,13 +346,12 @@ QVariant CompositionModel::data(const QModelIndex &idx, int role) const {
     }
 
     if (node->type == NodeType::Mask) {
-        auto &mask = node->get<GeneratedMask>();
-        auto gen = mask.generator();
+        auto &maskGen = node->get<AbstractMaskGenerator>();
         switch (role) {
         case Qt::DisplayRole:
-            return gen ? QString::fromStdString(gen->getMeta().name) : "Mask";
+            return QString::fromStdString(maskGen.getMeta().name);
         case Qt::CheckStateRole:
-            return mask.isEnabled ? Qt::Checked : Qt::Unchecked;
+            return maskGen.isEnabled ? Qt::Checked : Qt::Unchecked;
         default:
             return QVariant();
         }
@@ -431,10 +410,10 @@ bool CompositionModel::setData(const QModelIndex &idx, const QVariant &value, in
     }
 
     if (node->type == NodeType::Mask) {
-        auto &mask = node->get<GeneratedMask>();
+        auto &maskGen = node->get<AbstractMaskGenerator>();
         switch (role) {
         case Qt::CheckStateRole:
-            mask.isEnabled = value.value<Qt::CheckState>() == Qt::Checked;
+            maskGen.isEnabled = value.value<Qt::CheckState>() == Qt::Checked;
             emit dataChanged(idx, idx);
             notifyCompositionUpdated();
             return true;
@@ -506,7 +485,7 @@ QMimeData *CompositionModel::mimeData(const QModelIndexList &indexes) const {
     Node *node = nodeAtIndex(indexes.at(0));
     if (node->type == NodeType::Mask) {
         // Mime data is going to be a mask.
-        auto enc = serialization::encodeMask(&node->get<image::GeneratedMask>());
+        auto enc = serialization::encodeMask(&node->get<AbstractMaskGenerator>());
         QMimeData *mimeData = new QMimeData();
         mimeData->setData("application/x.photoView.mask+json", QByteArray::fromStdString(enc));
         return mimeData;
@@ -591,7 +570,7 @@ bool CompositionModel::canDropMimeData(const QMimeData *data,
     }
     if (data->hasFormat("application/x.photoView.mask+json")) {
         auto node = nodeAtIndex(parent);
-        return node->type == NodeType::Layer && !node->get<image::Layer>().mask;
+        return node->type == NodeType::Layer && !node->get<image::Layer>().maskGen;
     }
     return false;
 }

@@ -37,7 +37,7 @@ namespace internal {
     };
 
     template <>
-    struct NodeTraits<image::GeneratedMask> {
+    struct NodeTraits<image::AbstractMaskGenerator> {
         inline static const NodeType type = NodeType::Mask;
     };
 
@@ -122,8 +122,7 @@ namespace internal {
         Node *addFilter(std::unique_ptr<image::AbstractFilterSpec> &&filter, int idx) noexcept;
         void removeFilters(int startIdx, int count) noexcept;
 
-        Node *addMask(std::unique_ptr<image::AbstractMaskGenerator> &&gen) noexcept;
-        Node *addMask(std::shared_ptr<image::GeneratedMask> mask) noexcept;
+        Node *addMask(std::shared_ptr<image::AbstractMaskGenerator> maskGen) noexcept;
         void removeMask() noexcept;
 
         Node() noexcept {}
@@ -151,8 +150,7 @@ public:
     void addFilters(const QModelIndex &parent,
                     int row,
                     std::vector<std::unique_ptr<image::AbstractFilterSpec>> &&filters) noexcept;
-    void addLayerMask(const QModelIndex &idx, std::unique_ptr<image::AbstractMaskGenerator> &&gen) noexcept;
-    void addLayerMask(const QModelIndex &idx, std::shared_ptr<image::GeneratedMask> mask) noexcept;
+    void addLayerMask(const QModelIndex &idx, std::shared_ptr<image::AbstractMaskGenerator> maskGen) noexcept;
 
     internal::Node *nodeAtIndex(const QModelIndex &idx) const noexcept;
 
@@ -189,7 +187,7 @@ public:
 
 signals:
     void compositionUpdated();
-    void maskChanged(image::GeneratedMask *mask);
+    void maskChanged(image::AbstractMaskGenerator *maskGen);
 
 protected:
     bool dropFiltersMimeData(const QMimeData *data, int row, const QModelIndex &parent) noexcept;

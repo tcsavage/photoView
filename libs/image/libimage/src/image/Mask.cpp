@@ -67,18 +67,4 @@ namespace image {
         }
     }
 
-    void GeneratedMask::update(const ImageBuf<F32> &img) const noexcept {
-        ensureMask(img.width(), img.height());
-        gen_->generate(img, *mask());
-        mask_->pixelArray.buffer()->copyHostToDevice();
-    }
-
-    void GeneratedMask::ensureMask(memory::Size width, memory::Size height) const noexcept {
-        if (!mask_ || mask_->width() != width || mask_->height() != height) {
-            mask_ = std::make_shared<Mask>(width, height);
-            mask_->pixelArray.buffer()->device = opencl::Manager::the()->bufferDevice;
-            mask_->pixelArray.buffer()->deviceMalloc();
-        }
-    }
-
 }

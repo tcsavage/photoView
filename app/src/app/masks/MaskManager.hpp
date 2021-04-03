@@ -13,7 +13,7 @@
 class MaskManager : public QObject {
     Q_OBJECT
 public:
-    explicit MaskManager(CanvasScene *scene, image::GeneratedMask *mask = nullptr, QObject *parent = nullptr) noexcept;
+    explicit MaskManager(CanvasScene *scene, image::AbstractMaskGenerator *maskGen = nullptr, QObject *parent = nullptr) noexcept;
 
     ~MaskManager() { deactivateControls(); }
 
@@ -22,17 +22,20 @@ public:
 
     void setOverlayEnabled(bool isEnabled) noexcept;
 
-    inline image::GeneratedMask *mask() noexcept { return mask_; }
-    void setMask(image::GeneratedMask *mask) noexcept;
+    inline image::AbstractMaskGenerator *maskGen() noexcept { return maskGen_; }
+    void setMask(image::AbstractMaskGenerator *maskGen) noexcept;
     void clearMask() noexcept;
 
     void createOverlay() noexcept;
+
+    void handleMaskGenerated(const image::AbstractMaskGenerator *maskGen, const image::Mask *maskBuf) noexcept;
 
 signals:
     void maskUpdated();
 
 private:
-    image::GeneratedMask *mask_ { nullptr };
+    image::AbstractMaskGenerator *maskGen_ { nullptr };
+    const image::Mask *maskBuf_ { nullptr };
     CanvasScene *scene_;
     std::unique_ptr<CanvasControl> ctrl_;
     std::unique_ptr<MaskOverlayControl> overlay_;

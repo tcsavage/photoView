@@ -16,6 +16,8 @@ namespace image {
     };
 
     struct AbstractMaskGenerator {
+        bool isEnabled { true };
+        
         virtual const MaskGeneratorMeta &getMeta() const noexcept = 0;
         virtual void generate(const ImageBuf<F32> &img, Mask &mask) const noexcept = 0;
 
@@ -62,29 +64,6 @@ namespace image {
         constexpr LinearGradientMaskSpec(const glm::vec2 &from, const glm::vec2 &to) noexcept : from(from), to(to) {}
 
         virtual ~LinearGradientMaskSpec() noexcept {}
-    };
-
-    class GeneratedMask {
-    public:
-        bool isEnabled { true };
-        
-        inline std::shared_ptr<Mask> mask() const noexcept { return mask_; }
-
-        inline AbstractMaskGenerator *generator() const noexcept { return gen_.get(); }
-
-        inline void setGenerator(std::unique_ptr<AbstractMaskGenerator> &&gen) noexcept { gen_ = std::move(gen); }
-
-        void update(const ImageBuf<F32> &img) const noexcept;
-
-        GeneratedMask() noexcept {}
-        explicit GeneratedMask(std::unique_ptr<AbstractMaskGenerator> &&gen) noexcept : gen_(std::move(gen)) {}
-
-    protected:
-        void ensureMask(memory::Size width, memory::Size height) const noexcept;
-
-    private:
-        mutable std::shared_ptr<Mask> mask_;
-        std::unique_ptr<AbstractMaskGenerator> gen_;
     };
 
 }

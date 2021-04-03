@@ -5,23 +5,23 @@
 
 namespace image::serialization {
 
-    String encodeMask(const image::GeneratedMask *mask) noexcept {
+    String encodeMask(const image::AbstractMaskGenerator *maskGen) noexcept {
         auto maskGeneratorSerializationRegistry = makeMaskGeneratorSerializationRegistry();
         WriteContext ctx { std::filesystem::current_path(), nullptr, &maskGeneratorSerializationRegistry };
         pt::ptree tree;
-        auto &meta = mask->generator()->getMeta();
+        auto &meta = maskGen->getMeta();
         tree.put("generator", meta.id);
-        tree.put("enabled", mask->isEnabled);
+        tree.put("enabled", maskGen->isEnabled);
         pt::ptree subtree;
         auto serializerResult = ctx.maskGeneratorSerializationRegistry->create(meta.id);
-        if (serializerResult.hasValue()) { serializerResult.value()->write(ctx, subtree, mask->generator()); }
+        if (serializerResult.hasValue()) { serializerResult.value()->write(ctx, subtree, maskGen); }
         if (!subtree.empty()) { tree.put_child("options", subtree); }
         std::stringstream ss;
         pt::write_json(ss, tree);
         return ss.str();
     }
 
-    std::shared_ptr<image::GeneratedMask> decodeMask(const String &encoded) noexcept {
+    std::shared_ptr<image::AbstractMaskGenerator> decodeMask(const String &encoded) noexcept {
         auto maskGeneratorSerializationRegistry = makeMaskGeneratorSerializationRegistry();
         auto maskGeneratorRegistry = makeMaskGeneratorRegistry();
         ReadContext ctx {
@@ -32,25 +32,25 @@ namespace image::serialization {
         std::stringstream ss { encoded };
         pt::read_json(ss, tree);
 
+        std::shared_ptr<AbstractMaskGenerator> maskGen;
+
         if (auto generatorName = tree.get_optional<String>("generator")) {
             // Create new mask generator implementation instance.
             auto createResult = ctx.maskGeneratorRegistry->create(*generatorName);
             if (createResult.hasError()) { return nullptr; }
-            auto &generator = *createResult;
+            maskGen = std::shared_ptr<AbstractMaskGenerator> { createResult.value().release() };
 
             // Read generator-specific options.
             if (auto options = tree.get_child_optional("options")) {
                 auto maskGeneratorSerializationCreateResult = ctx.maskGeneratorSerializationRegistry->create(*generatorName);
                 if (maskGeneratorSerializationCreateResult.hasError()) { return nullptr; }
                 auto &serialization = *maskGeneratorSerializationCreateResult;
-                serialization->read(ctx, *options, generator.get());
+                serialization->read(ctx, *options, maskGen.get());
             }
 
-            auto genMask = std::make_shared<image::GeneratedMask>(std::move(generator));
+            maskGen->isEnabled = tree.get<bool>("enabled", true);
 
-            genMask->isEnabled = tree.get<bool>("enabled", true);
-
-            return genMask;
+            return maskGen;
         }
 
         return nullptr;

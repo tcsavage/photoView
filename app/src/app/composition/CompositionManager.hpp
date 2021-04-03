@@ -43,7 +43,7 @@ public:
      */
     void exportImage(const QString &path) noexcept;
 
-    void notifyMaskChanged(image::GeneratedMask *mask) noexcept;
+    void notifyMaskChanged(image::AbstractMaskGenerator *maskGen) noexcept;
 
     void ensureOutput() noexcept;
     void resetProcessor() noexcept;
@@ -81,6 +81,11 @@ signals:
      * @brief Emitted when the composition is loaded/saved from/to a file.
      */
     void compositionPathChanged(const QString &path);
+
+    /**
+     * @brief Emitted when a mask has been re-generated.
+     */
+    void maskGenerated(const image::AbstractMaskGenerator *maskGen, const image::Mask *maskBuf);
 
 private:
     std::shared_ptr<image::Composition> composition_;

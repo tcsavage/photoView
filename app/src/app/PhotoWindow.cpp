@@ -53,10 +53,11 @@ void PhotoWindow::setupMainWidget() {
 
     activeMaskManager = std::make_unique<MaskManager>(canvasScene, nullptr, nullptr);
     connect(activeMaskManager.get(), &MaskManager::maskUpdated, this, [this] {
-        if (auto mask = activeMaskManager->mask()) {
-            compositionManager->notifyMaskChanged(mask);
+        if (auto maskGen = activeMaskManager->maskGen()) {
+            compositionManager->notifyMaskChanged(maskGen);
         }
     });
+    connect(compositionManager, &CompositionManager::maskGenerated, activeMaskManager.get(), &MaskManager::handleMaskGenerated);
 }
 
 void PhotoWindow::setupDialogs() {
@@ -191,7 +192,14 @@ void PhotoWindow::setupDockWidgets() {
                 compositionManager,
                 &CompositionManager::setFiltersEnabled);
 
-        connect(compositionOutline, &CompositionOutline::activeMaskChanged, activeMaskManager.get(), &MaskManager::setMask);
+        connect(compositionOutline, &CompositionOutline::activeMaskChanged, this, [this](image::AbstractMaskGenerator *maskGen) {
+            activeMaskManager->setMask(maskGen);
+            // This is a little bit hacky. Basically we need to get the generated mask buffer for the new active mask
+            // generator (if any) and give it to the mask manager to display in the overlay.
+            if (maskGen) {
+                activeMaskManager->handleMaskGenerated(maskGen, &compositionManager->processor()->state.mask(maskGen));
+            }
+        });
     }
 }
 

@@ -41,7 +41,7 @@ namespace image {
      */
     struct Op {
         PoolLease<Lut> lut;
-        std::shared_ptr<Mask> mask;
+        std::shared_ptr<AbstractMaskGenerator> maskGen;
 
         explicit Op(PoolLease<Lut> &&lut) : lut(std::move(lut)) {}
     };
@@ -68,11 +68,27 @@ namespace image {
         void newOp() noexcept;
         void accumulate(AbstractFilterSpec &filter) noexcept;
         void accumulate(Layer &filter) noexcept;
-        void setMask(const std::shared_ptr<Mask> &mask) noexcept;
+        void setMask(std::shared_ptr<AbstractMaskGenerator> maskGen) noexcept;
 
         OpSequence build() noexcept;
 
         explicit OpSequenceBuilder(AbstractPool<Lut> &lutPool) noexcept;
+    };
+
+    /**
+     * @brief Maintains runtime data associated with a composition.
+     * 
+     * This is where ephemeral data associated directly with composition elements (such as loaded images,
+     * generated masks, etc.) lives, especially anything which depends on the input image buffer.
+     */
+    struct CompositionState {
+        ImageBuf<F32> input;
+        std::map<AbstractMaskGenerator *, Mask> generatedMasks;
+        std::unique_ptr<AbstractPool<ImageBuf<F32>>> intermediateImagePool;
+
+        void setInput(const ImageBuf<F32> &image) noexcept;
+        Mask &update(AbstractMaskGenerator *maskGen) noexcept;
+        Mask &mask(AbstractMaskGenerator *maskGen) noexcept;
     };
 
     /**
@@ -92,7 +108,8 @@ namespace image {
         opencl::SamplerHandle oclSampler;
 
         Pool<Lut, 10> lutPool;
-        std::unique_ptr<AbstractPool<ImageBuf<F32>>> intermediateImagePool;
+
+        CompositionState state;
 
         OpSequenceBuilder opSeqBuilder;
         OpSequence opSeq;

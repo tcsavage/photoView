@@ -71,7 +71,7 @@ namespace image {
         // Optimisation: if the current op is new (i.e. effectively a no-op) any mask can be discarded and we can just
         // pretend the existing current op is new again.
         if (currentIsNew) {
-            currentOp.mask = nullptr;
+            currentOp.maskGen = nullptr;
             return;
         }
         finaliseOp();
@@ -87,24 +87,24 @@ namespace image {
 
     void OpSequenceBuilder::accumulate(Layer &layer) noexcept {
         if (!layer.isEnabled) { return; }
-        bool hasActiveMask = layer.mask && layer.mask->isEnabled;
-        if (currentOp.mask || hasActiveMask) {
+        bool hasActiveMask = layer.maskGen && layer.maskGen->isEnabled;
+        if (currentOp.maskGen || hasActiveMask) {
             // We need a new op if:
             // - the current op has one already
             // - or the layer has a mask (regardless of whether the current op has one or not)
             newOp();
         }
-        if (hasActiveMask) { setMask(layer.mask->mask()); }
+        if (hasActiveMask) { setMask(layer.maskGen); }
         for (auto &&filter : layer.filters->filterSpecs) {
             if (filter->isEnabled) { accumulate(*filter); }
         }
     }
 
-    void OpSequenceBuilder::setMask(const std::shared_ptr<Mask> &mask) noexcept { currentOp.mask = mask; }
+    void OpSequenceBuilder::setMask(std::shared_ptr<AbstractMaskGenerator> maskGen) noexcept { currentOp.maskGen = maskGen; }
 
     OpSequence OpSequenceBuilder::build() noexcept {
         if (currentIsNew) {
-            currentOp.mask = nullptr;
+            currentOp.maskGen = nullptr;
         } else {
             finaliseOp();
             seq.ops.emplace_back(std::move(currentOp));
@@ -117,6 +117,42 @@ namespace image {
     OpSequenceBuilder::OpSequenceBuilder(AbstractPool<Lut> &lutPool) noexcept
       : lutPool(lutPool)
       , currentOp(lutPool.acquire()) {}
+
+    void CompositionState::setInput(const ImageBuf<F32> &image) noexcept {
+        input = image;
+        input.pixelArray.buffer()->device = opencl::Manager::the()->bufferDevice;
+        input.pixelArray.buffer()->deviceMalloc();
+        input.pixelArray.buffer()->copyHostToDevice();
+
+        // Invalidate all the state.
+        intermediateImagePool = std::make_unique<Pool<ImageBuf<F32>, 3>>(input.width(), input.height());
+        generatedMasks.clear();
+    }
+
+    Mask &CompositionState::update(AbstractMaskGenerator *maskGen) noexcept {
+        if (auto it = generatedMasks.find(maskGen); it != generatedMasks.end()) {
+            auto &maskBuf = it->second;
+            maskGen->generate(input, maskBuf);
+            maskBuf.pixelArray.buffer()->copyHostToDevice();
+            return maskBuf;
+        } else {
+            // Rely on mask() doing the first update for us.
+            return mask(maskGen);
+        }
+    }
+
+    Mask &CompositionState::mask(AbstractMaskGenerator *maskGen) noexcept {
+        if (auto it = generatedMasks.find(maskGen); it != generatedMasks.end()) {
+            return it->second;
+        }
+        auto &&[it, inserted] = generatedMasks.emplace(maskGen, input.size);
+        auto &maskBuf = it->second;
+        maskGen->generate(input, maskBuf);
+        maskBuf.pixelArray.buffer()->device = opencl::Manager::the()->bufferDevice;
+        maskBuf.pixelArray.buffer()->deviceMalloc();
+        maskBuf.pixelArray.buffer()->copyHostToDevice();
+        return maskBuf;
+    }
 
     void Processor::init() noexcept {
         {
@@ -168,13 +204,9 @@ namespace image {
 
     void Processor::setComposition(std::shared_ptr<Composition> comp) noexcept {
         composition = comp;
-        auto &img = *comp->inputImage.data;
-        if (!img.pixelArray.buffer()->device) {
-            img.pixelArray.buffer()->device = opencl::Manager::the()->bufferDevice;
-            img.pixelArray.buffer()->deviceMalloc();
-            img.pixelArray.buffer()->copyHostToDevice();
-        }
-        intermediateImagePool = std::make_unique<Pool<ImageBuf<F32>, 3>>(img.width(), img.height());
+        state = CompositionState {};
+
+        state.setInput(*comp->inputImage.data);
     }
 
     void Processor::update() noexcept {
@@ -188,8 +220,7 @@ namespace image {
 
     void Processor::process(ImageBuf<U8> &outFinal) noexcept {
         assert(composition);
-        assert(composition->inputImage.data);
-        assert(composition->inputImage.data->pixelArray.shape() == outFinal.pixelArray.shape());
+        assert(state.input.pixelArray.shape() == outFinal.pixelArray.shape());
 
         // TODO: This function is rather horrible (mostly due to error handling boilerplate).
         // Would be nice to tidy it up.
@@ -199,23 +230,25 @@ namespace image {
         std::optional<PoolLease<ImageBuf<F32>>> intermediateOut;
 
         // The current input image for processing.
-        ImageBuf<F32> *currentIn = &(*composition->inputImage.data);
+        ImageBuf<F32> *currentIn = &(state.input);
 
         // Run through the operations.
         for (auto &&op : opSeq.ops) {
             // Acquire a new intermediate image for output.
-            intermediateOut = intermediateImagePool->acquire();
+            intermediateOut = state.intermediateImagePool->acquire();
 
             // Convenience.
             auto &latticeImage = op.lut->latticeImage;
             auto &out = **intermediateOut;
             opencl::Kernel *kernel;
 
-            if (op.mask) {
+            if (op.maskGen) {
+                // Get mask buffer. Will create and generate if necessary.
+                auto &mask = state.mask(op.maskGen.get());
                 // Set-up masking kernel to apply LUT.
                 kernel = &oclKernelApplyLutMasked;
                 auto saResult = kernel->setArgs(
-                    latticeImage, oclSampler, currentIn->pixelArray, op.mask->pixelArray, out.pixelArray);
+                    latticeImage, oclSampler, currentIn->pixelArray, mask.pixelArray, out.pixelArray);
                 if (saResult.hasError()) {
                     std::cerr << "Error setting kernel args: " << saResult.error().error << " (arg #"
                               << saResult.error().argIdx << ")\n";

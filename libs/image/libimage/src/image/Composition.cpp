@@ -37,7 +37,7 @@ namespace image {
                               << (filter->isEnabled ? "enabled" : "disabled") << ")\n";
                 }
             }
-            if (layer->mask) { std::cerr << "\t\tMask\n"; }
+            if (layer->maskGen) { std::cerr << "\t\tMask generator\n"; }
         }
         std::cerr << "========================\n";
     }

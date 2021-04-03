@@ -118,11 +118,11 @@ CompositionOutline::CompositionOutline(QWidget *parent) noexcept : QWidget(paren
             if (!layerIdx.isValid()) { return; }
             auto layerNode = model_->nodeAtIndex(layerIdx);
             auto &layer = layerNode->get<Layer>();
-            image::GeneratedMask *activeMask = nullptr;
-            if (layer.mask) { activeMask = layer.mask.get(); }
-            if (activeMask != lastActiveMask_) {
-                lastActiveMask_ = activeMask;
-                emit activeMaskChanged(lastActiveMask_);
+            image::AbstractMaskGenerator *activeMaskGen = nullptr;
+            if (layer.maskGen) { activeMaskGen = layer.maskGen.get(); }
+            if (activeMaskGen != lastActiveMaskGen_) {
+                lastActiveMaskGen_ = activeMaskGen;
+                emit activeMaskChanged(lastActiveMaskGen_);
             }
         }
     });
@@ -153,11 +153,12 @@ void CompositionOutline::setupContextMenu() noexcept {
             auto addMaskGeneratorMenu = makeMaskGeneratorMenu();
             addMaskGeneratorMenu->setTitle("Add &Mask");
             menu.addMenu(addMaskGeneratorMenu);
-            if (node->get<Layer>().mask) { addMaskGeneratorMenu->setEnabled(false); }
+            if (node->get<Layer>().maskGen) { addMaskGeneratorMenu->setEnabled(false); }
             connect(addMaskGeneratorMenu, &QMenu::triggered, this, [&](QAction *action) {
                 auto id = action->data().toString().toStdString();
                 auto maskGeneratorResult = maskGeneratorRegistry.create(id);  // TODO: Could this result in an error?
-                model_->addLayerMask(idx, std::move(*maskGeneratorResult));
+                std::shared_ptr<AbstractMaskGenerator> maskGen { maskGeneratorResult.value().release() };
+                model_->addLayerMask(idx, maskGen);
             });
         }
         if (node->type == internal::NodeType::Filter) {
@@ -193,7 +194,7 @@ void CompositionOutline::setupContextMenu() noexcept {
         }
         if (node->type == internal::NodeType::Mask) {
             menu.addAction("&Copy Mask", [&] {
-                auto enc = serialization::encodeMask(&node->get<GeneratedMask>());
+                auto enc = serialization::encodeMask(&node->get<AbstractMaskGenerator>());
                 auto clipboard = QGuiApplication::clipboard();
                 QMimeData *mimeData = new QMimeData();
                 mimeData->setData("application/x.photoView.mask+json", QByteArray::fromStdString(enc));
@@ -208,7 +209,7 @@ void CompositionOutline::setupContextMenu() noexcept {
                 auto data = mimeData->data("application/x.photoView.mask+json");
                                auto mask = serialization::decodeMask(data.toStdString());
                                model_->addLayerMask(idx, mask);
-            })->setEnabled(mimeData->hasFormat("application/x.photoView.mask+json") && !layer.mask);;
+            })->setEnabled(mimeData->hasFormat("application/x.photoView.mask+json") && !layer.maskGen);
         }
         if (node->type == internal::NodeType::Filter || node->type == internal::NodeType::Mask ||
             node->type == internal::NodeType::Layer) {

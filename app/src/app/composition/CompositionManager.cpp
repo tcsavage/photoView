@@ -93,8 +93,9 @@ void CompositionManager::exportImage(const QString &qPath) noexcept {
     writeImageBufToFile(path, output_);
 }
 
-void CompositionManager::notifyMaskChanged(image::GeneratedMask *mask) noexcept {
-    mask->update(*composition_->inputImage.data);
+void CompositionManager::notifyMaskChanged(AbstractMaskGenerator *maskGen) noexcept {
+    auto &maskBuf = processor_->state.update(maskGen);
+    emit maskGenerated(maskGen, &maskBuf);
     process();
 }
 
