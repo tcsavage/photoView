@@ -1,0 +1,22 @@
+add_executable(libimage_example_data_api main.cpp)
+target_link_libraries(libimage_example_data_api PUBLIC image::libimage)
+
+target_compile_features(libimage_example_data_api PUBLIC cxx_std_20)
+if(MSVC)
+    target_compile_options(libimage_example_data_api PRIVATE /W4 /WX)
+else()
+    target_compile_options(libimage_example_data_api PRIVATE -Wall -Wextra -pedantic -Werror -march=native)
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT IMAGE_DISABLE_ASAN)
+        target_compile_options(libimage_example_data_api PRIVATE -fsanitize=address)
+        target_link_libraries(libimage_example_data_api PRIVATE -fsanitize=address)
+    endif()
+endif()
+
+if(MSVC)
+    target_compile_options(libimage_example_data_api PRIVATE /arch:AVX2)
+else()
+    target_compile_options(libimage_example_data_api PRIVATE -mavx2)
+endif()
+
+include(GNUInstallDirs)
+install(TARGETS libimage_example_data_api RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
