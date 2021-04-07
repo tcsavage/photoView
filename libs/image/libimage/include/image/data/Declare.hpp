@@ -15,20 +15,19 @@ namespace image {
         StringView description;
         AbstractTypeInfo *propertyTypeInfo;
         AbstractTypeInfo *objectTypeInfo;
-        void *(*getter)(void *);
+
+        virtual void *get(void *obj) const noexcept = 0;
 
         constexpr AbstractProperty(StringView ident,
                                    StringView name,
                                    StringView description,
                                    AbstractTypeInfo &propertyTypeInfo,
-                                   AbstractTypeInfo &objectTypeInfo,
-                                   void *(*getter)(void *))
+                                   AbstractTypeInfo &objectTypeInfo)
           : ident(ident)
           , name(name)
           , description(description)
           , propertyTypeInfo(&propertyTypeInfo)
-          , objectTypeInfo(&objectTypeInfo)
-          , getter(getter) {}
+          , objectTypeInfo(&objectTypeInfo) {}
     };
 
     struct AbstractTypeInfo {
@@ -118,13 +117,16 @@ namespace image {
     struct BaseProperty : public AbstractProperty {
         PropertyType ObjectType::*ptr;
 
-        constexpr BaseProperty(StringView ident, PropertyType ObjectType::*ptr, void *(*getter)(void *))
+        virtual void *get(void *obj) const noexcept override {
+            return &(reinterpret_cast<ObjectType *>(obj)->*ptr);
+        }
+
+        constexpr BaseProperty(StringView ident, PropertyType ObjectType::*ptr)
           : AbstractProperty(ident,
                              ident,
                              "",
                              TypeInfoTraits<PropertyType>::desc,
-                             TypeInfoTraits<ObjectType>::desc,
-                             getter)
+                             TypeInfoTraits<ObjectType>::desc)
           , ptr(ptr) {}
     };
 
@@ -135,20 +137,34 @@ namespace image {
     struct TypedProperty<memberPtr> final : public BaseProperty<ObjectType, PropertyType> {
         template <class F>
         constexpr explicit TypedProperty(StringView ident, F &&f) noexcept
-          : BaseProperty<ObjectType, PropertyType>(ident, memberPtr, [](void *obj) {
-              return reinterpret_cast<void *>(&(reinterpret_cast<ObjectType *>(obj)->*memberPtr));
-          }) {
+          : BaseProperty<ObjectType, PropertyType>(ident, memberPtr) {
             f(*this);
         }
     };
 
+    template <DynamicType ObjectType, DynamicType PropertyType>
+    struct BaseFunctionalProperty : public AbstractProperty {
+        virtual PropertyType &get(ObjectType &obj) const noexcept = 0;
+
+        virtual void *get(void *obj) const noexcept override {
+            return &(this->get(*static_cast<ObjectType *>(obj)));
+        };
+
+        constexpr BaseFunctionalProperty(StringView ident)
+          : AbstractProperty(ident,
+                             ident,
+                             "",
+                             TypeInfoTraits<PropertyType>::desc,
+                             TypeInfoTraits<ObjectType>::desc) {}
+    };
+
     template <DynamicType PropertyType, DynamicType ObjectType>
-    PropertyType &getProperty(ObjectType &obj, StringView ident) noexcept {
+    PropertyType &getProperty(const ObjectType &obj, StringView ident) noexcept {
         auto &prop = dynInfo<ObjectType>()[ident];
         ASSERT(prop.propertyTypeInfo == &dynInfo<PropertyType>(),
                "Dynamic property's type doesn't match what's expected");
-        auto &typedProp = static_cast<BaseProperty<ObjectType, PropertyType> &>(prop);
-        return obj.*(typedProp.ptr);
+        auto propVoidPtr = prop.get(&obj);
+        return static_cast<PropertyType *>(propVoidPtr);
     }
 
 }
@@ -186,4 +202,22 @@ namespace image {
     struct Property_##objectType##_##propertyIdent##_registration {                                      \
         inline static bool isRegistered = TypeInfoTraits<objectType>::desc.registerProperty(             \
             TypedProperty<&objectType::propertyIdent> { #propertyIdent, [](auto &propertyIdent) init }); \
+    }
+
+/**
+ * @brief Declare and register a functional property of a dynamic type.
+ */
+#define PROPERTY_FN(objectType, propertyType, propertyIdent, init, objBinder, getter)                            \
+    struct FunctionalProperty_##objectType##_##propertyIdent                                                     \
+      : public BaseFunctionalProperty<objectType, propertyType> {                                                \
+        virtual propertyType &get(objectType &objBinder) const noexcept override getter                          \
+        template <class F>                                                                                       \
+        constexpr FunctionalProperty_##objectType##_##propertyIdent(StringView ident, F &&f)                     \
+          : BaseFunctionalProperty<objectType, propertyType>(ident) {                                            \
+            f(*this);                                                                                            \
+        }                                                                                                        \
+    };                                                                                                           \
+    struct Property_##objectType##_##propertyIdent##_registration {                                              \
+        inline static bool isRegistered = TypeInfoTraits<objectType>::desc.registerProperty(                     \
+            FunctionalProperty_##objectType##_##propertyIdent { #propertyIdent, [](auto &propertyIdent) init }); \
     }

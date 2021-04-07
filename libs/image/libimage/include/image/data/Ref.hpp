@@ -17,13 +17,13 @@ namespace image {
 
         DynamicRef operator[](StringView ident) noexcept {
             auto &propTypeInfo = (*typeInfo)[ident];
-            return DynamicRef(propTypeInfo.getter(ptr), propTypeInfo.propertyTypeInfo);
+            return DynamicRef(propTypeInfo.get(ptr), propTypeInfo.propertyTypeInfo);
         }
 
         std::map<StringView, DynamicRef> properties() noexcept {
             std::map<StringView, DynamicRef> out;
             for (auto &&[ident, propTypeInfo] : typeInfo->properties()) {
-                out.insert({ ident, DynamicRef(propTypeInfo->getter(ptr), propTypeInfo->propertyTypeInfo) });
+                out.insert({ ident, DynamicRef(propTypeInfo->get(ptr), propTypeInfo->propertyTypeInfo) });
             }
             return out;
         }
