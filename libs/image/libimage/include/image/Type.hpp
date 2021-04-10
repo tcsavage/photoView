@@ -9,10 +9,7 @@ namespace image {
 
     class Type {
     public:
-        constexpr Type(StringView name, std::size_t size, std::size_t alignment) noexcept
-          : size_(size)
-          , alignment_(alignment)
-          , name_(name) {}
+        Type(StringView name, std::size_t size, std::size_t alignment);
 
         Type(const Type&) = delete;
         Type(Type&&) = delete;
@@ -20,50 +17,44 @@ namespace image {
         Type& operator=(const Type&) = delete;
         Type& operator=(Type&&) = delete;
 
-        constexpr std::size_t size() const noexcept { return size_; }
-        constexpr std::size_t alignment() const noexcept { return alignment_; }
-        constexpr StringView name() const noexcept { return name_; }
+        std::size_t size() const;
+        std::size_t alignment() const;
+        const String& name() const;
 
-        constexpr bool operator==(const Type& rhs) const noexcept { return this == &rhs; }
-        constexpr bool operator!=(const Type& rhs) const noexcept { return this != &rhs; }
+        bool operator==(const Type& rhs) const noexcept;
+        bool operator!=(const Type& rhs) const noexcept;
 
     private:
-        std::size_t size_ { 0 };
-        std::size_t alignment_ { 0 };
-        StringView name_;
+        std::size_t _size { 0 };
+        std::size_t _alignment { 0 };
+        String _name;
     };
 
     class TypeRef {
     public:
-        constexpr TypeRef(const Type& type) noexcept : type_(&type) {}
+        TypeRef(const Type& type);
 
-        constexpr TypeRef(const TypeRef& other) noexcept : type_(other.type_) {}
-        constexpr TypeRef& operator=(const TypeRef& other) noexcept {
-            type_ = other.type_;
-            return *this;
-        }
+        TypeRef(const TypeRef& other);
+        TypeRef& operator=(const TypeRef& other);
 
-        constexpr TypeRef(TypeRef&& other) noexcept : type_(other.type_) {}
-        constexpr TypeRef& operator=(TypeRef&& other) noexcept {
-            type_ = other.type_;
-            return *this;
-        }
+        TypeRef(TypeRef&& other) noexcept;
+        TypeRef& operator=(TypeRef&& other) noexcept;
 
-        constexpr const Type* get() const noexcept { return type_; }
-        constexpr const Type& operator*() const noexcept { return *get(); }
-        constexpr const Type* operator->() const noexcept { return get(); }
+        const Type* get() const;
+        const Type& operator*() const;
+        const Type* operator->() const;
 
-        constexpr bool operator==(const TypeRef& rhs) const noexcept { return type_ == rhs.type_; }
-        constexpr bool operator!=(const TypeRef& rhs) const noexcept { return type_ != rhs.type_; }
+        bool operator==(const TypeRef& rhs) const noexcept;
+        bool operator!=(const TypeRef& rhs) const noexcept;
 
     private:
-        const Type* type_;
+        const Type* _type;
     };
 
     template <typename T, typename Enable = void>
     class RepresentType {
     public:
-        constexpr static TypeRef get() {
+        static TypeRef get() {
             std::terminate();
         }
     };
@@ -71,18 +62,18 @@ namespace image {
     template<typename T>
     class RepresentType<T, std::enable_if_t<std::is_arithmetic_v<T> || (std::is_standard_layout_v<T> && std::is_trivial_v<T>) || std::is_aggregate_v<T> || std::is_final_v<T>>> {
     public:
-        constexpr static Type type { TypeName<T>::get(), sizeof(String), alignof(String) };
-        constexpr static TypeRef get() noexcept {
-            return TypeRef(type);
+        static TypeRef get() {
+            static Type ty { TypeName<T>::get(), sizeof(T), alignof(T) };
+            return TypeRef(ty);
         }
     };
 
     template<>
     class RepresentType<String> {
     public:
-        constexpr static Type type { "String", sizeof(String), alignof(String) };
-        constexpr static TypeRef get() noexcept {
-            return TypeRef(type);
+        static TypeRef get() {
+            static Type ty { TypeName<String>::get(), sizeof(String), alignof(String) };
+            return TypeRef(ty);
         }
     };
 
