@@ -6,6 +6,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
+#include "DataAPIInterface.hpp"
 #include "FiltersSerialization.hpp"
 #include "MaskGeneratorSerialization.hpp"
 #include "Serialization.hpp"
@@ -36,6 +37,15 @@ namespace image::serialization {
         }
         if (!filtersTree.empty()) {
             tree.add_child("filters", filtersTree);
+        }
+        pt::ptree filtersTreeDynamic;
+        for (auto &&filterSpec : layer.filters->filterSpecs) {
+            pt::ptree filterTree;
+            writeFilter(ctx, filterTree, *filterSpec);
+            filtersTreeDynamic.push_back(std::make_pair("", filterTree));
+        }
+        if (!filtersTreeDynamic.empty()) {
+            tree.add_child("filtersDynamic", filtersTreeDynamic);
         }
         if (layer.maskGen) {
             pt::ptree maskTree;

@@ -2,85 +2,82 @@
 
 #include <concepts>
 #include <sstream>
+#include <variant>
 
-#include <boost/property_tree/ptree_fwd.hpp>
+#include <boost/property_tree/ptree.hpp>
 
 #include <image/data/Interface.hpp>
+#include <image/data/FilterTypes.hpp>
 #include <image/data/PrimitiveTypes.hpp>
-#include <image/serialization/Serialization.hpp>
+
+#include "Serialization.hpp"
 
 namespace image::serialization {
 
-    /**
-     * @brief Interface definition.
-     */
+    using Data = std::variant<String, I32, F32, pt::ptree>;
+
+    void addData(pt::ptree &tree, const String &key, Data &&data) noexcept;
+
     struct Serialization {
-        virtual void write(const WriteContext &, pt::ptree &, DynamicRef ref) const noexcept {}
-
-        virtual Expected<void, ReadError>
-        read(const ReadContext &, const pt::ptree &, DynamicRef ref) const noexcept {
-            return success;
-        }
+        virtual Data encode(const WriteContext &, DynamicRef) const noexcept = 0;
     };
 
-    /**
-     * @brief ToString implementation which will work for any T.
-     */
-    struct SerializationForFilter final : public Serialization {
-        virtual void write(const WriteContext &ctx, pt::ptree &tree, const String &key, DynamicRef ref) const noexcept override {
-            auto filter = ref.getUnchecked<AbstractFilterSpec>();
-            pt::ptree filterTree;
-            tree.put("filter", filter->getMeta().id);
-            tree.put("enabled", filter->isEnabled);
-            pt::ptree optionsTree;
-
-        }
-        virtual String toString(DynamicRef ref) const noexcept override {
-            std::stringstream ss;
-            ss << "<" << ref.info().name;
-            auto props = ref.properties();
-            if (props.empty()) {
-                ss << ">";
-            } else {
-                ss << ":";
-                bool first = true;
-                for (auto &&[ident, propRef] : props) {
-                    if (!first) { ss << ","; };
-                    first = false;
-                    ss << " " << ident << " : ";
-                    ss << propRef.info().ident;
-                    ss << " = ";
-                    ss << ifaceImpl<ToString>(propRef)->toString(propRef);
-                }
-                ss << ">";
-            }
-            return ss.str();
-        }
-    };
+    void writeFilter(const WriteContext &ctx, pt::ptree &filterTree, AbstractFilterSpec &filterSpec) noexcept;
 
     /**
-     * @brief ToString implementation for numeric types.
+     * @brief Serialize directly into a primitive data type.
      */
     template <class T>
-    requires std::integral<T> || std::floating_point<T>
-    struct ToStringNumericImpl final : public ToString {
-        virtual String toString(DynamicRef ref) const noexcept override {
-            std::stringstream ss;
-            ss << *ref.get<T>();
-            return ss.str();
+    struct TrivialSerialization final : public Serialization {
+        virtual Data encode(const WriteContext &, DynamicRef ref) const noexcept override {
+            auto data = ref.getUnchecked<T>();
+            return *data;
         }
     };
 
+    INTERFACE(Serialization, I32, TrivialSerialization<I32>);
+    INTERFACE(Serialization, F32, TrivialSerialization<F32>);
+
+    template <class T>
+    struct SerializationViaString final : public Serialization {
+        virtual Data encode(const WriteContext &, DynamicRef ref) const noexcept override {
+            auto data = ref.getUnchecked<T>();
+            std::stringstream ss;
+            ss << *data;
+            return ss.str();
+        }
+    };
+    
+    INTERFACE(Serialization, bool, SerializationViaString<bool>);
+
     /**
-     * @brief ToString implementation for Path.
+     * @brief Serializes a filter spec.
      */
-    template <>
-    struct ToStringImpl<Path> final : public ToString {
-        virtual String toString(DynamicRef ref) const noexcept override { return ref.get<Path>()->string(); }
+    struct SerializationForFilter final : public Serialization {
+        virtual Data encode(const WriteContext &ctx, DynamicRef ref) const noexcept override {
+            pt::ptree filterTree;
+            auto filter = ref.getUnchecked<AbstractFilterSpec>();
+            filterTree.put("filter", filter->getMeta().id);
+            filterTree.put("enabled", filter->isEnabled);
+            auto props = ref.properties();
+            if (!props.empty()) {
+                pt::ptree optionsTree;
+                for (auto &&[ident, propRef] : props) {
+                    auto data = ifaceImpl<Serialization>(propRef)->encode(ctx, propRef);
+                    addData(optionsTree, String(ident), std::move(data));
+                }
+                if (!optionsTree.empty()) {
+                    filterTree.add_child("options", optionsTree);
+                }
+            }
+            return filterTree;
+        }
     };
 
-    INTERFACE(ToString, I32, ToStringNumericImpl<I32>);
-    INTERFACE(ToString, F32, ToStringNumericImpl<F32>);
-    INTERFACE(ToString, Path, ToStringImpl<Path>);
+    INTERFACE(Serialization, ExposureFilterSpec, SerializationForFilter);
+    INTERFACE(Serialization, LutFilterSpec, SerializationForFilter);
+    INTERFACE(Serialization, SaturationFilterSpec, SerializationForFilter);
+    INTERFACE(Serialization, ContrastFilterSpec, SerializationForFilter);
+    INTERFACE(Serialization, ChannelMixerFilterSpec, SerializationForFilter);
 
 }

@@ -96,16 +96,6 @@ namespace image {
         inline static std::map<StringView, AbstractTypeInfo *> types;
     };
 
-    template <class T>
-    concept DynamicType = requires(T a, TypeInfo<T> *ti) {
-        typename TypeInfo<T>;
-        typename TypeInfoTraits<T>;
-        { ti }
-        ->std::convertible_to<BaseTypeInfo<T> *>;
-        { TypeInfoTraits<T>::desc }
-        ->std::convertible_to<TypeInfo<T>>;
-    };
-
     template <DynamicType T>
     constexpr TypeInfo<T> &dynInfo() noexcept {
         return TypeInfoTraits<T>::desc;

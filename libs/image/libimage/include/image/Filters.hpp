@@ -7,7 +7,7 @@
 #include <image/Mask.hpp>
 #include <image/PolyVal.hpp>
 #include <image/Resource.hpp>
-#include <image/data/API.hpp>
+#include <image/data/Ref.hpp>
 #include <image/luts/Lattice3D.hpp>
 #include <image/luts/TetrahedralInterpolator.hpp>
 
@@ -18,7 +18,7 @@ namespace image {
         String name;
     };
 
-    struct AbstractFilterSpec : public Dynamic {
+    struct AbstractFilterSpec {
         bool isEnabled { true };
 
         virtual const FilterMeta &getMeta() const noexcept = 0;
@@ -47,19 +47,7 @@ namespace image {
         virtual bool isLinear() const noexcept override { return true; }
 
         virtual void apply(luts::Lattice3D &lattice) const noexcept override;
-
-        virtual DynamicRef dynRef() noexcept override;
     };
-
-    TYPE(ExposureFilterSpec, {
-        name = "Exposure filter";
-    });
-
-    PROPERTY(ExposureFilterSpec, exposureEvs, {
-        exposureEvs.name = "Exposure EVs";
-    });
-
-    inline DynamicRef ExposureFilterSpec::dynRef() noexcept { return DynamicRef { this }; }
 
     struct LutFilterSpec final : AbstractFilterSpec {
         LutResource lut;
@@ -72,19 +60,7 @@ namespace image {
         virtual const FilterMeta &getMeta() const noexcept override { return meta; }
         virtual void update() noexcept override;
         virtual void apply(luts::Lattice3D &lattice) const noexcept override;
-
-        virtual DynamicRef dynRef() noexcept override;
     };
-
-    TYPE(LutFilterSpec, {
-        name = "LUT filter";
-    });
-
-    PROPERTY(LutFilterSpec, strength, {
-        strength.name = "Strength";
-    });
-
-    inline DynamicRef LutFilterSpec::dynRef() noexcept { return DynamicRef { this }; }
 
     struct SaturationFilterSpec final : AbstractFilterSpec {
         F32 multiplier { 1.0f };
@@ -93,19 +69,7 @@ namespace image {
 
         virtual const FilterMeta &getMeta() const noexcept override { return meta; }
         virtual void apply(luts::Lattice3D &lattice) const noexcept override;
-
-        virtual DynamicRef dynRef() noexcept override;
     };
-
-    TYPE(SaturationFilterSpec, {
-        name = "Saturation filter";
-    });
-
-    PROPERTY(SaturationFilterSpec, multiplier, {
-        multiplier.name = "Multiplier";
-    });
-
-    inline DynamicRef SaturationFilterSpec::dynRef() noexcept { return DynamicRef { this }; }
 
     struct ContrastFilterSpec final : AbstractFilterSpec {
         F32 factor { 1.0f };
@@ -114,19 +78,7 @@ namespace image {
 
         virtual const FilterMeta &getMeta() const noexcept override { return meta; }
         virtual void apply(luts::Lattice3D &lattice) const noexcept override;
-
-        virtual DynamicRef dynRef() noexcept override;
     };
-
-    TYPE(ContrastFilterSpec, {
-        name = "Contrast filter";
-    });
-
-    PROPERTY(ContrastFilterSpec, factor, {
-        factor.name = "Factor";
-    });
-
-    inline DynamicRef ContrastFilterSpec::dynRef() noexcept { return DynamicRef { this }; }
 
     struct ChannelMixerFilterSpec final : AbstractFilterSpec {
         MatrixRGB<F32> matrix;
@@ -136,14 +88,6 @@ namespace image {
 
         virtual const FilterMeta &getMeta() const noexcept override { return meta; }
         virtual void apply(luts::Lattice3D &lattice) const noexcept override;
-
-        virtual DynamicRef dynRef() noexcept override;
     };
-
-    TYPE(ChannelMixerFilterSpec, {
-        name = "Channel mixer filter";
-    });
-
-    inline DynamicRef ChannelMixerFilterSpec::dynRef() noexcept { return DynamicRef { this }; }
 
 }

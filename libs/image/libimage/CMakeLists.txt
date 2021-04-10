@@ -40,6 +40,7 @@ add_library(libimage
     src/image/Processor.cpp
     src/image/Resource.cpp
     src/image/serialization/CompositionSerialization.cpp
+    src/image/serialization/DataAPIInterface.cpp
     src/image/serialization/FiltersSerialization.cpp
     src/image/serialization/MaskGeneratorSerialization.cpp
     src/image/serialization/Serialization.cpp

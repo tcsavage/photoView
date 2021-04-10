@@ -1,6 +1,8 @@
 #pragma once
 
-#include <image/data/Core.hpp>
+#include <map>
+
+#include <image/data/Declare.hpp>
 
 namespace image {
 
@@ -34,6 +36,10 @@ namespace image {
         }
 
         const AbstractTypeInfo &info() const noexcept { return *typeInfo; }
+
+        inline static DynamicRef makeUnchecked(void *ptr, AbstractTypeInfo *typeInfo) noexcept {
+            return DynamicRef(ptr, typeInfo);
+        }
 
         template <DynamicType T>
         DynamicRef(T *ptr) noexcept : ptr(ptr)
