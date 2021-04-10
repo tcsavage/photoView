@@ -22,6 +22,7 @@ cmrc_add_resource_library(
 
 # libimage
 add_library(libimage
+    src/image/Assert.cpp
     src/image/Composition.cpp
     src/image/Filters.cpp
     src/image/luts/Barycentric.cpp

@@ -15,6 +15,11 @@ namespace image {
             }
         }
 
+        template <class T>
+        T *getUnchecked() noexcept {
+            return static_cast<T *>(ptr);
+        }
+
         DynamicRef operator[](StringView ident) noexcept {
             auto &propTypeInfo = (*typeInfo)[ident];
             return DynamicRef(propTypeInfo.get(ptr), propTypeInfo.propertyTypeInfo);
@@ -39,6 +44,16 @@ namespace image {
         AbstractTypeInfo *typeInfo { nullptr };
 
         DynamicRef(void *ptr, AbstractTypeInfo *typeInfo) noexcept : ptr(ptr), typeInfo(typeInfo) {}
+    };
+
+    /**
+     * @brief Convenience interface to make it easy to get a DynamicRef.
+     */
+    class Dynamic {
+    public:
+        virtual DynamicRef dynRef() noexcept = 0;
+
+        virtual ~Dynamic() noexcept {}
     };
 
 }

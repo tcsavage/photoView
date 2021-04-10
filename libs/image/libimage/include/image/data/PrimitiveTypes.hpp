@@ -5,6 +5,7 @@
 
 namespace image {
 
+    TYPE(bool, {});
     TYPE(I32, {});
     TYPE(F32, {});
     TYPE(String, {});
