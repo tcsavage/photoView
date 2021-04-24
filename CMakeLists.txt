@@ -14,6 +14,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 add_subdirectory(external)
 add_subdirectory(libs)
 add_subdirectory(app)
+add_subdirectory(v2_test)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     include(GNUInstallDirs)

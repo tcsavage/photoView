@@ -1,7 +1,9 @@
 #pragma once
 
 #include <map>
+#include <memory>
 
+#include <image/Assert.hpp>
 #include <image/data/Declare.hpp>
 
 namespace image {
@@ -9,7 +11,13 @@ namespace image {
     class DynamicRef {
     public:
         template <DynamicType T>
-        T *get() noexcept {
+        T &get() noexcept {
+            ASSERT(typeInfo == &dynInfo<T>(), "Attempted to get a DynamicRef with wrong type");
+            return *static_cast<T *>(ptr);
+        }
+
+        template <DynamicType T>
+        T *ptr() noexcept {
             if (typeInfo != &dynInfo<T>()) {
                 return nullptr;
             } else {
@@ -18,7 +26,7 @@ namespace image {
         }
 
         template <class T>
-        T *getUnchecked() noexcept {
+        T *ptrUnchecked() noexcept {
             return static_cast<T *>(ptr);
         }
 
@@ -26,6 +34,11 @@ namespace image {
             auto &propTypeInfo = (*typeInfo)[ident];
             return DynamicRef(propTypeInfo.get(ptr), propTypeInfo.propertyTypeInfo);
         }
+
+        DynamicRef operator[](AbstractProperty *prop) noexcept {
+            return DynamicRef(prop->get(ptr), prop->propertyTypeInfo);
+        }
+
 
         std::map<StringView, DynamicRef> properties() noexcept {
             std::map<StringView, DynamicRef> out;
@@ -42,8 +55,7 @@ namespace image {
         }
 
         template <DynamicType T>
-        DynamicRef(T *ptr) noexcept : ptr(ptr)
-                                    , typeInfo(&dynInfo<T>()) {}
+        DynamicRef(T *ptr) noexcept : DynamicRef(ptr, &dynInfo<T>()) {}
 
     private:
         void *ptr { nullptr };
@@ -57,7 +69,7 @@ namespace image {
      */
     class Dynamic {
     public:
-        virtual DynamicRef dynRef() noexcept = 0;
+        virtual DynamicRef dynPtr() noexcept = 0;
 
         virtual ~Dynamic() noexcept {}
     };

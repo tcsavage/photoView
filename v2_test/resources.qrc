@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file alias="appIcon">../packaging/icons/dev.tomsavage.PhotoView.svg</file>
+    </qresource>
+</RCC>

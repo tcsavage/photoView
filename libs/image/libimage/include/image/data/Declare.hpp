@@ -191,7 +191,7 @@ namespace image {
 #define PROPERTY(objectType, propertyIdent, init)                                                        \
     struct Property_##objectType##_##propertyIdent##_registration {                                      \
         inline static bool isRegistered = TypeInfoTraits<objectType>::desc.registerProperty(             \
-            TypedProperty<&objectType::propertyIdent> { #propertyIdent, [](auto &propertyIdent) init }); \
+            TypedProperty<&objectType::propertyIdent> { #propertyIdent, []([[maybe_unused]] auto &propertyIdent) init }); \
     }
 
 /**
